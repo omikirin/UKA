@@ -510,5 +510,22 @@
     <p>『空の狐と地上のウサギ』 &copy; omikirin</p>
   </div>
 </footer>
+<script>
+(function () {
+  try {
+    var d = localStorage.getItem("uka-last");
+    if (!d) return;
+    var o = JSON.parse(d);
+    if (!o || !o.url || !o.title) return;
+    var c = document.querySelector(".hero-cta");
+    if (!c) return;
+    var a = document.createElement("a");
+    a.className = "btn btn-ghost";
+    a.href = o.url;
+    a.textContent = "続きから読む｜" + o.title.split(" - ")[0];
+    c.appendChild(a);
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

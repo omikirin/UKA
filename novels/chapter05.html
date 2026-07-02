@@ -9,12 +9,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
+<script>(function () { try { var r = document.documentElement, g = function (k, d) { return localStorage.getItem(k) || d; }; r.setAttribute("data-fontsize", g("uka-fontsize", "medium")); r.setAttribute("data-theme", g("uka-theme", "light")); r.setAttribute("data-writing", g("uka-writing", "yoko")); } catch (e) {} })();</script>
 </head>
 <body>
+<div class="reading-progress"><span id="reading-progress-bar"></span></div>
 <header class="site-header reader-header">
   <div class="header-inner">
     <p class="reader-work"><a href="../index.html">クリプト忍者のウカ</a>　『空の狐と地上のウサギ』</p>
     <h1 class="reader-title">第五章　墜ちた狐</h1>
+    <p class="reader-meta">約3,900字　読了目安 約7分</p>
   </div>
 </header>
 
@@ -105,11 +108,34 @@
 <p class="chapter-end">（第五章　了）</p>
 </article>
 
+<details class="reader-toc">
+  <summary>目次　『空の狐と地上のウサギ』</summary>
+  <ol>
+    <li><a href="chapter01.html">第一章　風の音のする国</a></li>
+    <li><a href="chapter02.html">第二章　数式の花嫁</a></li>
+    <li><a href="chapter03.html">第三章　仇の名</a></li>
+    <li><a href="chapter04.html">第四章　式典の銃声</a></li>
+    <li class="current">第五章　墜ちた狐</li>
+    <li><a href="chapter06.html">第六章　名前のない客</a></li>
+    <li><a href="chapter07.html">第七章　二つの露見</a></li>
+    <li><a href="chapter08.html">第八章　大徴収作戦</a></li>
+    <li><a href="chapter09.html">第九章　第二射</a></li>
+    <li><a href="chapter10.html">第十章　同じ高さの空</a></li>
+  </ol>
+</details>
+
 <nav class="chapter-nav">
   <a href="chapter04.html">&laquo;　第四章　式典の銃声</a>
-  <a class="to-index" href="../index.html#novels">目次へ</a>
+  <a class="to-index" href="../index.html#novels">一覧へ</a>
   <a href="chapter06.html">第六章　名前のない客　&raquo;</a>
 </nav>
+
+<div class="reader-tools" role="group" aria-label="読書設定">
+  <button type="button" id="tool-fs-plus" title="文字を大きく">大</button>
+  <button type="button" id="tool-fs-minus" title="文字を小さく">小</button>
+  <button type="button" id="tool-writing" title="縦書き/横書きを切り替え">縦</button>
+  <button type="button" id="tool-theme" title="夜間モードを切り替え">夜</button>
+</div>
 
 <footer class="site-footer">
   <div class="footer-inner">
@@ -117,5 +143,6 @@
     <p>『空の狐と地上のウサギ』 &copy; omikirin</p>
   </div>
 </footer>
+<script src="../assets/reader.js" defer></script>
 </body>
 </html>

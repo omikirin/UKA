@@ -196,12 +196,15 @@ PAGE = """<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
+<script>(function () {{ try {{ var r = document.documentElement, g = function (k, d) {{ return localStorage.getItem(k) || d; }}; r.setAttribute("data-fontsize", g("uka-fontsize", "medium")); r.setAttribute("data-theme", g("uka-theme", "light")); r.setAttribute("data-writing", g("uka-writing", "yoko")); }} catch (e) {{}} }})();</script>
 </head>
 <body>
+<div class="reading-progress"><span id="reading-progress-bar"></span></div>
 <header class="site-header reader-header">
   <div class="header-inner">
     <p class="reader-work"><a href="../index.html">クリプト忍者のウカ</a>　『{work}』</p>
     <h1 class="reader-title">{heading}</h1>
+    <p class="reader-meta">約{chars}字　読了目安 約{minutes}分</p>
   </div>
 </header>
 
@@ -209,11 +212,25 @@ PAGE = """<!DOCTYPE html>
 {body}
 </article>
 
+<details class="reader-toc">
+  <summary>目次　『{work}』</summary>
+  <ol>
+{toc}
+  </ol>
+</details>
+
 <nav class="chapter-nav">
   {prev_link}
-  <a class="to-index" href="../index.html#{index_anchor}">目次へ</a>
+  <a class="to-index" href="../index.html#{index_anchor}">一覧へ</a>
   {next_link}
 </nav>
+
+<div class="reader-tools" role="group" aria-label="読書設定">
+  <button type="button" id="tool-fs-plus" title="文字を大きく">大</button>
+  <button type="button" id="tool-fs-minus" title="文字を小さく">小</button>
+  <button type="button" id="tool-writing" title="縦書き/横書きを切り替え">縦</button>
+  <button type="button" id="tool-theme" title="夜間モードを切り替え">夜</button>
+</div>
 
 <footer class="site-footer">
   <div class="footer-inner">
@@ -221,23 +238,29 @@ PAGE = """<!DOCTYPE html>
     <p>『{work}』 &copy; omikirin</p>
   </div>
 </footer>
+<script src="../assets/reader.js" defer></script>
 </body>
 </html>
 """
-
 EMPTY_LINK = '<a class="nav-empty" href="#">-</a>'
 
 
 def render(dest_dir, fname, *, work, heading, page_title, description,
-           index_anchor, prev_link, next_link):
+           index_anchor, prev_link, next_link, toc=""):
     src = dest_dir / fname
-    body = md_to_paragraphs(src.read_text(encoding="utf-8"))
+    raw = src.read_text(encoding="utf-8")
+    body = md_to_paragraphs(raw)
+    chars = len(re.sub(r"\s", "", re.sub(r"^#.*$", "", raw, flags=re.M)))
+    minutes = max(1, round(chars / 600))
     page = PAGE.format(
         work=work,
         heading=heading,
         page_title=page_title,
         description=description,
         body=body,
+        chars=f"{round(chars, -2):,}",
+        minutes=minutes,
+        toc=toc,
         index_anchor=index_anchor,
         prev_link=prev_link,
         next_link=next_link,
@@ -247,9 +270,24 @@ def render(dest_dir, fname, *, work, heading, page_title, description,
     print(f"built {dest.relative_to(ROOT)}")
 
 
+def make_toc(entries, current_href):
+    """entries: [(href, label)]。current_href はリンクにしない。"""
+    lines = []
+    for href, label in entries:
+        if href == current_href:
+            lines.append(f'    <li class="current">{html.escape(label)}</li>')
+        else:
+            lines.append(f'    <li><a href="{href}">{html.escape(label)}</a></li>')
+    return "\n".join(lines)
+
+
 def build_novel() -> None:
     dest_dir = ROOT / "novels"
     available = [(n, t, f) for n, t, f in CHAPTERS if f]
+    toc_entries = [
+        (f.replace(".md", ".html"), f"第{kanji_num(n)}章　{t}")
+        for n, t, f in available
+    ]
     for i, (n, title, fname) in enumerate(available):
         label = f"第{kanji_num(n)}章"
 
@@ -282,6 +320,7 @@ def build_novel() -> None:
             index_anchor="novels",
             prev_link=prev_link,
             next_link=next_link,
+            toc=make_toc(toc_entries, fname.replace(".md", ".html")),
         )
 
 
@@ -304,6 +343,10 @@ def build_stories() -> list[int]:
     if missing:
         print(f"skip (原稿なし): {missing}")
 
+    toc_entries = [
+        (f"story{n:02d}.html", f"其の{kanji_num(n)}　{t}")
+        for n, t, _ in available
+    ]
     for i, (n, title, genre) in enumerate(available):
         prev_link = EMPTY_LINK
         if i > 0:
@@ -334,6 +377,7 @@ def build_stories() -> list[int]:
             index_anchor="stories",
             prev_link=prev_link,
             next_link=next_link,
+            toc=make_toc(toc_entries, f"story{n:02d}.html"),
         )
     return [n for n, _, _ in available]
 

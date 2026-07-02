@@ -373,7 +373,7 @@ a.chapter-card:hover {
 }
 
 .novel-body p {
-  margin-bottom: 0.4em;
+  margin-block-end: 0.4em;
   text-align: justify;
 }
 
@@ -609,4 +609,230 @@ a.chapter-card:hover {
 
 #stories .chapter-teaser {
   font-size: 0.82rem;
+}
+
+
+/* ============================================
+   読書体験
+   ============================================ */
+
+/* ---------- 進捗バー ---------- */
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 60;
+  pointer-events: none;
+}
+
+#reading-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--fox), var(--fox-bright));
+  transition: width 0.1s linear;
+}
+
+/* ---------- 読書設定ツールバー ---------- */
+
+.reader-tools {
+  position: fixed;
+  right: 0.9rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 50;
+}
+
+.reader-tools button {
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fffdf7;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(74, 20, 14, 0.16);
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.reader-tools button:hover {
+  border-color: var(--fox);
+  color: var(--fox);
+  transform: translateY(-2px);
+}
+
+/* ---------- 読了目安 ---------- */
+
+.reader-meta {
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  color: #eed3a4;
+}
+
+/* ---------- しおりチップ ---------- */
+
+.resume-chip {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 1.2rem;
+  z-index: 70;
+  background: var(--sky-deep);
+  color: #f6e5c8;
+  border: 1px solid rgba(240, 192, 114, 0.55);
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(74, 20, 14, 0.35);
+  transition: opacity 1s ease;
+}
+
+.resume-chip.fade {
+  opacity: 0;
+}
+
+/* ---------- 目次(読書ページ) ---------- */
+
+.reader-toc {
+  max-width: 38em;
+  margin: 0 auto;
+  padding: 0 1.5rem 1.6rem;
+}
+
+.reader-toc summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
+}
+
+.reader-toc summary:hover {
+  color: var(--fox);
+}
+
+.reader-toc ol {
+  list-style: none;
+  margin-top: 0.9rem;
+  columns: 14em 3;
+  column-gap: 2em;
+  font-size: 0.88rem;
+  line-height: 2.1;
+}
+
+.reader-toc a {
+  text-decoration: none;
+  color: var(--sky-mid);
+}
+
+.reader-toc a:hover {
+  color: var(--fox);
+  text-decoration: underline;
+}
+
+.reader-toc .current {
+  color: var(--fox);
+  font-weight: 600;
+}
+
+/* ---------- 章送りをボタン状に ---------- */
+
+.chapter-nav a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
+  background: #fffdf7;
+}
+
+.chapter-nav a:hover {
+  border-color: var(--fox);
+}
+
+.chapter-nav .to-index,
+.chapter-nav .nav-empty {
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.3rem;
+}
+
+/* ---------- 文字サイズ ---------- */
+
+html[data-fontsize="small"] .novel-body {
+  font-size: 0.95rem;
+}
+
+html[data-fontsize="large"] .novel-body {
+  font-size: 1.22rem;
+  line-height: 2.25;
+}
+
+/* ---------- 夜間モード ---------- */
+
+html[data-theme="dark"] {
+  --paper: #191210;
+  --ink: #e8dcc6;
+  --ink-soft: #b3a189;
+  --line: #48382c;
+}
+
+html[data-theme="dark"] body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .reader-tools button,
+html[data-theme="dark"] .chapter-nav a {
+  background: #251b15;
+  color: #e9cf9f;
+}
+
+html[data-theme="dark"] .chapter-nav .to-index,
+html[data-theme="dark"] .chapter-nav .nav-empty {
+  background: transparent;
+}
+
+html[data-theme="dark"] .reader-toc a {
+  color: #d8b77e;
+}
+
+html[data-theme="dark"] .novel-body .fin {
+  color: #e9cf9f;
+}
+
+html[data-theme="dark"] .novel-body .sep {
+  color: #d8955f;
+}
+
+/* ---------- 縦書きモード ---------- */
+
+html[data-writing="tate"] .novel-body {
+  writing-mode: vertical-rl;
+  max-width: none;
+  width: 100%;
+  height: min(78vh, 46em);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2.5rem 1.5rem;
+  margin: 0;
+}
+
+html[data-writing="tate"] .novel-body .sep {
+  letter-spacing: normal;
+  text-indent: 0;
+  margin: 0 2.2em;
+}
+
+html[data-writing="tate"] .novel-body .chapter-end {
+  margin-top: 0;
+  margin-block-start: 3em;
 }
