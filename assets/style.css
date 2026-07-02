@@ -3,15 +3,15 @@
    ============================================ */
 
 :root {
-  --sky-deep: #141a33;
-  --sky-mid: #23304f;
-  --sky-dawn: #6a5a7a;
-  --fox: #d98e4a;
-  --fox-bright: #f0b276;
-  --paper: #f7f3ea;
-  --ink: #2b2a26;
-  --ink-soft: #5c584e;
-  --line: #ddd5c3;
+  --sky-deep: #4a140e;   /* 深緋 */
+  --sky-mid: #942a1b;    /* 緋 */
+  --sky-dawn: #c9512f;   /* 朱 */
+  --fox: #bf3a24;        /* 朱アクセント */
+  --fox-bright: #f0c072; /* 金 */
+  --paper: #fbf6ec;      /* 生成りの白 */
+  --ink: #34261e;
+  --ink-soft: #6d5a4b;
+  --line: #e7d8bf;
   --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
     "Noto Serif JP", serif;
 }
@@ -58,15 +58,15 @@ a {
   background:
     conic-gradient(
       from 0deg,
-      rgba(240, 178, 118, 0.14) 0deg 12deg, transparent 12deg 40deg,
-      rgba(240, 178, 118, 0.14) 40deg 52deg, transparent 52deg 80deg,
-      rgba(240, 178, 118, 0.14) 80deg 92deg, transparent 92deg 120deg,
-      rgba(240, 178, 118, 0.14) 120deg 132deg, transparent 132deg 160deg,
-      rgba(240, 178, 118, 0.14) 160deg 172deg, transparent 172deg 200deg,
-      rgba(240, 178, 118, 0.14) 200deg 212deg, transparent 212deg 240deg,
-      rgba(240, 178, 118, 0.14) 240deg 252deg, transparent 252deg 280deg,
-      rgba(240, 178, 118, 0.14) 280deg 292deg, transparent 292deg 320deg,
-      rgba(240, 178, 118, 0.14) 320deg 332deg, transparent 332deg 360deg
+      rgba(240, 192, 114, 0.16) 0deg 12deg, transparent 12deg 40deg,
+      rgba(240, 192, 114, 0.16) 40deg 52deg, transparent 52deg 80deg,
+      rgba(240, 192, 114, 0.16) 80deg 92deg, transparent 92deg 120deg,
+      rgba(240, 192, 114, 0.16) 120deg 132deg, transparent 132deg 160deg,
+      rgba(240, 192, 114, 0.16) 160deg 172deg, transparent 172deg 200deg,
+      rgba(240, 192, 114, 0.16) 200deg 212deg, transparent 212deg 240deg,
+      rgba(240, 192, 114, 0.16) 240deg 252deg, transparent 252deg 280deg,
+      rgba(240, 192, 114, 0.16) 280deg 292deg, transparent 292deg 320deg,
+      rgba(240, 192, 114, 0.16) 320deg 332deg, transparent 332deg 360deg
     );
   border-radius: 50%;
   pointer-events: none;
@@ -207,7 +207,7 @@ main {
 
 a.chapter-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(20, 26, 51, 0.12);
+  box-shadow: 0 10px 24px rgba(74, 20, 14, 0.16);
   border-color: var(--fox);
 }
 
@@ -464,4 +464,149 @@ a.chapter-card:hover {
   .novel-body {
     font-size: 1rem;
   }
+}
+
+
+/* ---------- ヒーローCTA ---------- */
+
+.hero-cta {
+  margin-top: 1.9rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.68rem 1.7rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--fox-bright);
+  color: #4a140e;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #ffd68f;
+}
+
+.btn-ghost {
+  border: 1px solid rgba(240, 192, 114, 0.65);
+  color: #f6e8cf;
+}
+
+.btn-ghost:hover {
+  border-color: var(--fox-bright);
+  color: var(--fox-bright);
+}
+
+.btn-light {
+  background: var(--paper);
+  color: #7a2416;
+  font-weight: 600;
+}
+
+.btn-light:hover {
+  background: #fff;
+}
+
+/* ---------- 看板長編 ---------- */
+
+.featured-work {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #571a12 0%, #a03322 55%, #c9512f 100%);
+  color: #f9efdd;
+  border-radius: 14px;
+  padding: 2.5rem 2.7rem;
+  margin-bottom: 2.2rem;
+  box-shadow: 0 16px 34px rgba(74, 20, 14, 0.28);
+}
+
+.featured-work::after {
+  content: "";
+  position: absolute;
+  right: -110px;
+  bottom: -110px;
+  width: 320px;
+  height: 320px;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(240, 192, 114, 0.2) 0deg 12deg, transparent 12deg 40deg,
+      rgba(240, 192, 114, 0.2) 40deg 52deg, transparent 52deg 80deg,
+      rgba(240, 192, 114, 0.2) 80deg 92deg, transparent 92deg 120deg,
+      rgba(240, 192, 114, 0.2) 120deg 132deg, transparent 132deg 160deg,
+      rgba(240, 192, 114, 0.2) 160deg 172deg, transparent 172deg 200deg,
+      rgba(240, 192, 114, 0.2) 200deg 212deg, transparent 212deg 240deg,
+      rgba(240, 192, 114, 0.2) 240deg 252deg, transparent 252deg 280deg,
+      rgba(240, 192, 114, 0.2) 280deg 292deg, transparent 292deg 320deg,
+      rgba(240, 192, 114, 0.2) 320deg 332deg, transparent 332deg 360deg
+    );
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.featured-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  border: 1px solid rgba(240, 192, 114, 0.7);
+  color: var(--fox-bright);
+  border-radius: 999px;
+  padding: 0.18rem 0.95rem;
+  margin-bottom: 1.1rem;
+}
+
+.featured-title {
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.featured-desc {
+  max-width: 40em;
+  font-size: 0.95rem;
+  line-height: 2;
+  color: #f4e3c6;
+  margin-bottom: 1.7rem;
+  position: relative;
+  z-index: 1;
+}
+
+.featured-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- セクション別の強弱 ---------- */
+
+#novels .chapter-card {
+  border-left: 3px solid var(--fox);
+}
+
+#stories .chapter-card {
+  padding: 1.15rem 1.25rem 1.1rem;
+}
+
+#stories .chapter-name {
+  font-size: 1.05rem;
+}
+
+#stories .chapter-teaser {
+  font-size: 0.82rem;
 }
