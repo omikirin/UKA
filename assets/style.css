@@ -1,0 +1,432 @@
+/* ============================================
+   クリプト忍者のウカ — 『空の狐と地上のウサギ』
+   ============================================ */
+
+:root {
+  --sky-deep: #141a33;
+  --sky-mid: #23304f;
+  --sky-dawn: #6a5a7a;
+  --fox: #d98e4a;
+  --fox-bright: #f0b276;
+  --paper: #f7f3ea;
+  --ink: #2b2a26;
+  --ink-soft: #5c584e;
+  --line: #ddd5c3;
+  --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+    "Noto Serif JP", serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--serif);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+/* ---------- ヘッダー / ヒーロー ---------- */
+
+.site-header {
+  background: linear-gradient(170deg, var(--sky-deep) 0%, var(--sky-mid) 55%, var(--sky-dawn) 100%);
+  color: #f4efe4;
+  position: relative;
+  overflow: hidden;
+}
+
+.site-header::after {
+  /* 大風輪のシルエット */
+  content: "";
+  position: absolute;
+  right: -140px;
+  top: -140px;
+  width: 420px;
+  height: 420px;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(240, 178, 118, 0.14) 0deg 12deg, transparent 12deg 40deg,
+      rgba(240, 178, 118, 0.14) 40deg 52deg, transparent 52deg 80deg,
+      rgba(240, 178, 118, 0.14) 80deg 92deg, transparent 92deg 120deg,
+      rgba(240, 178, 118, 0.14) 120deg 132deg, transparent 132deg 160deg,
+      rgba(240, 178, 118, 0.14) 160deg 172deg, transparent 172deg 200deg,
+      rgba(240, 178, 118, 0.14) 200deg 212deg, transparent 212deg 240deg,
+      rgba(240, 178, 118, 0.14) 240deg 252deg, transparent 252deg 280deg,
+      rgba(240, 178, 118, 0.14) 280deg 292deg, transparent 292deg 320deg,
+      rgba(240, 178, 118, 0.14) 320deg 332deg, transparent 332deg 360deg
+    );
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header-inner {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.site-tag {
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  color: var(--fox-bright);
+  margin-bottom: 1rem;
+}
+
+.site-title {
+  font-size: clamp(1.9rem, 5vw, 3.1rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+}
+
+.site-subtitle {
+  margin-top: 1.2rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+  color: #d9d2c2;
+  letter-spacing: 0.08em;
+  max-width: 36em;
+}
+
+.site-nav {
+  border-top: 1px solid rgba(244, 239, 228, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.site-nav ul {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.site-nav a {
+  display: block;
+  padding: 0.8rem 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: #e8e2d3;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover {
+  color: var(--fox-bright);
+  border-bottom-color: var(--fox-bright);
+}
+
+/* ---------- 本文レイアウト ---------- */
+
+main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section {
+  padding: 4rem 0 1rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  letter-spacing: 0.25em;
+  color: var(--sky-deep);
+  margin-bottom: 0.6rem;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  width: 3.2em;
+  height: 2px;
+  margin-top: 0.55rem;
+  background: linear-gradient(90deg, var(--fox), transparent);
+}
+
+.section-lead {
+  color: var(--ink-soft);
+  max-width: 42em;
+  margin-bottom: 2rem;
+}
+
+/* ---------- あらすじ ---------- */
+
+.story-intro {
+  background: #fffdf7;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 2rem 2.2rem;
+  max-width: 46em;
+}
+
+.story-intro p + p {
+  margin-top: 1em;
+}
+
+.story-intro .work-title {
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
+  color: var(--sky-deep);
+  margin-bottom: 1rem;
+}
+
+/* ---------- 小説一覧 ---------- */
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1.1rem;
+}
+
+.chapter-card {
+  display: block;
+  text-decoration: none;
+  background: #fffdf7;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.4rem 1.5rem 1.3rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+a.chapter-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(20, 26, 51, 0.12);
+  border-color: var(--fox);
+}
+
+.chapter-no {
+  font-size: 0.78rem;
+  letter-spacing: 0.3em;
+  color: var(--fox);
+  margin-bottom: 0.4rem;
+}
+
+.chapter-name {
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  color: var(--sky-deep);
+  margin-bottom: 0.55rem;
+}
+
+.chapter-teaser {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.75;
+}
+
+.chapter-card.coming {
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.chapter-card.coming .chapter-no {
+  color: var(--ink-soft);
+}
+
+.badge-soon {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 0.1rem 0.7rem;
+}
+
+/* ---------- 登場人物 ---------- */
+
+.chara-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1.1rem;
+}
+
+.chara-card {
+  background: #fffdf7;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--fox);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+}
+
+.chara-card.rabbit {
+  border-left-color: var(--sky-mid);
+}
+
+.chara-name {
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  color: var(--sky-deep);
+}
+
+.chara-role {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--fox);
+  margin-bottom: 0.5rem;
+}
+
+.chara-card.rabbit .chara-role {
+  color: var(--sky-mid);
+}
+
+.chara-desc {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.8;
+}
+
+/* ---------- 読書ページ ---------- */
+
+.reader-header {
+  background: linear-gradient(170deg, var(--sky-deep), var(--sky-mid));
+  color: #f4efe4;
+}
+
+.reader-header .header-inner {
+  padding: 3rem 1.5rem 2.6rem;
+}
+
+.reader-work {
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
+  color: var(--fox-bright);
+  margin-bottom: 0.8rem;
+}
+
+.reader-work a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reader-work a:hover {
+  text-decoration: underline;
+}
+
+.reader-title {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  letter-spacing: 0.15em;
+  font-weight: 600;
+}
+
+.novel-body {
+  max-width: 38em;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2rem;
+  font-size: 1.05rem;
+  line-height: 2.15;
+  letter-spacing: 0.04em;
+}
+
+.novel-body p {
+  margin-bottom: 0.4em;
+  text-align: justify;
+}
+
+.novel-body .sep {
+  text-align: center;
+  margin: 2.4em 0;
+  color: var(--fox);
+  letter-spacing: 1em;
+  text-indent: 1em;
+}
+
+.novel-body .chapter-end {
+  margin-top: 3em;
+  text-align: right;
+  color: var(--ink-soft);
+}
+
+.novel-body .fin {
+  margin-top: 3.5em;
+  text-align: center;
+  letter-spacing: 0.4em;
+  color: var(--sky-deep);
+  font-size: 1.15rem;
+}
+
+/* ---------- 章送りナビ ---------- */
+
+.chapter-nav {
+  max-width: 38em;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.chapter-nav a {
+  text-decoration: none;
+  color: var(--sky-deep);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 0.2rem;
+}
+
+.chapter-nav a:hover {
+  color: var(--fox);
+}
+
+.chapter-nav .to-index {
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
+}
+
+.chapter-nav .nav-empty {
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- フッター ---------- */
+
+.site-footer {
+  margin-top: 4rem;
+  background: var(--sky-deep);
+  color: #b9b3a4;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
+.footer-inner {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2.2rem 1.5rem;
+  line-height: 2;
+}
+
+.footer-inner a {
+  color: #d9d2c2;
+}
+
+@media (max-width: 600px) {
+  .site-nav ul {
+    gap: 1.2rem;
+  }
+  .novel-body {
+    font-size: 1rem;
+  }
+}
