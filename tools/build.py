@@ -29,7 +29,7 @@ CHAPTERS = [
     (6, "名前のない客", "chapter06.md"),
     (7, "二つの露見", "chapter07.md"),
     (8, "大徴収作戦", "chapter08.md"),
-    (9, "第二射", None),
+    (9, "第二射", "chapter09.md"),
     (10, "同じ高さの空", "chapter10.md"),
 ]
 
