@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>とりラボ — 鳥ぬいぐるみ型紙メーカー〈猛禽エディション〉</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{--ink:#2b2a24;--paper:#f5f2ea;--paper2:#ece7da;--taka:#a8752e;--taka-dk:#7f561d;
+    --thread:#b3a98f;--ok:#4a8f6d;--seam:#c25438;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+    background:var(--paper);color:var(--ink);min-height:100vh;
+    background-image:radial-gradient(var(--paper2) 1px,transparent 1px);background-size:22px 22px;}
+  header{padding:18px 22px 10px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  h1{font-size:20px;letter-spacing:.06em;font-weight:800;}
+  h1 .stitch{color:var(--taka);border-bottom:2px dashed var(--taka);padding-bottom:2px;}
+  header p{font-size:12px;color:#7a7360;}
+  .wrap{display:grid;gap:14px;grid-template-columns:1fr 1fr;padding:6px 22px 22px;max-width:1150px;margin:0 auto;}
+  @media(max-width:780px){.wrap{grid-template-columns:1fr;}}
+  .card{background:#fdfbf5;border:1.5px solid var(--ink);border-radius:14px;
+    box-shadow:4px 4px 0 rgba(43,42,36,.12);overflow:hidden;display:flex;flex-direction:column;}
+  .card h2{font-size:12px;font-weight:700;letter-spacing:.14em;padding:10px 14px;
+    border-bottom:1.5px dashed var(--thread);display:flex;justify-content:space-between;
+    align-items:center;background:linear-gradient(#fdfbf5,#f8f4e9);gap:8px;flex-wrap:wrap;}
+  .card h2 .hint{font-weight:500;letter-spacing:0;color:#948b74;font-size:11px;}
+  .stage{position:relative;aspect-ratio:1/1;touch-action:none;}
+  .stage.short{aspect-ratio:5/3;}
+  canvas{display:block;width:100%;height:100%;}
+  #draw{cursor:grab;}
+  #view3dWrap{background:radial-gradient(circle at 50% 35%,#fdfcf6 0%,#ece5d3 75%);}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#a99f86;font-size:13px;text-align:center;padding:20px;pointer-events:none;line-height:1.9;}
+  .palette{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1.5px dashed var(--thread);
+    background:#f8f4e9;align-items:center;}
+  .palette .pl{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#82795f;margin-right:2px;}
+  .sw24{width:21px;height:21px;border-radius:6px;border:1.5px solid rgba(43,42,36,.25);cursor:pointer;
+    transition:transform .06s;}
+  .sw24:hover{transform:scale(1.15);}
+  .sw24.sel{border:2.5px solid var(--ink);transform:scale(1.12);}
+  .partBtn{font:inherit;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;
+    border:1.5px solid var(--ink);background:#fdfbf5;color:var(--ink);cursor:pointer;}
+  .partBtn.on{background:var(--ink);color:#fff;}
+  .shape,.controls{grid-column:1/-1;background:#fdfbf5;border:1.5px solid var(--ink);border-radius:14px;
+    box-shadow:4px 4px 0 rgba(43,42,36,.12);padding:14px 16px;
+    display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;}
+  .shape .lbl{font-size:11px;font-weight:800;letter-spacing:.1em;color:#82795f;}
+  .ctl{display:flex;flex-direction:column;gap:4px;min-width:130px;flex:1;}
+  .ctl label{font-size:12px;font-weight:700;display:flex;justify-content:space-between;gap:6px;}
+  .ctl label output{color:var(--taka-dk);font-variant-numeric:tabular-nums;}
+  input[type=range]{accent-color:var(--taka);width:100%;}
+  input[type=number],select{font:inherit;font-size:13px;padding:6px 8px;
+    border:1.5px solid var(--ink);border-radius:8px;background:#fff;width:100%;}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;}
+  button,label.filebtn{font:inherit;font-size:13px;font-weight:700;padding:9px 16px;border-radius:999px;
+    border:1.5px solid var(--ink);background:var(--taka);color:#fff;cursor:pointer;
+    box-shadow:2px 2px 0 rgba(43,42,36,.25);transition:transform .08s;display:inline-block;}
+  button:active{transform:translate(2px,2px);box-shadow:none;}
+  button.ghost{background:#fdfbf5;color:var(--ink);}
+  button.big{background:var(--ok);}
+  button.mini{font-size:11px;padding:5px 10px;box-shadow:1px 1px 0 rgba(43,42,36,.25);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .toggle{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;cursor:pointer;}
+  .toggle input{accent-color:var(--taka);width:15px;height:15px;}
+  .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+    background:#e9e3d2;color:#6d6650;margin-left:auto;}
+  .badge.ok{background:#d9ead9;color:#33663f;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;font-size:11px;color:#6d6650;
+    border-top:1.5px dashed var(--thread);}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;
+    border:1px solid rgba(43,42,36,.3);vertical-align:-1px;margin-right:4px;}
+  .foot{grid-column:1/-1;font-size:11.5px;color:#7a7360;line-height:1.9;padding:2px 6px 10px;}
+  .foot .dartnote{color:var(--taka-dk);font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="stitch">とりラボ</span> — 鳥ぬいぐるみ型紙メーカー</h1>
+  <p>〈猛禽エディション〉ぬいラボ派生。体は回転体ゴア構成=縫い合わせ辺はすべて厳密一致・いせ込み不要。</p>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <h2>STEP 1 シルエット調整
+      <span class="hint">●ハンドルをドラッグして体型を編集(左右どちらでも)</span></h2>
+    <div class="palette" id="partPal">
+      <span class="pl">色を塗る場所</span>
+      <button class="partBtn on" data-part="back">背中</button>
+      <button class="partBtn" data-part="belly">おなか</button>
+      <button class="partBtn" data-part="wing">翼・尾</button>
+      <button class="partBtn" data-part="beak">くちばし</button>
+      <button class="partBtn" data-part="eye">目</button>
+      <button class="partBtn" data-part="feet">足</button>
+      <span style="flex-basis:100%;height:0;"></span>
+      <span class="pl">羽色パレット</span>
+      <span id="swatches" style="display:flex;flex-wrap:wrap;gap:5px;"></span>
+    </div>
+    <div class="stage"><canvas id="draw"></canvas></div>
+  </section>
+
+  <section class="card">
+    <h2>STEP 2 立体プレビュー <span class="hint">ドラッグで回転</span></h2>
+    <div class="stage" id="view3dWrap"></div>
+    <div class="legend">
+      <span><span class="sw" style="background:#5b6b7a"></span>背中ゴア</span>
+      <span><span class="sw" style="background:#f1ede2"></span>おなかゴア(前2枚)</span>
+      <span><span class="sw" style="background:#c25438"></span>赤破線=はぎ線(ゴア境界)</span>
+    </div>
+  </section>
+
+  <div class="shape">
+    <span class="lbl">テンプレ</span>
+    <div class="ctl" style="max-width:180px;"><label>鳥プリセット</label>
+      <select id="presetSel">
+        <option value="narukami" selected>ナルカミ風(鷹の忍)</option>
+        <option value="ootaka">オオタカ(鷹)</option>
+        <option value="kumataka">クマタカ(茶鷹)</option>
+        <option value="hayabusa">ハヤブサ</option>
+        <option value="tobi">トビ</option>
+        <option value="fukurou">フクロウ</option>
+        <option value="shimaenaga">シマエナガ</option>
+        <option value="custom">カスタム(手動調整中)</option>
+      </select></div>
+    <div class="ctl" style="max-width:120px;"><label>パネル数(ゴア)</label>
+      <select id="goreSel">
+        <option value="4">4枚</option>
+        <option value="6" selected>6枚</option>
+        <option value="8">8枚</option>
+      </select></div>
+    <div class="ctl" style="max-width:105px;"><label>全高(cm)</label>
+      <input type="number" id="hcm" value="20" min="8" max="60" step="0.5"></div>
+    <div class="ctl" style="max-width:170px;"><label>生地(伸び補正)</label>
+      <select id="fabric">
+        <option value="1.00">織物(補正なし)</option>
+        <option value="0.97">クリスタルボア(−3%)</option>
+        <option value="0.94" selected>ソフトボア(−6%)</option>
+      </select></div>
+    <label class="toggle"><input type="checkbox" id="browChk" checked>眉庇(まゆびさし)</label>
+    <label class="toggle"><input type="checkbox" id="crestChk" checked>頭の毛(冠羽)</label>
+    <label class="toggle"><input type="checkbox" id="headBackChk">頭は背中色(前ゴア分割)</label>
+    <label class="toggle"><input type="checkbox" id="barChk" checked>胸の横斑(刺繍ガイド)</label>
+    <label class="toggle"><input type="checkbox" id="feetChk" checked>足(フェルト)</label>
+  </div>
+
+  <div class="controls">
+    <div class="ctl"><label>くちばし 長さ<output id="bkLOut"></output></label>
+      <input type="range" id="bkL" min="0.06" max="0.30" step="0.005" value="0.15"></div>
+    <div class="ctl"><label>くちばし 鉤の強さ<output id="bkHOut"></output></label>
+      <input type="range" id="bkH" min="0" max="1" step="0.01" value="0.55"></div>
+    <div class="ctl"><label>翼 長さ<output id="wgLOut"></output></label>
+      <input type="range" id="wgL" min="0.35" max="1.05" step="0.01" value="0.62"></div>
+    <div class="ctl"><label>翼 幅<output id="wgWOut"></output></label>
+      <input type="range" id="wgW" min="0.16" max="0.45" step="0.005" value="0.30"></div>
+    <div class="ctl"><label>風切羽の枚数<output id="wgFOut"></output></label>
+      <input type="range" id="wgF" min="3" max="8" step="1" value="5"></div>
+    <div class="ctl"><label>尾羽 長さ<output id="tlLOut"></output></label>
+      <input type="range" id="tlL" min="0.15" max="0.60" step="0.01" value="0.34"></div>
+    <div class="ctl"><label>尾羽の枚数<output id="tlFOut"></output></label>
+      <input type="range" id="tlF" min="3" max="7" step="1" value="5"></div>
+    <div class="ctl"><label>目の高さ(上から)<output id="eyOut"></output></label>
+      <input type="range" id="eyT" min="8" max="24" step="1" value="13"></div>
+    <div class="ctl"><label>頭の毛 長さ<output id="crLOut"></output></label>
+      <input type="range" id="crL" min="0.08" max="0.25" step="0.005" value="0.14"></div>
+    <div class="ctl"><label>色の境目(上から)<output id="spOut"></output></label>
+      <input type="range" id="spT" min="15" max="50" step="1" value="27"></div>
+    <div class="btns">
+      <button class="ghost" id="resetBtn">プリセットに戻す</button>
+      <button class="big" id="pdfBtn">STEP 4 型紙PDFを作る</button>
+    </div>
+    <span class="badge ok" id="status">準備完了</span>
+  </div>
+
+  <section class="card" style="grid-column:1/-1;">
+    <h2>STEP 3 型紙プレビュー
+      <span style="display:flex;gap:8px;align-items:center;">
+        <span class="hint">実線=仕上がり / 点線=縫い代7mm(フェルトは縫い代なし) / 赤=あき口・取り付け位置</span>
+        <button class="mini ghost" id="pngBtn">画像でDL</button>
+      </span></h2>
+    <div class="stage short"><canvas id="flat"></canvas></div>
+  </section>
+
+  <p class="foot" id="report"></p>
+  <p class="foot">
+    <b>とりラボの設計思想(ぬいラボ譲り):</b>造形の自由はあなたに、縫える整合性はソフトに。
+    体は回転体ゴア構成なので、<span class="dartnote">ゴア側辺は全枚数で完全に同一曲線</span>、
+    底の円周は<span class="dartnote">ゴア裾幅×枚数と厳密一致</span>——ダーツもいせ込みも不要です。
+    くちばし・眉庇・足はフェルト(ほつれないので縫い代なし・切りっぱなし)。
+    翼と尾羽は2枚仕立てで返して、綿入れ後に本体へまつり付けます。
+    PDFには組み立て手順・パーツ配色・合印・検寸バーが入ります。</p>
+</div>
+
+<div id="exportModal" style="display:none;position:fixed;inset:0;z-index:50;
+  background:rgba(43,42,36,.55);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fdfbf5;border:2px solid var(--ink);border-radius:16px;
+    box-shadow:6px 6px 0 rgba(43,42,36,.25);max-width:min(920px,94vw);max-height:92vh;
+    display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;
+      padding:10px 14px;border-bottom:1.5px dashed var(--thread);">
+      <b id="exportTitle" style="font-size:13px;letter-spacing:.08em;"></b>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <a id="exportLink" href="#" target="_blank" download
+          style="font-size:12px;font-weight:700;color:var(--taka-dk);">別タブで開く/保存</a>
+        <button class="mini ghost" id="exportClose">閉じる</button>
+      </span>
+    </div>
+    <div id="exportHint" style="font-size:11.5px;color:#948b74;padding:6px 14px;"></div>
+    <div style="overflow:auto;padding:10px;flex:1;background:#ece7da;">
+      <img id="exportImg" style="display:none;max-width:100%;border:1px solid #ccc;background:#fff;">
+      <iframe id="exportFrame" style="display:none;width:100%;height:70vh;border:1px solid #ccc;background:#fff;"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+
+// ============ 羽色パレット ============
+const BIRD_COLS=[
+  ['スノー','#f6f4ee'],['アイボリー','#efe9da'],['クリーム','#eadfc2'],['ベージュ','#d8c19a'],
+  ['キャメル','#b98d54'],['ブラウン','#7a5a35'],['ダークブラウン','#59401f'],['チョコ','#3f2d17'],
+  ['グレー','#9aa2aa'],['ブルーグレー','#5b6b7a'],['スレート','#47525e'],['チャコール','#33383e'],
+  ['ブラック','#211f1e'],['イエロー','#e8c93f'],['マスタード','#d9a52e'],['オレンジ','#e08a2e'],
+  ['茶褐(ラスト)','#8a4b28'],['モスグリーン','#6d7a4a'],['オリーブ','#a8a04f'],['グレーベージュ','#a9a49a'],
+];
+
+// ============ 状態 ============
+// 体プロファイル:t=0(頭頂)→1(底)、r=全高比の半径。回転体。
+let CP=[];       // 制御点 [{t,r}]  先頭はt=0,r=0固定/末尾はt=1固定(半径のみ可変)
+let P={};        // その他パラメータ
+let SAMP=null;   // サンプリング結果
+let curPart='back';
+
+const PRESETS={
+  narukami:{cp:[[0,0],[.055,.115],[.14,.175],[.23,.125],[.35,.21],[.53,.22],[.72,.17],[.88,.105],[1,.065]],
+    bkL:.13,bkH:.60,wgL:.74,wgW:.33,wgF:6,tlL:.36,tlF:5,eyT:13,
+    brow:true,bars:false,feet:true,crest:true,crL:.14,headSplit:true,split:27,
+    col:{back:'#5a452c',belly:'#a9a49a',wing:'#2f2d2a',beak:'#a8a04f',eye:'#f2c022',feet:'#c9b768'}},
+  ootaka:{cp:[[0,0],[.05,.105],[.13,.162],[.215,.112],[.34,.198],[.52,.212],[.71,.162],[.87,.10],[1,.062]],
+    bkL:.15,bkH:.62,wgL:.66,wgW:.30,wgF:5,tlL:.34,tlF:5,eyT:13,
+    brow:true,bars:true,feet:true,crest:false,crL:.12,
+    col:{back:'#5b6b7a',belly:'#f1ede2',wing:'#47525e',beak:'#33383e',eye:'#e08a2e',feet:'#e8c93f'}},
+  kumataka:{cp:[[0,0],[.05,.11],[.14,.172],[.225,.12],[.36,.212],[.54,.222],[.72,.168],[.88,.105],[1,.068]],
+    bkL:.16,bkH:.62,wgL:.72,wgW:.34,wgF:6,tlL:.38,tlF:5,eyT:13,
+    brow:true,bars:true,feet:true,crest:true,crL:.16,
+    col:{back:'#6b4a2c',belly:'#eadfc2',wing:'#59401f',beak:'#3f2d17',eye:'#d9a52e',feet:'#d9a52e'}},
+  hayabusa:{cp:[[0,0],[.05,.10],[.125,.148],[.20,.105],[.32,.185],[.50,.198],[.70,.15],[.87,.095],[1,.058]],
+    bkL:.11,bkH:.75,wgL:.78,wgW:.26,wgF:6,tlL:.32,tlF:5,eyT:12,
+    brow:true,bars:true,feet:true,crest:false,crL:.10,
+    col:{back:'#47525e',belly:'#f6f4ee',wing:'#33383e',beak:'#33383e',eye:'#3f2d17',feet:'#e8c93f'}},
+  tobi:{cp:[[0,0],[.05,.105],[.13,.155],[.22,.115],[.35,.195],[.54,.205],[.72,.16],[.88,.10],[1,.065]],
+    bkL:.13,bkH:.5,wgL:.70,wgW:.32,wgF:6,tlL:.36,tlF:4,eyT:13,
+    brow:false,bars:false,feet:true,crest:false,crL:.11,
+    col:{back:'#7a5a35',belly:'#b98d54',wing:'#59401f',beak:'#33383e',eye:'#59401f',feet:'#d8c19a'}},
+  fukurou:{cp:[[0,0],[.08,.16],[.20,.22],[.42,.24],[.65,.22],[.85,.16],[1,.10]],
+    bkL:.08,bkH:.65,wgL:.50,wgW:.30,wgF:4,tlL:.18,tlF:4,eyT:14,
+    brow:false,bars:true,feet:true,crest:true,crL:.11,
+    col:{back:'#8a7355',belly:'#efe9da',wing:'#7a5a35',beak:'#4c4238',eye:'#e8c93f',feet:'#d8c19a'}},
+  shimaenaga:{cp:[[0,0],[.09,.17],[.24,.235],[.48,.245],[.72,.21],[.90,.14],[1,.09]],
+    bkL:.06,bkH:.15,wgL:.42,wgW:.24,wgF:3,tlL:.55,tlF:3,eyT:15,
+    brow:false,bars:false,feet:true,crest:false,crL:.10,
+    col:{back:'#f6f4ee',belly:'#f6f4ee',wing:'#59401f',beak:'#211f1e',eye:'#211f1e',feet:'#33383e'}},
+};
+
+const hcmEl=$('hcm'),fabricEl=$('fabric'),goreSel=$('goreSel'),presetSel=$('presetSel');
+const bkL=$('bkL'),bkH=$('bkH'),wgL=$('wgL'),wgW=$('wgW'),wgF=$('wgF'),
+  tlL=$('tlL'),tlF=$('tlF'),eyT=$('eyT'),crL=$('crL'),spT=$('spT');
+const browChk=$('browChk'),barChk=$('barChk'),feetChk=$('feetChk'),crestChk=$('crestChk'),headBackChk=$('headBackChk');
+const statusEl=$('status'),reportEl=$('report');
+
+function readParams(){
+  P={hcm:+hcmEl.value, N:+goreSel.value, fx:+fabricEl.value,
+    beakLen:+bkL.value, beakHook:+bkH.value, beakR:Math.max(.036,+bkL.value*.40), beakT:(+eyT.value)/100+.045,
+    eyeT:(+eyT.value)/100, eyeR:.038,
+    wingT:.32, wingLen:+wgL.value, wingWid:+wgW.value, wingF:+wgF.value,
+    tailLen:+tlL.value, tailW0:.15, tailW1:.24, tailF:+tlF.value,
+    brow:browChk.checked, bars:barChk.checked, feet:feetChk.checked,
+    crest:crestChk.checked, crestLen:+crL.value,
+    headSplit:headBackChk.checked, splitT:(+spT.value)/100,
+    col:P.col||{...PRESETS.narukami.col}};
+  $('bkLOut').textContent=Math.round(P.beakLen*100)+'%';
+  $('bkHOut').textContent=Math.round(P.beakHook*100)+'%';
+  $('wgLOut').textContent=Math.round(P.wingLen*100)+'%';
+  $('wgWOut').textContent=Math.round(P.wingWid*100)+'%';
+  $('wgFOut').textContent=P.wingF+'枚';
+  $('tlLOut').textContent=Math.round(P.tailLen*100)+'%';
+  $('tlFOut').textContent=P.tailF+'枚';
+  $('eyOut').textContent=(+eyT.value)+'%';
+  $('crLOut').textContent=Math.round((+crL.value)*100)+'%';
+  $('spOut').textContent=(+spT.value)+'%';
+}
+function applyPreset(k){
+  const pr=PRESETS[k];if(!pr)return;
+  CP=pr.cp.map(a=>({t:a[0],r:a[1]}));
+  bkL.value=pr.bkL;bkH.value=pr.bkH;wgL.value=pr.wgL;wgW.value=pr.wgW;wgF.value=pr.wgF;
+  tlL.value=pr.tlL;tlF.value=pr.tlF;eyT.value=pr.eyT;
+  browChk.checked=pr.brow;barChk.checked=pr.bars;feetChk.checked=pr.feet;
+  crestChk.checked=!!pr.crest;crL.value=pr.crL||.13;
+  headBackChk.checked=!!pr.headSplit;spT.value=pr.split||27;
+  P.col={...pr.col};
+  readParams();
+  refreshSwatchSel();
+}
+
+// ============ 幾何ユーティリティ ============
+function catmull(p0,p1,p2,p3,u){
+  const u2=u*u,u3=u2*u;
+  return .5*((2*p1)+(-p0+p2)*u+(2*p0-5*p1+4*p2-p3)*u2+(-p0+3*p1-3*p2+p3)*u3);
+}
+function sampleProfile(){
+  const pts=[];
+  const n=CP.length;
+  for(let i=0;i<n-1;i++){
+    const a=CP[Math.max(0,i-1)],b=CP[i],c=CP[i+1],d=CP[Math.min(n-1,i+2)];
+    const m=10;
+    for(let s=0;s<m;s++){
+      const u=s/m;
+      pts.push({t:catmull(a.t,b.t,c.t,d.t,u),r:Math.max(0,catmull(a.r,b.r,c.r,d.r,u))});
+    }
+  }
+  pts.push({t:1,r:CP[n-1].r});
+  // t単調化(保険)
+  for(let i=1;i<pts.length;i++)if(pts[i].t<=pts[i-1].t)pts[i].t=pts[i-1].t+1e-4;
+  const H=P.hcm;
+  const arc=[0];
+  for(let i=1;i<pts.length;i++){
+    arc.push(arc[i-1]+Math.hypot((pts[i].t-pts[i-1].t)*H,(pts[i].r-pts[i-1].r)*H));
+  }
+  SAMP={pts,arc,H};
+}
+function lookup(t){ // {r(全高比), arc(cm)}
+  const p=SAMP.pts,a=SAMP.arc;
+  if(t<=p[0].t)return {r:p[0].r,arc:a[0]};
+  for(let i=1;i<p.length;i++){
+    if(t<=p[i].t){
+      const f=(t-p[i-1].t)/(p[i].t-p[i-1].t);
+      return {r:p[i-1].r+(p[i].r-p[i-1].r)*f, arc:a[i-1]+(a[i]-a[i-1])*f};
+    }
+  }
+  return {r:p[p.length-1].r,arc:a[a.length-1]};
+}
+function quadPts(A,C,B,n){
+  const o=[];
+  for(let i=0;i<=n;i++){
+    const u=i/n,v=1-u;
+    o.push({x:v*v*A.x+2*v*u*C.x+u*u*B.x, y:v*v*A.y+2*v*u*C.y+u*u*B.y});
+  }
+  return o;
+}
+function resampleOpen(p,n){
+  let total=0;const segs=[];
+  for(let i=0;i<p.length-1;i++){const L=Math.hypot(p[i+1].x-p[i].x,p[i+1].y-p[i].y);segs.push(L);total+=L;}
+  const out=[];let acc=0,si=0;
+  for(let k=0;k<n;k++){
+    const target=total*k/(n-1);
+    while(si<segs.length-1&&acc+segs[si]<target){acc+=segs[si];si++;}
+    const f=segs[si]>0?Math.min(1,(target-acc)/segs[si]):0;
+    out.push({x:p[si].x+(p[si+1].x-p[si].x)*f,y:p[si].y+(p[si+1].y-p[si].y)*f});
+  }
+  return out;
+}
+// 羽根エッジ:基準線をn個の半円の連なりに置換(interiorと逆側へ膨らむ)
+function featherArcs(base,n,interior){
+  const rs=resampleOpen(base,n+1),out=[];
+  for(let k=0;k<n;k++){
+    const Pp=rs[k],Q=rs[k+1];
+    const mx=(Pp.x+Q.x)/2,my=(Pp.y+Q.y)/2;
+    const dx=Q.x-Pp.x,dy=Q.y-Pp.y,L=Math.hypot(dx,dy)||1;
+    const ux=dx/L,uy=dy/L;
+    let nx=-uy,ny=ux;
+    if((mx-interior.x)*nx+(my-interior.y)*ny<0){nx=-nx;ny=-ny;}
+    const R=L/2;
+    for(let s=0;s<=7;s++){
+      const th=Math.PI-Math.PI*s/7;
+      out.push({x:mx+R*(Math.cos(th)*ux+Math.sin(th)*nx),
+                y:my+R*(Math.cos(th)*uy+Math.sin(th)*ny)});
+    }
+  }
+  return out;
+}
+function offsetPoly(fp,off){
+  const n=fp.length,out=[];
+  for(let i=0;i<n;i++){
+    const p=fp[i],a=fp[(i-1+n)%n],b=fp[(i+1)%n];
+    const e1x=p.x-a.x,e1y=p.y-a.y,e2x=b.x-p.x,e2y=b.y-p.y;
+    const l1=Math.hypot(e1x,e1y)||1,l2=Math.hypot(e2x,e2y)||1;
+    let nx=(e1y/l1+e2y/l2),ny=-(e1x/l1+e2x/l2);
+    const nl=Math.hypot(nx,ny)||1;nx/=nl;ny/=nl;
+    out.push({x:p.x+nx*off,y:p.y+ny*off});
+  }
+  const cx=fp.reduce((s,p)=>s+p.x,0)/n,cy=fp.reduce((s,p)=>s+p.y,0)/n;
+  const d0=Math.hypot(fp[0].x-cx,fp[0].y-cy),d1=Math.hypot(out[0].x-cx,out[0].y-cy);
+  if(d1<d0)return fp.map((p,i)=>({x:2*p.x-out[i].x,y:2*p.y-out[i].y}));
+  return out;
+}
+function shade(hex,f){ // f<1で暗く
+  const v=parseInt(hex.slice(1),16);
+  const r=Math.min(255,Math.round((v>>16&255)*f)),g=Math.min(255,Math.round((v>>8&255)*f)),
+    b=Math.min(255,Math.round((v&255)*f));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function hexRgb(h){const v=parseInt(h.slice(1),16);return [v>>16&255,v>>8&255,v&255];}
+
+// ============ 各パーツ輪郭(cm・yは下向き) ============
+function goreSeg(t0,t1){ // t0..t1区間のゴア輪郭(cm)
+  const H=P.hcm,N=P.N,fx=P.fx,M=40;
+  const right=[],left=[];
+  for(let i=0;i<=M;i++){
+    const t=t0+(t1-t0)*i/M,q=lookup(t);
+    const hw=Math.max(.03,Math.PI*q.r*H/N*fx);
+    right.push({x:hw,y:q.arc});left.push({x:-hw,y:q.arc});
+  }
+  return right.concat(left.reverse());
+}
+function goreOutline(){
+  const p=SAMP.pts,arc=SAMP.arc,H=P.hcm,N=P.N,fx=P.fx;
+  const hw=i=>Math.max(.03,Math.PI*p[i].r*H/N*fx);
+  const o=[];
+  for(let i=0;i<p.length;i++)o.push({x:hw(i),y:arc[i]});
+  for(let i=p.length-1;i>=0;i--)o.push({x:-hw(i),y:arc[i]});
+  return o;
+}
+function wingOutline(){
+  const H=P.hcm,len=P.wingLen*H,wid=P.wingWid*H;
+  const top=quadPts({x:0,y:0},{x:len*.45,y:-wid*.16},{x:len,y:wid*.42},22);
+  const base=quadPts({x:len,y:wid*.42},{x:len*.42,y:wid*1.12},{x:0,y:wid},30);
+  const fe=featherArcs(base,P.wingF,{x:len*.30,y:wid*.40});
+  return top.concat(fe.slice(1));
+}
+function tailOutline(){
+  const H=P.hcm,len=P.tailLen*H,w0=P.tailW0*H,w1=P.tailW1*H;
+  const right=quadPts({x:w0/2,y:0},{x:(w0+w1)/4*1.25,y:len*.5},{x:w1/2,y:len*.94},12);
+  const tipBase=quadPts({x:w1/2,y:len*.94},{x:0,y:len*1.05},{x:-w1/2,y:len*.94},20);
+  const fe=featherArcs(tipBase,P.tailF,{x:0,y:len*.45});
+  const left=quadPts({x:-w1/2,y:len*.94},{x:-(w0+w1)/4*1.25,y:len*.5},{x:-w0/2,y:0},12);
+  return right.concat(fe.slice(1),left.slice(1));
+}
+function beakOutline(){
+  const H=P.hcm,LB=P.beakLen*H,r0=P.beakR*H,hk=P.beakHook;
+  const top=[],bot=[];
+  const M=22;
+  for(let i=0;i<=M;i++){
+    const u=i/M;
+    const cx=LB*(u-.10*hk*u*u*u);                 // 鉤で先端がわずかに戻る
+    const cy=hk*LB*(.20*u*u+.58*Math.pow(u,5));   // 先端に集中した下降
+    const r=r0*Math.pow(1-u,1.12)*(1-.12*u)+.015;
+    top.push({x:cx,y:cy-r});bot.push({x:cx,y:cy+r});
+  }
+  return top.concat(bot.reverse().slice(1));
+}
+function browOutline(){
+  const H=P.hcm,Ro=P.eyeR*H*2.1,Ri=Ro*.62,off=Ro*.42;
+  const o=[];
+  for(let i=0;i<=20;i++){const th=Math.PI+Math.PI*i/20;o.push({x:Ro*Math.cos(th),y:Ro*Math.sin(th)});}
+  for(let i=20;i>=0;i--){const th=Math.PI+Math.PI*i/20;o.push({x:Ri*Math.cos(th),y:Ri*Math.sin(th)+off});}
+  return o;
+}
+function crestOutline(){
+  const H=P.hcm,len=P.crestLen*H,bw=len*.62;
+  const A={x:-bw/2,y:0},B={x:bw/2,y:0};
+  const T1={x:bw*.40,y:len*.68},V1={x:bw*.15,y:len*.30},
+        T2={x:0,y:len},V2={x:-bw*.15,y:len*.30},T3={x:-bw*.40,y:len*.68};
+  return [].concat(
+    quadPts(B,{x:bw*.55,y:len*.35},T1,8),
+    quadPts(T1,{x:bw*.24,y:len*.52},V1,6).slice(1),
+    quadPts(V1,{x:bw*.10,y:len*.72},T2,8).slice(1),
+    quadPts(T2,{x:-bw*.10,y:len*.72},V2,8).slice(1),
+    quadPts(V2,{x:-bw*.24,y:len*.52},T3,6).slice(1),
+    quadPts(T3,{x:-bw*.55,y:len*.35},A,8).slice(1));
+}
+function footOutline(){
+  const H=P.hcm,fw=.10*H,fh=.045*H;
+  const o=[{x:-fw/2,y:0},{x:fw/2,y:0},{x:fw/2,y:fh}];
+  const toes=featherArcs([{x:fw/2,y:fh},{x:-fw/2,y:fh}],3,{x:0,y:0});
+  return o.concat(toes.slice(1));
+}
+
+// ============ ピース一式 ============
+function buildPieces(){
+  const H=P.hcm,N=P.N,fx=P.fx;
+  const gore=goreSeg(0,1);
+  const hwAt=t=>{const q=lookup(t);return Math.PI*q.r*H/N*fx;};
+  const arcAt=t=>lookup(t).arc;
+  const arcTot=SAMP.arc[SAMP.arc.length-1];
+
+  // おなかゴア:横斑ガイド+くちばし・目の位置
+  const bellyGuides=[],bellyMarks=[];
+  if(P.bars){
+    const nb=6,t0=P.headSplit?Math.max(P.eyeT+.14,P.splitT+.04):P.eyeT+.14,t1=.74;
+    const barCol=shade(P.col.back,1.0);
+    for(let b=0;b<nb;b++){
+      const t=t0+(t1-t0)*b/(nb-1);
+      const hw=hwAt(t)*.82,y=arcAt(t),pts=[];
+      for(let i=0;i<=16;i++){
+        const x=-hw+2*hw*i/16;
+        pts.push({x,y:y+Math.sin(i/16*Math.PI*3)*.12});
+      }
+      bellyGuides.push({pts,color:barCol,w:2.2});
+    }
+  }
+  bellyMarks.push({a:{x:-hwAt(P.beakT),y:arcAt(P.beakT)},b:{x:-hwAt(P.beakT)+.9,y:arcAt(P.beakT)},label:'BEAK'});
+  bellyMarks.push({a:{x:hwAt(P.eyeT)*.55,y:arcAt(P.eyeT)},b:{x:hwAt(P.eyeT)*.55+.6,y:arcAt(P.eyeT)},label:'EYE'});
+
+  // 背中ゴア:翼・尾・あき口
+  const backMarks=[
+    {a:{x:-hwAt(P.wingT),y:arcAt(P.wingT)},b:{x:-hwAt(P.wingT)+.9,y:arcAt(P.wingT)},label:'WING'},
+    {a:{x:0,y:arcAt(.965)},b:{x:0,y:arcAt(.965)+0.001},label:'TAIL'},
+  ];
+  const openPts=[];
+  for(let i=0;i<=10;i++){const t=.38+.26*i/10;openPts.push({x:hwAt(t),y:arcAt(t)});}
+  const backGuides=[{pts:openPts,color:'#c25438',w:3}];
+  backMarks.push({a:{x:hwAt(.51)-1.1,y:arcAt(.51)},label:'OPENING'});
+
+  const rb=lookup(1).r*H*fx;
+  const base=[];
+  for(let i=0;i<48;i++){const th=2*Math.PI*i/48;base.push({x:rb*Math.cos(th),y:rb+rb*Math.sin(th)});}
+
+  const frontPieces=P.headSplit?[
+    {en:'HEAD FRONT GORE',ja:'頭前ゴア',copies:2,pts:goreSeg(0,P.splitT),
+      guides:[],marks:bellyMarks,col:P.col.back,felt:false,
+      note:'Front upper gores in BACK color - makes the whole head one color. Bottom edge joins the BELLY gore top edge; widths match exactly.'},
+    {en:'BELLY GORE',ja:'おなかゴア',copies:2,pts:goreSeg(P.splitT,1),
+      guides:bellyGuides,marks:[
+        {a:{x:-hwAt(P.splitT),y:arcAt(P.splitT)},b:{x:hwAt(P.splitT),y:arcAt(P.splitT)},label:'JOIN HEAD FRONT'}],
+      col:P.col.belly,felt:false,
+      note:'Front lower gores. Sew the top edge to the HEAD FRONT gore first (widths match exactly), then treat as one front gore.'},
+  ]:[
+    {en:'BELLY GORE',ja:'おなかゴア',copies:2,pts:gore,guides:bellyGuides,marks:bellyMarks,
+      col:P.col.belly,felt:false,
+      note:'Front 2 gores. Embroider chest bars BEFORE sewing. BEAK mark sits on the center-front seam.'},
+  ];
+  const pieces=[
+    ...frontPieces,
+    {en:'BACK GORE',ja:'背中ゴア',copies:N-2,pts:gore,guides:backGuides,marks:backMarks,
+      col:P.col.back,felt:false,
+      note:'Red edge segment = leave OPEN on one seam only (turning gap). WING mark = hand-sew wing root here.'},
+    {en:'BASE',ja:'底(だ円)',copies:1,pts:base,guides:[],marks:[],col:P.col.belly,felt:false,
+      note:'Bottom circle. Perimeter exactly matches the sum of gore hem widths - pin and sew, no easing.'},
+    {en:'WING',ja:'翼',copies:4,pts:wingOutline(),guides:[],marks:[
+      {a:{x:0,y:0},b:{x:0,y:P.wingWid*H},label:'BODY'}],col:P.col.wing,felt:false,
+      note:'Cut 4 (2 mirrored pairs). Sew pairs right sides together leaving the red BODY edge open, turn, stuff lightly.'},
+    {en:'TAIL',ja:'尾羽',copies:2,pts:tailOutline(),guides:[],marks:[
+      {a:{x:-P.tailW0*H/2,y:0},b:{x:P.tailW0*H/2,y:0},label:'BODY'}],col:P.col.wing,felt:false,
+      note:'Sew 2 layers right sides together leaving the red BODY edge open, turn.'},
+    {en:'BEAK (felt)',ja:'くちばし(フェルト)',copies:2,pts:beakOutline(),guides:[],marks:[
+      {a:{x:0,y:-P.beakR*H},b:{x:0,y:P.beakR*H},label:'HEAD'}],col:P.col.beak,felt:true,
+      note:'Felt, no seam allowance. Whip-stitch top & bottom edges together, stuff lightly, attach at BEAK mark.'},
+  ];
+  if(P.brow)pieces.push({en:'BROW (felt)',ja:'眉庇(フェルト)',copies:2,pts:browOutline(),
+    guides:[],marks:[],col:shade(P.col.back,.72),felt:true,
+    note:'Felt crescent glued/stitched above each eye - gives the fierce hawk look.'});
+  if(P.crest)pieces.push({en:'CREST (felt)',ja:'冠羽(フェルト)',copies:2,pts:crestOutline(),
+    guides:[],marks:[{a:{x:-P.crestLen*P.hcm*.31,y:0},b:{x:P.crestLen*P.hcm*.31,y:0},label:'HEAD TOP'}],
+    col:P.col.wing,felt:true,
+    note:'Felt head tufts. Pinch a tiny pleat at the red base edge and stitch to the crown point, angled back (one per side).'});
+  if(P.feet)pieces.push({en:'FOOT (felt)',ja:'足(フェルト)',copies:4,pts:footOutline(),
+    guides:[],marks:[],col:P.col.feet,felt:true,
+    note:'Felt, 2 layers per foot (glue together for stiffness). Tuck under the front of the base.'});
+  pieces.arcTot=arcTot;pieces.rb=rb;
+  return pieces;
+}
+
+// ============ STEP1 2Dエディタ ============
+const drawCv=$('draw'),dctx=drawCv.getContext('2d');
+function fitCanvas(cv){
+  const r=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=r.width*dpr;cv.height=r.height*dpr;
+  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+}
+let handlePx=[];
+function frame2d(){
+  const r=drawCv.getBoundingClientRect();
+  return {cx:r.width*.53,top:r.height*.10,bh:r.height*.76,W:r.width,H:r.height};
+}
+function draw2d(){
+  const f=frame2d();
+  dctx.clearRect(0,0,f.W,f.H);
+  const k=f.bh; // 全高比→px
+  const X=r=>f.cx+r*k, Xm=r=>f.cx-r*k, Y=t=>f.top+t*f.bh;
+  const p=SAMP.pts;
+
+  // 中心軸
+  dctx.setLineDash([6,5]);dctx.strokeStyle='#c9c0a8';dctx.lineWidth=1;
+  dctx.beginPath();dctx.moveTo(f.cx,f.top-14);dctx.lineTo(f.cx,f.top+f.bh+14);dctx.stroke();
+  dctx.setLineDash([]);
+  dctx.fillStyle='#a99f86';dctx.font='10px sans-serif';dctx.textAlign='left';
+  dctx.fillText('回転体(左右対称)',f.cx+6,f.top-4);
+
+  // 尾羽(体の後ろ側に先に描く)
+  const tail=tailOutline(),H=P.hcm,pxc=f.bh/H;
+  dctx.save();
+  dctx.translate(X(lookup(.90).r*.60),Y(.93));dctx.rotate(Math.PI*.40);
+  dctx.beginPath();
+  tail.forEach((q,i)=>{const px=q.x*pxc,py=q.y*pxc;i?dctx.lineTo(px,py):dctx.moveTo(px,py);});
+  dctx.closePath();dctx.fillStyle=P.col.wing;dctx.fill();
+  dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.5;dctx.stroke();
+  dctx.restore();
+
+  // 頭の毛(体の後ろに描く)
+  if(P.crest){
+    const crest=crestOutline();
+    dctx.save();
+    dctx.translate(X(lookup(.04).r*.25),Y(.018));dctx.rotate(Math.PI+Math.PI*.18);
+    dctx.beginPath();
+    crest.forEach((q,i)=>{const px=q.x*pxc,py=q.y*pxc;i?dctx.lineTo(px,py):dctx.moveTo(px,py);});
+    dctx.closePath();dctx.fillStyle=P.col.wing;dctx.fill();
+    dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.5;dctx.stroke();
+    dctx.restore();
+  }
+  // 体シルエット
+  dctx.beginPath();
+  p.forEach((q,i)=>{i?dctx.lineTo(X(q.r),Y(q.t)):dctx.moveTo(X(q.r),Y(q.t));});
+  for(let i=p.length-1;i>=0;i--)dctx.lineTo(Xm(p[i].r),Y(p[i].t));
+  dctx.closePath();
+  dctx.fillStyle=P.col.back;dctx.fill();
+  // おなか(前=左側)
+  dctx.save();dctx.clip();
+  dctx.beginPath();
+  const tB0=P.headSplit?P.splitT:P.eyeT+.08;
+  for(let i=0;i<p.length;i++){if(p[i].t<tB0)continue;dctx.lineTo(Xm(p[i].r),Y(p[i].t));}
+  for(let i=p.length-1;i>=0;i--){if(p[i].t<tB0)continue;dctx.lineTo(Xm(p[i].r*.28),Y(p[i].t));}
+  dctx.closePath();dctx.fillStyle=P.col.belly;dctx.fill();
+  // 横斑
+  if(P.bars){
+    dctx.strokeStyle=shade(P.col.back,1.0);dctx.lineWidth=1.4;
+    for(let b=0;b<6;b++){
+      const t=tB0+.08+(0.70-tB0)*b/5;const rr=lookup(t).r;
+      dctx.beginPath();
+      for(let i=0;i<=14;i++){
+        const x=Xm(rr*.92)+(Xm(rr*.30)-Xm(rr*.92))*i/14;
+        dctx[i?'lineTo':'moveTo'](x,Y(t)+Math.sin(i/14*Math.PI*3)*2);
+      }
+      dctx.stroke();
+    }
+  }
+  dctx.restore();
+  dctx.beginPath();
+  p.forEach((q,i)=>{i?dctx.lineTo(X(q.r),Y(q.t)):dctx.moveTo(X(q.r),Y(q.t));});
+  for(let i=p.length-1;i>=0;i--)dctx.lineTo(Xm(p[i].r),Y(p[i].t));
+  dctx.closePath();
+  dctx.strokeStyle='#2b2a24';dctx.lineWidth=2;dctx.stroke();
+
+  // 翼(側面に重ねる)
+  const wing=wingOutline();
+  dctx.save();
+  dctx.translate(X(lookup(P.wingT).r*.10),Y(P.wingT));dctx.rotate(Math.PI*.36);
+  dctx.beginPath();
+  wing.forEach((q,i)=>{const px=q.x*pxc,py=q.y*pxc;i?dctx.lineTo(px,py):dctx.moveTo(px,py);});
+  dctx.closePath();dctx.fillStyle=P.col.wing;dctx.fill();
+  dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.5;dctx.stroke();
+  dctx.restore();
+
+  // くちばし(前=左へ)
+  const beak=beakOutline();
+  dctx.save();
+  dctx.translate(Xm(lookup(P.beakT).r*.96),Y(P.beakT));dctx.scale(-1,1);
+  dctx.beginPath();
+  beak.forEach((q,i)=>{const px=q.x*pxc,py=q.y*pxc;i?dctx.lineTo(px,py):dctx.moveTo(px,py);});
+  dctx.closePath();dctx.fillStyle=P.col.beak;dctx.fill();
+  dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.5;dctx.stroke();
+  dctx.restore();
+
+  // 目+眉庇
+  const eR=P.eyeR*k,ex=Xm(lookup(P.eyeT).r*.42),ey=Y(P.eyeT);
+  dctx.beginPath();dctx.arc(ex,ey,eR,0,7);dctx.fillStyle=P.col.eye;dctx.fill();
+  dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.3;dctx.stroke();
+  dctx.beginPath();dctx.arc(ex-eR*.15,ey,eR*.45,0,7);dctx.fillStyle='#1c1a17';dctx.fill();
+  if(P.brow){
+    dctx.beginPath();dctx.ellipse(ex,ey-eR*1.15,eR*1.7,eR*.55,-.12,Math.PI,0);
+    dctx.lineTo(ex+eR*1.7,ey-eR*.9);
+    dctx.ellipse(ex,ey-eR*.9,eR*1.7,eR*.3,-.12,0,Math.PI,true);
+    dctx.closePath();dctx.fillStyle=shade(P.col.back,.72);dctx.fill();
+  }
+  // 足
+  if(P.feet){
+    const foot=footOutline();
+    for(const sgn of [-1,1]){
+      dctx.save();
+      dctx.translate(Xm(lookup(1).r*(sgn<0?.55:.15)),Y(1)-2);
+      dctx.beginPath();
+      foot.forEach((q,i)=>{const px=q.x*pxc,py=q.y*pxc;i?dctx.lineTo(px,py):dctx.moveTo(px,py);});
+      dctx.closePath();dctx.fillStyle=P.col.feet;dctx.fill();
+      dctx.strokeStyle='#2b2a24';dctx.lineWidth=1.2;dctx.stroke();
+      dctx.restore();
+    }
+  }
+
+  // ハンドル
+  handlePx=[];
+  CP.forEach((c,i)=>{
+    if(i===0)return;
+    const hx=X(c.r),hy=Y(c.t);
+    handlePx.push({i,x:hx,y:hy});
+    handlePx.push({i,x:Xm(c.r),y:hy,mir:true});
+    for(const px of [hx,Xm(c.r)]){
+      dctx.beginPath();dctx.arc(px,hy,6,0,7);
+      dctx.fillStyle='#fdfbf5';dctx.fill();
+      dctx.strokeStyle='#a8752e';dctx.lineWidth=2.4;dctx.stroke();
+    }
+  });
+}
+let dragIdx=-1;
+function evPos(e){
+  const r=drawCv.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {x:t.clientX-r.left,y:t.clientY-r.top};
+}
+drawCv.addEventListener('pointerdown',e=>{
+  const q=evPos(e);
+  let best=15,bi=-1;
+  handlePx.forEach(h=>{const d=Math.hypot(h.x-q.x,h.y-q.y);if(d<best){best=d;bi=h.i;}});
+  if(bi>=0){dragIdx=bi;drawCv.setPointerCapture(e.pointerId);}
+});
+drawCv.addEventListener('pointermove',e=>{
+  if(dragIdx<0)return;
+  const q=evPos(e),f=frame2d();
+  const c=CP[dragIdx];
+  c.r=Math.min(.45,Math.max(.02,Math.abs(q.x-f.cx)/f.bh));
+  if(dragIdx<CP.length-1){
+    const lo=CP[dragIdx-1].t+.03,hi=CP[dragIdx+1].t-.03;
+    c.t=Math.min(hi,Math.max(lo,(q.y-f.top)/f.bh));
+  }
+  presetSel.value='custom';
+  rebuildAll(true);
+});
+drawCv.addEventListener('pointerup',()=>{if(dragIdx>=0){dragIdx=-1;rebuildAll();}});
+
+// ============ 3D ============
+const wrap3d=$('view3dWrap');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+wrap3d.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,.1,100);
+camera.position.set(0,0,4.4);
+scene.add(new THREE.AmbientLight(0xfff6e8,.6));
+const key=new THREE.DirectionalLight(0xfff8ec,.55);key.position.set(2,3,4);scene.add(key);
+const fill=new THREE.DirectionalLight(0xf0e8d8,.2);fill.position.set(-1.5,-.5,3);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xc25438,.08);rim.position.set(-3,-1,-2);scene.add(rim);
+const group=new THREE.Group();scene.add(group);
+let birdGroup=null;
+let rotX=.10,rotY=.45,tRX=.10,tRY=.45,dragging3=false,lX=0,lY=0,autoSpin=true;
+renderer.domElement.addEventListener('pointerdown',e=>{dragging3=true;autoSpin=false;lX=e.clientX;lY=e.clientY;});
+window.addEventListener('pointermove',e=>{if(!dragging3)return;
+  tRY+=(e.clientX-lX)*.01;tRX+=(e.clientY-lY)*.01;tRX=Math.max(-1.3,Math.min(1.3,tRX));
+  lX=e.clientX;lY=e.clientY;});
+window.addEventListener('pointerup',()=>dragging3=false);
+function resize3d(){const r=wrap3d.getBoundingClientRect();
+  renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
+
+const HN=1.9; // 3D内での全高
+const y3=t=>(0.52-t)*HN;
+const r3=t=>lookup(t).r*HN;
+function lam(col){return new THREE.MeshLambertMaterial({color:new THREE.Color(col),side:THREE.DoubleSide});}
+function disposeAll(o){
+  o.traverse(m=>{
+    if(m.geometry)m.geometry.dispose();
+    if(m.material){(Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>mt.dispose());}
+  });
+}
+function shapeMesh(outlineCm,col,mir){ // yは下向き→3Dではy上向きに反転、cm→3D単位
+  const sc=HN/P.hcm;
+  const sh=new THREE.Shape();
+  outlineCm.forEach((q,i)=>{
+    const x=(mir?-1:1)*q.x*sc,y=-q.y*sc;
+    i?sh.lineTo(x,y):sh.moveTo(x,y);
+  });
+  return new THREE.Mesh(new THREE.ShapeGeometry(sh),lam(col));
+}
+// 2枚合わせ+綿入れ風:ベベル付き押し出しで縁が丸くふくらむ
+function puffyMesh(outlineCm,col,mir,thick){
+  const sc=HN/P.hcm;
+  const sh=new THREE.Shape();
+  outlineCm.forEach((q,i)=>{
+    const x=(mir?-1:1)*q.x*sc,y=-q.y*sc;
+    i?sh.lineTo(x,y):sh.moveTo(x,y);
+  });
+  const geo=new THREE.ExtrudeGeometry(sh,{depth:thick*.36,curveSegments:6,
+    bevelEnabled:true,bevelThickness:thick*.52,bevelSize:thick*.42,bevelSegments:3});
+  geo.translate(0,0,-thick*.18);
+  return new THREE.Mesh(geo,lam(col));
+}
+function rebuild3d(){
+  if(birdGroup){group.remove(birdGroup);disposeAll(birdGroup);}
+  birdGroup=new THREE.Group();
+  const N=P.N,p=SAMP.pts,S=p.length-1,A=6;
+  // ゴアメッシュ
+  function goreMesh(t0,t1,a0,a1,col){
+    const M=36,pos=[],idx=[];
+    for(let i=0;i<=M;i++){
+      const t=t0+(t1-t0)*i/M,q=lookup(t);
+      const rr=q.r*HN,yy=y3(t);
+      for(let j=0;j<=A;j++){
+        const a=a0+(a1-a0)*j/A;
+        pos.push(rr*Math.sin(a),yy,rr*Math.cos(a));
+      }
+    }
+    for(let i=0;i<M;i++)for(let j=0;j<A;j++){
+      const v=i*(A+1)+j;
+      idx.push(v,v+A+1,v+1, v+1,v+A+1,v+A+2);
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    geo.setIndex(idx);geo.computeVertexNormals();
+    return new THREE.Mesh(geo,lam(col));
+  }
+  for(let g=0;g<N;g++){
+    const a0=g*2*Math.PI/N,a1=(g+1)*2*Math.PI/N;
+    const isBelly=(g===0||g===N-1);
+    if(isBelly&&P.headSplit){
+      birdGroup.add(goreMesh(0,P.splitT,a0,a1,P.col.back));
+      birdGroup.add(goreMesh(P.splitT,1,a0,a1,P.col.belly));
+    }else{
+      birdGroup.add(goreMesh(0,1,a0,a1,isBelly?P.col.belly:P.col.back));
+    }
+  }
+  // 色の切り替え線(赤破線・前面のみ)
+  if(P.headSplit){
+    const azm=2*Math.PI/N,pts=[];
+    const rr=r3(P.splitT)*1.004,yy=y3(P.splitT);
+    for(let i=0;i<=24;i++){
+      const a=-azm+2*azm*i/24;
+      pts.push(rr*Math.sin(a),yy,rr*Math.cos(a));
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+    const ln=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0xc25438,dashSize:.045,gapSize:.03}));
+    ln.computeLineDistances();birdGroup.add(ln);
+  }
+  // はぎ線(赤破線)
+  for(let g=0;g<N;g++){
+    const a=g*2*Math.PI/N,pts=[];
+    for(let i=0;i<=S;i++){
+      const rr=p[i].r*HN*1.004;
+      pts.push(rr*Math.sin(a),y3(p[i].t),rr*Math.cos(a));
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+    const ln=new THREE.Line(geo,new THREE.LineDashedMaterial({color:0xc25438,dashSize:.045,gapSize:.03}));
+    ln.computeLineDistances();birdGroup.add(ln);
+  }
+  // 底
+  const rb=r3(1);
+  const baseM=new THREE.Mesh(new THREE.CircleGeometry(rb,32),lam(P.col.belly));
+  baseM.rotation.x=-Math.PI/2;baseM.position.y=y3(1);
+  birdGroup.add(baseM);
+  // 横斑
+  if(P.bars){
+    const azMax=2*Math.PI/N;
+    for(let b=0;b<6;b++){
+      const t=P.eyeT+.16+(0.72-(P.eyeT+.16))*b/5;
+      const rr=r3(t)*1.006,pts=[];
+      for(let i=0;i<=20;i++){
+        const a=-azMax+2*azMax*i/20;
+        pts.push(rr*Math.sin(a),y3(t),rr*Math.cos(a));
+      }
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+      birdGroup.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:new THREE.Color(shade(P.col.back,.9))})));
+    }
+  }
+  // くちばし(湾曲チューブ)
+  {
+    const LB=P.beakLen*HN,rB0=P.beakR*HN,hk=P.beakHook;
+    const M=16,SEG=10,pos=[],idx=[];
+    const zRoot=r3(P.beakT)*.97,yRoot=y3(P.beakT);
+    let prev=null;
+    for(let i=0;i<=M;i++){
+      const u=i/M;
+      const cz=zRoot+LB*(u-.10*hk*u*u*u), cy=yRoot-hk*LB*(.20*u*u+.58*Math.pow(u,5));
+      const rr=rB0*Math.pow(1-u,1.12)*(1-.12*u)+.006;
+      // 接線
+      const dz=LB*(1-.30*hk*u*u)/M, dy=-hk*LB*(.40*u+2.9*Math.pow(u,4))/M;
+      const tl=Math.hypot(dy,dz)||1,ty=dy/tl,tz=dz/tl;
+      const ny=tz,nz=-ty; // 接線に直交(yz面内)
+      for(let j=0;j<=SEG;j++){
+        const ph=2*Math.PI*j/SEG;
+        pos.push(rr*Math.cos(ph), cy+rr*Math.sin(ph)*ny, cz+rr*Math.sin(ph)*nz);
+      }
+      prev=u;
+    }
+    for(let i=0;i<M;i++)for(let j=0;j<SEG;j++){
+      const v=i*(SEG+1)+j;
+      idx.push(v,v+SEG+1,v+1, v+1,v+SEG+1,v+SEG+2);
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    geo.setIndex(idx);geo.computeVertexNormals();
+    birdGroup.add(new THREE.Mesh(geo,lam(P.col.beak)));
+  }
+  // 目・眉庇
+  const az=Math.min(.86,2*Math.PI/N*.95);
+  for(const s of [-1,1]){
+    const rr=r3(P.eyeT),re=P.eyeR*HN;
+    const dx=Math.sin(az*s),dz=Math.cos(az*s);
+    const ex=rr*dx*.96+dx*re*.55, ey=y3(P.eyeT), ez=rr*dz*.96+dz*re*.55;
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(re,16,12),lam(P.col.eye));
+    eye.position.set(ex,ey,ez);birdGroup.add(eye);
+    const pup=new THREE.Mesh(new THREE.SphereGeometry(re*.45,12,10),lam('#1c1a17'));
+    pup.position.set(ex+dx*re*.62,ey,ez+dz*re*.62);birdGroup.add(pup);
+    if(P.brow){
+      const br=new THREE.Mesh(new THREE.SphereGeometry(re,12,10),lam(shade(P.col.back,.72)));
+      br.scale.set(2.1,.58,1.1);
+      const rr2=r3(P.eyeT-.045);
+      br.position.set(rr2*dx*.96+dx*re*.6,y3(P.eyeT-.045),rr2*dz*.96+dz*re*.6);
+      br.rotation.y=az*s;
+      birdGroup.add(br);
+    }
+  }
+  // 翼(たたんだ翼:2枚合わせ+綿入れのふくらみ)
+  for(const s of [-1,1]){
+    const az2=1.62;
+    const wg=new THREE.Group();
+    wg.position.set(Math.sin(az2*s)*r3(P.wingT)*.98,y3(P.wingT),Math.cos(az2*s)*r3(P.wingT)*.98);
+    wg.rotation.y=s*az2;
+    const m=puffyMesh(wingOutline(),P.col.wing,s<0,P.wingWid*HN*.26);
+    m.rotation.z=(s>0?-1:1)*0.60;
+    wg.add(m);birdGroup.add(wg);
+  }
+  // 尾羽(こちらも2枚仕立てのふくらみ)
+  {
+    const tg=new THREE.Group();
+    tg.position.set(0,y3(.90),-r3(.86)*.9);
+    tg.rotation.x=1.18;
+    tg.add(puffyMesh(tailOutline(),shade(P.col.wing,1.06),false,P.tailW1*HN*.24));
+    birdGroup.add(tg);
+  }
+  // 冠羽(頭頂・左右2枚を後ろへ流す)
+  if(P.crest){
+    const cl3=P.crestLen*HN;
+    for(const s of [-1,1]){
+      const m=puffyMesh(crestOutline(),P.col.wing,false,cl3*.14);
+      m.rotation.set(-0.65,s*0.22,Math.PI+s*0.28);
+      m.position.set(s*r3(.05)*.30,y3(.012),-r3(.05)*.12);
+      birdGroup.add(m);
+    }
+  }
+  // 足(縦向きに立てて体の下前方へ)
+  if(P.feet){
+    for(const s of [-1,1]){
+      const m=shapeMesh(footOutline(),P.col.feet);
+      m.position.set(s*Math.max(r3(1)*.6,.10*HN*.62),y3(1)+.05,r3(1)*.8);
+      birdGroup.add(m);
+    }
+  }
+  // 全体を中央へ
+  const box=new THREE.Box3().setFromObject(birdGroup);
+  const c=box.getCenter(new THREE.Vector3());
+  birdGroup.position.y=-c.y;
+  group.add(birdGroup);
+}
+
+// ============ 展開図描画 ============
+const flatCv=$('flat');
+const SA_CM=.7;
+function renderFlat(ctx,W,H,opaque){
+  const pieces=buildPieces();
+  ctx.clearRect(0,0,W,H);
+  if(opaque){ctx.fillStyle='#fdfbf5';ctx.fillRect(0,0,W,H);}
+  const withSA=pieces.map(p=>({piece:p,sa:p.felt?p.pts:offsetPoly(p.pts,SA_CM)}));
+  const boxes=withSA.map(({sa})=>{
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    sa.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+      y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    return {x0,x1,y0,y1,w:x1-x0,h:y1-y0};
+  });
+  const pad=20,gap=22,n=pieces.length;
+  const nRows=n>6?2:1;
+  const perRow=Math.ceil(n/nRows);
+  const rows=[];
+  for(let r=0;r<nRows;r++)rows.push([...Array(n).keys()].slice(r*perRow,(r+1)*perRow));
+  let s=Infinity;
+  rows.forEach(row=>{
+    const tw=row.reduce((a,i)=>a+boxes[i].w,0);
+    const mh=Math.max(...row.map(i=>boxes[i].h));
+    s=Math.min(s,(W-pad*2-gap*(row.length-1))/tw,((H-pad*2-22*nRows)/nRows-14)/mh);
+  });
+  const rowH=(H-pad*2)/nRows;
+  withSA.forEach(({piece:p,sa},pi)=>{
+    const b=boxes[pi];
+    const ri=rows.findIndex(row=>row.includes(pi));
+    const row=rows[ri];
+    const tw=row.reduce((a,i)=>a+boxes[i].w*s+gap,0)-gap;
+    let ox=(W-tw)/2;
+    for(const i of row){if(i===pi)break;ox+=boxes[i].w*s+gap;}
+    const oy=pad+ri*rowH+(rowH-b.h*s)/2-10;
+    const TX=q=>ox+(q.x-b.x0)*s,TY=q=>oy+(q.y-b.y0)*s;
+    if(!p.felt){
+      ctx.setLineDash([5,4]);ctx.strokeStyle='#948b74';ctx.lineWidth=1.2;
+      ctx.beginPath();
+      sa.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+      ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    ctx.beginPath();
+    p.pts.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+    ctx.closePath();
+    ctx.fillStyle=p.col+'55';ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle='#2b2a24';ctx.stroke();
+    p.guides.forEach(g=>{
+      ctx.lineWidth=(g.w||2.5)*.7;ctx.strokeStyle=g.color;
+      ctx.beginPath();
+      g.pts.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+      ctx.stroke();
+    });
+    ctx.strokeStyle='#c25438';ctx.fillStyle='#c25438';ctx.lineWidth=2.4;
+    (p.marks||[]).forEach(mk=>{
+      if(mk.b){ctx.beginPath();ctx.moveTo(TX(mk.a),TY(mk.a));ctx.lineTo(TX(mk.b),TY(mk.b));ctx.stroke();}
+      if(mk.label){
+        ctx.font='800 9px sans-serif';ctx.textAlign='center';
+        ctx.fillText(mk.label,TX(mk.a),TY(mk.a)-4);
+      }
+    });
+    ctx.fillStyle='#2b2a24';ctx.font='700 10px sans-serif';ctx.textAlign='center';
+    const label=`${p.ja} ×${p.copies}`;
+    ctx.fillText(b.w*s>60?label:p.ja,ox+b.w*s/2,oy+b.h*s+15);
+  });
+}
+function drawFlatScreen(){
+  const r=flatCv.getBoundingClientRect();
+  renderFlat(flatCv.getContext('2d'),r.width,r.height,false);
+}
+
+// ============ 書き出し ============
+const exModal=$('exportModal');
+$('exportClose').addEventListener('click',()=>{exModal.style.display='none';
+  $('exportFrame').src='about:blank';});
+function showExport(title,kind,url,hint){
+  $('exportTitle').textContent=title;
+  $('exportHint').textContent=hint;
+  $('exportLink').href=url;
+  const img=$('exportImg'),fr=$('exportFrame');
+  img.style.display=kind==='img'?'block':'none';
+  fr.style.display=kind==='pdf'?'block':'none';
+  if(kind==='img')img.src=url;else fr.src=url;
+  exModal.style.display='flex';
+}
+$('pngBtn').addEventListener('click',()=>{
+  const W=2600,Hh=1560;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=Hh;
+  renderFlat(cv.getContext('2d'),W,Hh,true);
+  const url=cv.toDataURL('image/png');
+  showExport('展開図 PNG (2600px)','img',url,
+    '画像を長押し(スマホ)または右クリック(PC)で保存できます。');
+  statusEl.textContent='展開図PNGを表示しました';statusEl.className='badge ok';
+});
+
+$('pdfBtn').addEventListener('click',()=>{
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'cm',format:'a4'});
+  const pageW=21,pageH=29.7,margin=1.2;
+  const pieces=buildPieces();
+  // ---- 表紙(jsPDF標準フォントのため英語表記)----
+  {
+    let y=margin+1.0,colX=margin;
+    doc.setFont('helvetica','bold');doc.setFontSize(22);
+    doc.text('TORI PATTERN - BIRD OF PREY',margin,y);y+=.8;
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text('Generated bird plush pattern - all mating edges length-matched by construction',margin,y);y+=1.0;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('SPEC',margin,y);y+=.55;
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    const arcTot=pieces.arcTot,rb=pieces.rb;
+    [`Total height: ${P.hcm.toFixed(1)} cm  /  Body: ${P.N} gores  /  Seam allowance: 7 mm (felt: none)  /  Fabric factor: x${P.fx}`,
+     `Gore side seam: ${arcTot.toFixed(1)} cm - IDENTICAL on all ${P.N} gores (exact match by construction)`,
+     `Base circumference: ${(2*Math.PI*rb).toFixed(1)} cm = gore hem ${(2*Math.PI*rb/P.N).toFixed(1)} cm x ${P.N} (exact)`,
+    ].forEach(t=>{doc.text(t,margin,y);y+=.5;});
+    y+=.5;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('FABRIC & FELT COLORS',margin,y);y+=.6;
+    const legend=[['Back / gores',P.col.back],['Belly gores + base',P.col.belly],
+      ['Wings + tail',P.col.wing],['Beak (felt)',P.col.beak],['Eyes (safety eyes)',P.col.eye]];
+    if(P.brow)legend.push(['Brow (felt)',shade(P.col.back,.72)]);
+    if(P.crest)legend.push(['Crest tufts (felt)',P.col.wing]);
+    if(P.feet)legend.push(['Feet (felt)',P.col.feet]);
+    legend.forEach(([nm,hex])=>{
+      const [rr,gg,bb]=hexRgb(hex);
+      doc.setFillColor(rr,gg,bb);doc.rect(colX,y-.32,.42,.42,'F');
+      doc.setDrawColor(60);doc.rect(colX,y-.32,.42,.42,'S');
+      doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+      doc.text(nm+'  '+hex,colX+.65,y);y+=.6;
+    });
+    y+=.4;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('ASSEMBLY ORDER',margin,y);y+=.6;
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    const steps=[
+      `1. Cut: ${P.headSplit?'2 HEAD FRONT gores (back color), 2 BELLY gores (belly color), ':'2 BELLY gores, '}${P.N-2} BACK gores, 1 BASE, 4 WING (2 mirrored pairs), 2 TAIL. Felt (no allowance): 2 BEAK${P.brow?', 2 BROW':''}${P.crest?', 2 CREST':''}${P.feet?', 4 FOOT':''}.`,
+      '2. Embroider the chest bar guide lines on the belly gores BEFORE sewing.',
+      P.headSplit?'2b. Sew each HEAD FRONT gore to its BELLY gore along the straight color-break edge, right sides together (edge widths match exactly). Press, then treat each joined pair as ONE front gore.':null,
+      '3. Sew gores side by side, right sides together: BELLY + BELLY at center front, BACK gores around. Leave the red OPENING segment unsewn on ONE back seam.',
+      '4. Sew the BASE circle to the hem (perimeter matches exactly - pin, no easing).',
+      '5. WINGS & TAIL: sew each pair right sides together leaving the red BODY edge open. Turn, stuff lightly, close by hand.',
+      '6. Turn body right-side out, stuff firmly (head first), ladder-stitch the opening.',
+      '7. BEAK: whip-stitch the two felt pieces along top and bottom edges, stuff lightly, attach at the BEAK mark on the center-front seam (hook points DOWN).',
+      '8. EYES: pin-test position at the EYE marks on the stuffed head from 4 angles, then attach safety eyes or buttons.'+(P.brow?' Glue/stitch felt BROWS above the eyes, tilted down toward the beak - this makes the hawk glare.':''),
+      '9. Hand-sew wings at the WING marks (root edge against the side seams) and the tail at the TAIL mark, angled down.'+(P.feet?' Glue foot felt pairs and tuck under the front of the base.':''),
+      P.crest?'10. CREST: pinch a small pleat at the base of each felt tuft and stitch both to the crown point (where all gores meet), angled back like wind-swept feathers.':null,
+    ];
+    steps.filter(Boolean).forEach(t=>{
+      const lines=doc.splitTextToSize(t,pageW-margin*2);
+      if(y+.48*lines.length>pageH-margin-1.2){doc.addPage();y=margin+1;}
+      doc.text(lines,margin,y);y+=.48*lines.length+.12;
+    });
+    doc.setFontSize(8);doc.setTextColor(130);
+    doc.text('Pieces follow on the next pages. Print at 100% and verify the 5 cm bar on each page.',margin,pageH-margin);
+    doc.setTextColor(0);
+  }
+  pieces.forEach((p,pi)=>{
+    doc.addPage();
+    const fp=p.pts,op=p.felt?fp:offsetPoly(fp,SA_CM);
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    op.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+      y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    const w=x1-x0,h=y1-y0;
+    const fitW=pageW-margin*2,fitH=pageH-margin*2-3.2;
+    const s=Math.min(1,fitW/w,fitH/h);
+    const ox=margin+(fitW-w*s)/2-x0*s;
+    const oy=margin+2.6+(fitH-h*s)/2-y0*s;
+    const T=q=>[ox+q.x*s,oy+q.y*s];
+    doc.setFont('helvetica','bold');doc.setFontSize(13);
+    doc.text(`PIECE ${pi+1}/${pieces.length}   ${p.en}   x${p.copies}`,margin,margin+.4);
+    doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+    doc.text(`total height ${P.hcm.toFixed(1)}cm / ${p.felt?'FELT - cut on solid line, NO seam allowance':'seam 7mm (dashed)'} / fabric x${P.fx}`,margin,margin+1.0);
+    doc.text(s<1?`!! printed at ${(s*100).toFixed(0)}% - enlarge to 100%, verify 5cm bar`:'print at 100%, verify 5cm bar',margin,margin+1.45);
+    if(p.note){
+      const lines=doc.splitTextToSize(p.note,pageW-margin*2);
+      doc.text(lines,margin,margin+1.9);
+    }
+    if(!p.felt){
+      doc.setDrawColor(120);doc.setLineDashPattern([.15,.12],0);doc.setLineWidth(.02);
+      op.forEach((q,i)=>{const a=T(q),b=T(op[(i+1)%op.length]);doc.line(a[0],a[1],b[0],b[1]);});
+    }
+    doc.setDrawColor(30);doc.setLineDashPattern([],0);doc.setLineWidth(.035);
+    fp.forEach((q,i)=>{const a=T(q),b=T(fp[(i+1)%fp.length]);doc.line(a[0],a[1],b[0],b[1]);});
+    // ガイド(刺繍・あき口)
+    p.guides.forEach(g=>{
+      const [rr,gg,bb]=hexRgb(g.color);
+      doc.setDrawColor(rr,gg,bb);doc.setLineWidth(.012*(g.w||2.5));
+      for(let i=0;i<g.pts.length-1;i++){
+        const a=T(g.pts[i]),b=T(g.pts[i+1]);doc.line(a[0],a[1],b[0],b[1]);
+      }
+    });
+    // 合印
+    doc.setDrawColor(194,84,56);doc.setLineWidth(.05);
+    (p.marks||[]).forEach(mk=>{
+      if(mk.b){const a=T(mk.a),b=T(mk.b);doc.line(a[0],a[1],b[0],b[1]);}
+      if(mk.label){
+        doc.setFontSize(8);doc.setTextColor(194,84,56);
+        const a=T(mk.a);doc.text(mk.label,a[0],a[1]-.15,{align:'center'});
+        doc.setTextColor(0,0,0);
+      }
+    });
+    // 地の目
+    if(!p.felt){
+      doc.setDrawColor(30);doc.setLineWidth(.03);
+      const gx=ox+((x0+x1)/2)*s,gy1=oy+(y0+h*.3)*s,gy2=oy+(y0+h*.7)*s;
+      doc.line(gx,gy1,gx,gy2);
+      doc.line(gx,gy1,gx-.15,gy1+.3);doc.line(gx,gy1,gx+.15,gy1+.3);
+      doc.line(gx,gy2,gx-.15,gy2-.3);doc.line(gx,gy2,gx+.15,gy2-.3);
+      doc.setFontSize(7);doc.text('GRAIN',gx+.2,(gy1+gy2)/2);
+    }
+    const bx=margin,by=pageH-margin;
+    doc.setDrawColor(30);doc.setLineWidth(.05);doc.line(bx,by,bx+5,by);
+    doc.line(bx,by-.15,bx,by+.15);doc.line(bx+5,by-.15,bx+5,by+.15);
+    doc.setFontSize(8);
+    doc.text(s<1?`bar = ${(5*s).toFixed(1)}cm here (enlarge until 5cm)`:'this bar must measure exactly 5cm',bx+.2,by-.25);
+  });
+  let url;
+  try{url=URL.createObjectURL(doc.output('blob'));}
+  catch(e){url=doc.output('datauristring');}
+  showExport(`型紙PDF(${pieces.length+1}ページ:表紙+ピース)`,'pdf',url,
+    'ここでスクロール確認できます。保存は右上の「別タブで開く/保存」から。');
+  statusEl.textContent='型紙PDFを表示しました';statusEl.className='badge ok';
+});
+
+// ============ レポート ============
+function updateReport(){
+  const pieces=buildPieces();
+  const arcTot=pieces.arcTot,rb=pieces.rb;
+  reportEl.innerHTML=
+    `<span class="dartnote">縫い合わせ整合チェック:</span>`+
+    `ゴア側辺 ${arcTot.toFixed(1)}cm — <span class="dartnote">${P.N}枚すべて同一曲線(厳密一致)</span> / `+
+    `底の円周 ${(2*Math.PI*rb).toFixed(1)}cm = ゴア裾 ${(2*Math.PI*rb/P.N).toFixed(1)}cm × ${P.N}枚 <span class="dartnote">(厳密一致)</span> / `+
+    `翼の根元(あき) ${(P.wingWid*P.hcm).toFixed(1)}cm / 尾羽の根元 ${(P.tailW0*P.hcm).toFixed(1)}cm / `+
+    `くちばし ${(P.beakLen*P.hcm).toFixed(1)}cm(フェルト2枚まつり)`+
+    (P.headSplit?` / 色の切り替え線 ${(2*Math.PI*lookup(P.splitT).r*P.hcm/P.N*P.fx).toFixed(1)}cm — 頭前ゴア下辺=おなかゴア上辺 <span class="dartnote">(厳密一致)</span>`:'')+'。'+
+    `おなかゴアは前中心のはぎ線を挟んで2枚——くちばしはそのはぎ線上のBEAK印に付けます。`;
+}
+
+// ============ パレット・配線 ============
+const swEl=$('swatches');
+let swBtns=[];
+BIRD_COLS.forEach(([name,hex])=>{
+  const b=document.createElement('div');
+  b.className='sw24';b.style.background=hex;b.title=name;
+  b.addEventListener('click',()=>{
+    P.col[curPart==='wing'?'wing':curPart]=hex;
+    presetSel.value='custom';
+    refreshSwatchSel();rebuildAll();
+  });
+  swEl.appendChild(b);swBtns.push([hex,b]);
+});
+function refreshSwatchSel(){
+  const cur=P.col[curPart];
+  swBtns.forEach(([hex,b])=>b.classList.toggle('sel',hex===cur));
+}
+document.querySelectorAll('.partBtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.partBtn').forEach(e=>e.classList.remove('on'));
+    b.classList.add('on');curPart=b.dataset.part;refreshSwatchSel();
+  });
+});
+
+let rafPending=false;
+function rebuildAll(light){
+  readParams();
+  sampleProfile();
+  draw2d();
+  if(rafPending)return;
+  rafPending=true;
+  requestAnimationFrame(()=>{
+    rafPending=false;
+    rebuild3d();
+    drawFlatScreen();
+    updateReport();
+  });
+  statusEl.textContent='型紙は自動更新中';statusEl.className='badge ok';
+}
+[bkL,bkH,wgL,wgW,wgF,tlL,tlF,eyT,crL,spT].forEach(el=>el.addEventListener('input',()=>{
+  presetSel.value='custom'; rebuildAll();
+}));
+[goreSel,fabricEl].forEach(el=>el.addEventListener('change',()=>rebuildAll()));
+hcmEl.addEventListener('change',()=>rebuildAll());
+[browChk,barChk,feetChk,crestChk,headBackChk].forEach(el=>el.addEventListener('change',()=>rebuildAll()));
+presetSel.addEventListener('change',e=>{
+  if(e.target.value!=='custom'){applyPreset(e.target.value);rebuildAll();}
+});
+$('resetBtn').addEventListener('click',()=>{
+  const k=presetSel.value==='custom'?'narukami':presetSel.value;
+  presetSel.value=k;applyPreset(k);rebuildAll();
+  statusEl.textContent='プリセットに戻しました';statusEl.className='badge ok';
+});
+
+// ============ 起動 ============
+function tick(){
+  requestAnimationFrame(tick);
+  if(autoSpin)tRY+=.004;
+  rotX+=(tRX-rotX)*.12;rotY+=(tRY-rotY)*.12;
+  group.rotation.x=rotX;group.rotation.y=rotY;
+  renderer.render(scene,camera);
+}
+function layout(){fitCanvas(drawCv);fitCanvas(flatCv);resize3d();draw2d();drawFlatScreen();}
+window.addEventListener('resize',layout);
+
+P.col={...PRESETS.narukami.col};
+applyPreset('narukami');
+sampleProfile();
+fitCanvas(drawCv);fitCanvas(flatCv);resize3d();
+rebuildAll();
+tick();
+
+})();
+
+</script>
+</body>
+</html>

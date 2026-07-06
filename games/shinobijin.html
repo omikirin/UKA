@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>忍陣 — シノビジン</title>
+<style>
+  :root{
+    --sumi:#14121a;        /* 墨 background */
+    --sumi2:#1e1b26;
+    --washi:#ece3d0;       /* 和紙 text */
+    --washi-dim:#a89f8c;
+    --ai:#3d6489;          /* 藍 自軍 */
+    --ai-bright:#5b8fbf;
+    --shu:#d8483b;         /* 朱 敵軍 */
+    --shu-bright:#f06a5a;
+    --sui:#5fa88c;         /* 翠 特殊 */
+    --kin:#d9a93f;         /* 金 大将 */
+    --line:#2c2836;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #241f30 0%, var(--sumi) 60%);
+    color:var(--washi);
+    font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+    min-height:100%; display:flex; flex-direction:column; align-items:center;
+    padding:14px; gap:12px; overflow-x:hidden;
+  }
+  header{text-align:center; user-select:none;}
+  header h1{
+    font-size:30px; letter-spacing:.35em; font-weight:700;
+    text-indent:.35em;
+    background:linear-gradient(#f4ecda,#c9bfa4); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header .sub{font-size:11px; color:var(--washi-dim); letter-spacing:.3em; margin-top:2px;}
+
+  /* 巻物のターン表示 */
+  #banner{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  }
+  .stageTag{
+    padding:5px 14px; border-radius:2px; font-size:13px; letter-spacing:.15em; font-weight:700;
+    color:var(--kin); border:1px solid rgba(217,169,63,.45); background:rgba(217,169,63,.08);
+    font-family:"Hiragino Mincho ProN",serif;
+  }
+  .turnTag{
+    padding:5px 16px; border-radius:2px; font-size:13px; letter-spacing:.12em; font-weight:700;
+    border:1px solid var(--line); background:var(--sumi2);
+  }
+  .turnTag.me{color:var(--ai-bright); border-color:var(--ai);}
+  .turnTag.foe{color:var(--shu-bright); border-color:var(--shu);}
+  .phase{font-size:12px; color:var(--washi-dim); letter-spacing:.1em;}
+
+  #main{display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; justify-content:center;}
+
+  /* 盤面 */
+  #boardWrap{position:relative;}
+  #board{
+    display:grid; gap:2px; padding:10px;
+    background:linear-gradient(135deg,#efe6d2,#ddd0b4);
+    border:2px solid #b7a889; border-radius:3px;
+    box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 0 1px #cabf9f;
+  }
+  .cell{
+    width:52px; height:52px; position:relative;
+    background:rgba(30,24,40,.04);
+    border:1px solid rgba(60,40,20,.12);
+    cursor:default; transition:background .1s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cell.terrain-tree{ background:rgba(70,110,80,.22); }
+  .cell.terrain-water{
+    background:
+      repeating-linear-gradient(-8deg,
+        rgba(210,235,255,.10) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg,#28405e,#1b2c44);
+    box-shadow:inset 0 3px 8px rgba(0,0,0,.55), inset 0 -1px 0 rgba(150,200,255,.15);
+    border-color:rgba(20,40,70,.6);
+    cursor:not-allowed;
+  }
+  .cell.terrain-roof{ background:rgba(90,70,60,.20); }
+  .cell.terrain-shrine{
+    background:radial-gradient(circle, rgba(255,226,140,.55) 0%, rgba(217,169,63,.25) 55%, rgba(30,24,40,.04) 80%);
+    box-shadow:inset 0 0 0 2px rgba(217,169,63,.6), 0 0 14px rgba(217,169,63,.35);
+    animation:shrineGlow 2.4s ease-in-out infinite alternate;}
+  @keyframes shrineGlow{ from{box-shadow:inset 0 0 0 2px rgba(217,169,63,.5), 0 0 8px rgba(217,169,63,.25);}
+        to{box-shadow:inset 0 0 0 2px rgba(255,226,140,.85), 0 0 20px rgba(217,169,63,.55);} }
+  .unit.god svg{ filter:drop-shadow(0 0 7px rgba(255,150,60,.9)) drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+  .cell.move{ background:rgba(91,143,191,.30); cursor:pointer; }
+  .cell.move:hover{ background:rgba(91,143,191,.48); }
+  .cell.atk{ background:rgba(216,72,59,.32); cursor:crosshair; }
+  .cell.atk:hover{ background:rgba(216,72,59,.5); }
+  .cell.sel{ box-shadow:inset 0 0 0 3px var(--kin); }
+  .coordLabel{position:absolute; font-size:8px; color:rgba(40,30,20,.35); top:1px; left:2px; pointer-events:none; font-family:monospace;}
+
+  /* ユニット駒 */
+  .itemScroll{position:absolute; inset:6px; pointer-events:none; z-index:1;
+        animation:itemFloat 1.6s ease-in-out infinite alternate;}
+  .itemScroll svg{width:100%; height:100%; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));}
+  @keyframes itemFloat{ from{transform:translateY(0);} to{transform:translateY(-3px);} }
+  .unit{width:48px; height:50px; position:relative; pointer-events:none;
+        transition:transform .18s ease-out, filter .15s;}
+  .unit svg{width:100%; height:100%; display:block;
+        filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));}
+  .unit.acted{ filter:grayscale(.7) opacity(.6); }
+  .unit.leader::after{
+    content:"大"; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    font-size:10px; color:var(--sumi); background:var(--kin);
+    width:15px; height:15px; border-radius:50%; line-height:15px; text-align:center;
+    font-family:"Hiragino Mincho ProN",serif; font-weight:700;
+    box-shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  .hpbar{position:absolute; bottom:-5px; left:4px; right:4px; height:4px;
+        background:rgba(0,0,0,.45); border-radius:2px; overflow:hidden;}
+  .hpbar > i{display:block; height:100%; transition:width .25s;}
+  .side-me   .hpbar > i{ background:linear-gradient(#8fd0f0,var(--ai-bright)); }
+  .side-foe  .hpbar > i{ background:linear-gradient(#ffb0a0,var(--shu-bright)); }
+
+  /* 斬撃・手裏剣エフェクト */
+  .fx{position:absolute; pointer-events:none; z-index:20;}
+  .slash{width:60px; height:60px; margin:-30px 0 0 -30px;}
+  .slash path{stroke:#fff; stroke-width:4; fill:none; stroke-linecap:round;
+        animation:slashDraw .28s ease-out forwards;}
+  @keyframes slashDraw{ from{stroke-dasharray:0 90;} to{stroke-dasharray:90 0; opacity:0;} }
+  .splash{width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;
+        background:radial-gradient(circle,#fff 0%,#f0d0b0 30%,rgba(216,72,59,0) 70%);
+        animation:pop .32s ease-out forwards;}
+  @keyframes pop{ from{transform:scale(.3);opacity:1;} to{transform:scale(1.6);opacity:0;} }
+  .float{position:absolute; z-index:21; font-family:"Hiragino Kaku Gothic ProN",sans-serif;
+        font-weight:700; font-size:19px; pointer-events:none;
+        text-shadow:0 2px 3px rgba(0,0,0,.6); animation:rise .8s ease-out forwards;}
+  @keyframes rise{ from{transform:translateY(0);opacity:1;} to{transform:translateY(-42px);opacity:0;} }
+
+  /* 側パネル */
+  #side{width:250px; display:flex; flex-direction:column; gap:12px;
+        font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;}
+  .card{background:var(--sumi2); border:1px solid var(--line); border-radius:4px; padding:12px;}
+  .card h2{font-size:11px; letter-spacing:.2em; color:var(--washi-dim); margin-bottom:8px;
+        font-weight:700; text-transform:uppercase;}
+  #info .noSel{font-size:12px; color:var(--washi-dim);}
+  .infoName{font-family:"Hiragino Mincho ProN",serif; font-size:19px; letter-spacing:.08em; margin-bottom:2px;}
+  .infoRole{font-size:11px; color:var(--sui); letter-spacing:.1em; margin-bottom:10px;}
+  .stat{display:flex; justify-content:space-between; font-size:12px; padding:3px 0; border-bottom:1px dashed var(--line);}
+  .stat b{font-variant-numeric:tabular-nums; letter-spacing:.05em;}
+  .stat.hp b{color:var(--sui);}
+
+  .acts{display:flex; gap:8px; margin-top:10px;}
+  .btn{flex:1; font-family:inherit; font-size:13px; font-weight:700; letter-spacing:.08em;
+        padding:9px 6px; border-radius:4px; cursor:pointer; transition:all .12s;
+        border:1px solid var(--line); background:#26222f; color:var(--washi);}
+  .btn:hover:not(:disabled){border-color:var(--ai); color:var(--ai-bright);}
+  .btn:active:not(:disabled){transform:scale(.96);}
+  .btn:disabled{opacity:.32; cursor:default;}
+  .btn.wide{width:100%;}
+  .btn.end{border-color:var(--shu); color:var(--shu-bright);}
+  .btn.end:hover{background:rgba(216,72,59,.14);}
+
+  #log{height:150px; overflow-y:auto; font-size:11.5px; line-height:1.7; color:var(--washi-dim);}
+  #log .me{color:var(--ai-bright);}
+  #log .foe{color:var(--shu-bright);}
+  #log .sys{color:var(--kin);}
+
+  .legend{font-size:10.5px; color:var(--washi-dim); line-height:1.9; letter-spacing:.03em;}
+  .legend b{color:var(--washi);}
+
+  /* 会話ウィンドウ */
+  #dlg{position:fixed; inset:0; z-index:40; display:none; cursor:pointer;
+        align-items:flex-end; justify-content:center;
+        background:linear-gradient(transparent 55%, rgba(8,6,14,.72));}
+  #dlg.show{display:flex;}
+  .dlgBox{width:min(720px,94vw); margin-bottom:26px; padding:16px 22px 12px;
+        background:linear-gradient(#211d2c,#191622);
+        border:1px solid #4a4258; border-left:4px solid var(--kin);
+        border-radius:4px; box-shadow:0 12px 36px rgba(0,0,0,.6);
+        font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;}
+  .dlgName{font-family:"Hiragino Mincho ProN",serif; font-size:16px; font-weight:700;
+        letter-spacing:.12em; margin-bottom:6px;}
+  .dlgText{font-size:14.5px; line-height:1.9; color:var(--washi); min-height:3.6em;}
+  .dlgFoot{display:flex; justify-content:space-between; margin-top:8px;
+        font-size:10.5px; color:var(--washi-dim); letter-spacing:.1em;}
+  /* 台詞吹き出し */
+  .bubble{position:absolute; z-index:22; transform:translate(-50%,-100%);
+        max-width:180px; padding:7px 11px; border-radius:8px;
+        background:#f2ecdf; color:#211c14;
+        font-family:"Hiragino Kaku Gothic ProN",sans-serif;
+        font-size:11.5px; font-weight:700; line-height:1.5; pointer-events:none;
+        box-shadow:0 4px 12px rgba(0,0,0,.4);
+        animation:bubbleIn 2.1s ease forwards;}
+  .bubble::after{content:""; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+        border:6px solid transparent; border-top-color:#f2ecdf; border-bottom:none;}
+  .bubble.b-foe{background:#3a2226; color:#ffd8d0;}
+  .bubble.b-foe::after{border-top-color:#3a2226;}
+  @keyframes bubbleIn{
+    0%{opacity:0; transform:translate(-50%,-90%) scale(.85);}
+    8%{opacity:1; transform:translate(-50%,-100%) scale(1);}
+    85%{opacity:1;}
+    100%{opacity:0; transform:translate(-50%,-108%);}
+  }
+  /* レベル表示 */
+  .lvlBadge{position:absolute; top:-3px; right:-1px; z-index:2;
+        font-family:"Hiragino Kaku Gothic ProN",sans-serif; font-size:6.5px; font-weight:700;
+        color:#14121a; background:rgba(125,184,232,.92);
+        padding:0 2.5px; border-radius:5px; box-shadow:0 1px 1px rgba(0,0,0,.4);
+        pointer-events:none; line-height:1.5;}
+  .expbar{height:5px; background:rgba(0,0,0,.4); border-radius:3px; overflow:hidden; margin-top:4px;}
+  .expbar > i{display:block; height:100%; background:linear-gradient(90deg,#8fd0a0,#5fa88c); transition:width .3s;}
+  .lvUpFx{position:absolute; z-index:23; transform:translate(-50%,-50%); pointer-events:none;
+        font-family:"Hiragino Mincho ProN",serif; font-size:15px; font-weight:700; color:#ffe27a;
+        text-shadow:0 0 8px rgba(217,169,63,.9), 0 2px 3px rgba(0,0,0,.7);
+        letter-spacing:.15em; animation:lvUp 1.1s ease-out forwards; white-space:nowrap;}
+  @keyframes lvUp{ 0%{transform:translate(-50%,-30%) scale(.6); opacity:0;}
+        20%{transform:translate(-50%,-60%) scale(1.15); opacity:1;}
+        100%{transform:translate(-50%,-130%) scale(1); opacity:0;} }
+
+  /* イズナ激怒の炎 */
+  .rageFire{position:absolute; inset:-4px; z-index:19; pointer-events:none; border-radius:3px;
+        background:radial-gradient(circle at 50% 65%, #fff2a0 0%, #ff9a3c 35%, #e0402a 65%, rgba(120,10,10,0) 90%);
+        animation:rageBurn .9s ease-out forwards; mix-blend-mode:screen;}
+  @keyframes rageBurn{
+    0%{opacity:0; transform:scale(.4);}
+    25%{opacity:1; transform:scale(1.1);}
+    70%{opacity:.85; transform:scale(1);}
+    100%{opacity:0; transform:scale(1.25);} }
+  .rageFlash{position:fixed; inset:0; z-index:45; pointer-events:none;
+        background:radial-gradient(circle, rgba(255,120,60,.35), rgba(160,20,20,.15));
+        animation:rageFlash .8s ease-out forwards;}
+  @keyframes rageFlash{ 0%{opacity:0;} 20%{opacity:1;} 100%{opacity:0;} }
+
+  /* マップ選択カード内の選択ボタン */
+  .mapOpts{display:flex; gap:8px; margin-top:10px;}
+  .mapOpts button{flex:1; font-family:inherit; font-size:12px; font-weight:700; letter-spacing:.06em;
+        padding:7px 4px; border-radius:4px; cursor:pointer; transition:all .12s;
+        border:1px solid var(--line); background:#26222f; color:var(--washi);}
+  .mapOpts button:hover{border-color:var(--kin); color:var(--kin);}
+
+  /* マップ選択 */
+  #mapsel{position:fixed; inset:0; z-index:55; display:none;
+        align-items:center; justify-content:center; flex-direction:column; gap:18px;
+        background:rgba(10,8,16,.88); backdrop-filter:blur(3px); padding:20px;}
+  #mapsel.show{display:flex;}
+  #mapsel h2{font-family:"Hiragino Mincho ProN",serif; font-size:24px; letter-spacing:.3em;
+        text-indent:.3em; color:var(--kin);}
+  #mapsel .hint{font-size:12px; color:var(--washi-dim); letter-spacing:.12em;
+        font-family:"Hiragino Kaku Gothic ProN",sans-serif;}
+  #mapChoices{display:flex; gap:16px; flex-wrap:wrap; justify-content:center;}
+  .mapCard{width:250px; padding:16px 18px; border-radius:5px; cursor:pointer; text-align:left;
+        background:linear-gradient(#242030,#1a1724); border:1px solid #4a4258;
+        transition:all .15s; font-family:"Hiragino Kaku Gothic ProN",sans-serif; color:var(--washi);}
+  .mapCard:hover{transform:translateY(-4px); border-color:var(--kin);
+        box-shadow:0 10px 26px rgba(0,0,0,.55);}
+  .mapCard .mTitle{font-family:"Hiragino Mincho ProN",serif; font-size:18px; letter-spacing:.1em;
+        color:var(--kin); margin-bottom:6px;}
+  .mapCard .mDesc{font-size:12px; line-height:1.8; color:var(--washi-dim);}
+  .mapCard .mBoss{font-size:11px; margin-top:8px; color:var(--shu-bright); letter-spacing:.08em;}
+
+  /* 勝敗オーバーレイ */
+  #overlay{position:fixed; inset:0; z-index:50; display:none;
+        align-items:center; justify-content:center; text-align:center;
+        background:rgba(10,8,16,.82); backdrop-filter:blur(3px);}
+  #overlay.show{display:flex;}
+  #overlay .box{padding:38px 54px;}
+  #overlay .kanji{font-family:"Hiragino Mincho ProN",serif; font-size:76px; letter-spacing:.3em;
+        text-indent:.3em; margin-bottom:8px;}
+  #overlay .win .kanji{color:var(--kin);}
+  #overlay .lose .kanji{color:var(--shu-bright);}
+  #overlay .msg{font-size:14px; color:var(--washi-dim); letter-spacing:.1em; margin-bottom:22px;
+        font-family:"Hiragino Kaku Gothic ProN",sans-serif;}
+  #overlay button{font-family:"Hiragino Kaku Gothic ProN",sans-serif; font-size:15px; font-weight:700;
+        padding:12px 40px; border-radius:4px; cursor:pointer; letter-spacing:.15em;
+        border:1px solid var(--kin); background:transparent; color:var(--kin); transition:all .15s;}
+  #overlay button:hover{background:var(--kin); color:var(--sumi);}
+
+  @media (max-width:640px){
+    .cell{width:38px;height:38px;} .unit{width:34px;height:34px;}
+    #side{width:100%; max-width:420px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>忍陣</h1>
+  <div class="sub">S H I N O B I &nbsp; J I N</div>
+</header>
+
+<div id="banner">
+  <span class="stageTag" id="stageTitle">第一幕</span>
+  <span class="turnTag me" id="turnTag">自軍のターン</span>
+  <span class="phase" id="phaseTxt">駒を選んでください</span>
+</div>
+
+<div id="main">
+  <div id="boardWrap"><div id="board"></div></div>
+
+  <div id="side">
+    <div class="card" id="info">
+      <h2>選択中の忍</h2>
+      <div class="noSel">盤上の駒をタップすると詳細が出ます。</div>
+    </div>
+
+    <div class="card">
+      <button class="btn end wide" id="endTurnBtn">ターン終了 ▸</button>
+      <button class="btn wide" id="debugSkip" style="margin-top:8px; opacity:.55; font-size:11px;">おわりから（三幕クリア後・デバッグ）</button>
+    </div>
+
+    <div class="card">
+      <h2>戦況</h2>
+      <div id="log"></div>
+    </div>
+
+    <div class="card">
+      <h2>凡例</h2>
+      <div class="legend">
+        <b style="color:var(--kin)">大</b> 大将（倒されると敗北）<br>
+        <b style="color:var(--ai-bright)">青マス</b> 移動できる場所<br>
+        <b style="color:var(--shu-bright)">朱マス</b> 攻撃できる相手<br>
+        森=回避↑ / 水=移動不可 / 屋根=防御↑
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dlg"><div class="dlgBox">
+  <div class="dlgName" id="dlgName"></div>
+  <div class="dlgText" id="dlgText"></div>
+  <div class="dlgFoot"><span id="dlgStep"></span><span>タップで進む ▼</span></div>
+</div></div>
+
+<div id="mapsel">
+  <h2>進軍先を選べ</h2>
+  <div class="hint">次に攻める地を選択してください（タップで出陣）</div>
+  <div id="mapChoices"></div>
+</div>
+
+<div id="overlay"><div class="box" id="overlayBox">
+  <div class="kanji" id="overlayKanji">勝</div>
+  <div class="msg" id="overlayMsg"></div>
+  <button id="restartBtn">もう一戦</button>
+</div></div>
+
+<script>
+"use strict";
+/* ===================================================================
+   忍陣 — テンミリオン風のマス目戦術SRPG（忍者テーマ・オリジナル）
+   ・敵の大将を討てば勝ち／自分の大将が落ちれば負け
+   ・自軍キャラ名は既存モーションシステムの忍者から引き継ぎ
+     （疾風ハヤテ・息吹イブキ・イズナ・クオン）
+=================================================================== */
+const COLS=9, ROWS=8, TILE=52;
+const $=s=>document.querySelector(s);
+const board=$("#board");
+board.style.gridTemplateColumns=`repeat(${COLS},1fr)`;
+
+/* ---- 兵種定義（忍術っぽい役割） ---- */
+const CLASS={
+  taisho:{ name:"頭領", role:"大将・斬撃", hp:30, atk:9, def:3, move:3, range:1, evd:10 },
+  slash: { name:"斬撃", role:"接近戦",     hp:24, atk:8, def:2, move:3, range:1, evd:12 },
+  throw: { name:"手裏剣", role:"遠隔",     hp:18, atk:7, def:1, move:2, range:3, evd:8  },
+  genjutsu:{name:"幻術", role:"広範囲",    hp:16, atk:6, def:1, move:3, range:2, evd:14 },
+  heal:  { name:"回復", role:"癒し手",     hp:16, atk:3, def:1, move:3, range:1, evd:10, heal:8 },
+  uka:   { name:"双刃", role:"遠撃と癒し・イズナの妹", hp:20, atk:7, def:2, move:4, range:2, evd:16, heal:6 },
+  ukagod:{ name:"大炎神", role:"覚醒・焔を統べる者", hp:34, atk:12, def:4, move:5, range:2, evd:20, heal:10 },
+  nise:  { name:"幻影", role:"偽りの姉", hp:14, atk:6, def:1, move:3, range:1, evd:20 },
+  onmyo: { name:"陰陽師", role:"式神・超遠隔", hp:20, atk:8, def:2, move:3, range:3, evd:12 },
+  shishou:{name:"師範", role:"団子と式神・シオンの師匠", hp:24, atk:9, def:2, move:3, range:2, evd:14, heal:7 },
+  bomb:  { name:"爆撃", role:"爆弾・周囲を巻き込む", hp:18, atk:8, def:1, move:3, range:2, evd:10 },
+  oni:   { name:"鬼衆", role:"敵・重装",   hp:22, atk:7, def:3, move:2, range:1, evd:4  },
+  karasu:{ name:"烏", role:"敵・遊撃",     hp:16, atk:6, def:1, move:3, range:2, evd:12 },
+};
+
+/* ============================================================
+   ステージ定義（3幕）
+   ・terrain: 0=平地,1=森,2=水,3=屋根
+   ・buff: 敵ステータス倍率（HP/ATKに掛かる）
+   ・自軍のHPはステージ間で持ち越し（クリア時に少し回復）
+============================================================ */
+const STAGES=[
+  { // 第一幕 里外れの森
+    title:"里外れの森",
+    next:[1,3],
+    item:{x:4,y:3},
+    intro:"斥候の鬼衆が里に迫る。敵の隊長「羅刹坊」を討て。",
+    bossName:"羅刹坊",
+    buff:{hp:1.0, atk:1.0},
+    terrain:[
+      [0,0,0,1,0,0,0,0,0],
+      [0,3,0,1,0,0,2,2,0],
+      [0,3,0,0,0,0,2,0,0],
+      [0,0,0,0,1,0,0,0,1],
+      [0,0,1,0,1,0,0,0,1],
+      [0,0,0,0,0,0,0,3,0],
+      [0,2,2,0,0,0,0,3,0],
+      [0,0,0,0,0,1,0,0,0],
+    ],
+    foes:[
+      ["taisho","羅刹坊",7,0,true],
+      ["oni","鬼衆・甲",8,1],
+      ["oni","鬼衆・乙",6,1],
+      ["karasu","烏・一",8,2],
+      ["throw","黒手裏剣",7,2],
+    ],
+  },
+  { // 第二幕 水城の渡り
+    title:"水城の渡り",
+    next:[2],
+    item:{x:4,y:2},
+    intro:"川に囲まれた水城。橋は二本。射手「濡鴉」が待ち構える。",
+    bossName:"濡鴉",
+    buff:{hp:1.25, atk:1.15},
+    terrain:[
+      [0,0,2,2,0,2,2,0,0],
+      [0,0,2,2,0,2,2,3,0],
+      [1,0,0,0,0,0,0,3,0],
+      [2,2,2,0,2,2,0,0,0],
+      [2,2,2,0,2,2,0,1,0],
+      [1,0,0,0,0,0,0,0,0],
+      [0,0,2,2,0,2,2,0,1],
+      [0,0,2,2,0,2,2,0,0],
+    ],
+    foes:[
+      ["throw","濡鴉",7,0,true],
+      ["oni","鬼衆・丙",6,1],
+      ["oni","鬼衆・丁",8,2],
+      ["karasu","烏・二",5,0],
+      ["karasu","烏・三",7,3],
+      ["throw","黒手裏剣・弐",8,0],
+      ["uka","ウカ",6,4],
+    ],
+  },
+  { // 第三幕 天守炎上
+    title:"天守炎上",
+    next:null,
+    item:{x:6,y:5},
+    intro:"敵の本丸。総大将「大天狗・魔羅坊」を討てば、この戦は終わる。",
+    bossName:"大天狗・魔羅坊",
+    buff:{hp:1.5, atk:1.3},
+    terrain:[
+      [3,3,0,0,0,0,0,3,3],
+      [3,0,0,1,0,1,0,0,3],
+      [0,0,0,0,0,0,0,0,0],
+      [0,1,0,2,2,2,0,1,0],
+      [0,1,0,2,2,2,0,1,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,1,0,0,0,1,0,0],
+      [0,0,0,0,0,0,0,0,0],
+    ],
+    foes:[
+      ["taisho","大天狗・魔羅坊",4,0,true],
+      ["oni","鬼衆・戊",2,1],
+      ["oni","鬼衆・己",6,1],
+      ["oni","鬼衆・庚",4,2],
+      ["karasu","烏・四",0,2],
+      ["karasu","烏・五",8,2],
+      ["throw","黒手裏剣・参",3,0],
+      ["throw","黒手裏剣・肆",5,0],
+    ],
+  },
+  { // 分岐マップ 竹林の隘路
+    title:"竹林の隘路",
+    next:[2],
+    item:{x:2,y:1},
+    intro:"視界を塞ぐ竹の海。幻術使い「青竹丸」の縄張りだ。",
+    bossName:"青竹丸",
+    buff:{hp:1.25, atk:1.15},
+    terrain:[
+      [1,1,0,1,1,0,1,1,1],
+      [1,0,0,0,1,0,0,0,1],
+      [0,0,1,0,0,0,1,0,0],
+      [1,0,1,2,2,2,1,0,1],
+      [1,0,0,0,0,0,0,0,1],
+      [0,0,1,0,1,0,1,0,0],
+      [1,0,0,0,1,0,0,0,1],
+      [1,1,0,0,0,0,0,1,1],
+    ],
+    foes:[
+      ["genjutsu","青竹丸",7,1,true],
+      ["oni","鬼衆・竹甲",5,2],
+      ["oni","鬼衆・竹乙",3,1],
+      ["karasu","烏・翠",8,3],
+      ["karasu","烏・影",1,2],
+      ["throw","黒手裏剣・竹",6,0],
+      ["uka","ウカ",4,4],
+    ],
+  },
+  { // 外伝 ウカ闇落ち（通常の進軍では出現しない）
+    title:"焔獄の祭壇",
+    special:true,
+    next:null,
+    item:null,
+    shrine:{x:4,y:3},
+    intro:"狂ったウカが、偽りの姉たちに囲まれている。祠で祈りイズナを呼び戻すか、力ずくで止めるか。",
+    bossName:"狂乱ウカ",
+    buff:{hp:1.6, atk:1.2},
+    terrain:[
+      [3,0,0,0,0,0,0,0,3],
+      [0,1,0,0,0,0,0,1,0],
+      [0,0,0,2,0,2,0,0,0],
+      [0,0,2,0,4,0,2,0,0],
+      [0,0,0,2,0,2,0,0,0],
+      [0,1,0,0,0,0,0,1,0],
+      [0,0,0,0,0,0,0,0,0],
+      [3,0,0,0,0,0,0,0,3],
+    ],
+    foes:[
+      ["uka","狂乱ウカ",4,0,true],
+      ["nise","偽イズナ・壱",2,1],
+      ["nise","偽イズナ・弐",6,1],
+      ["nise","偽イズナ・参",1,3],
+      ["nise","偽イズナ・肆",7,3],
+      ["nise","偽イズナ・伍",4,1],
+    ],
+  },
+  { // ═══ 第二章 ═══ 朧月の峠（往来可・再戦可）
+    title:"朧月の峠",
+    ch2:true, next:null, item:{x:4,y:0},
+    intro:"月を隠す妖霧の峠。夜盗あがりの忍「朧火」が関を塞ぐ。",
+    bossName:"朧火",
+    buff:{hp:1.8, atk:1.35},
+    terrain:[
+      [3,3,0,1,0,1,0,3,3],
+      [3,0,0,1,0,1,0,0,3],
+      [0,0,0,0,0,0,0,0,0],
+      [1,1,0,2,2,2,0,1,1],
+      [0,0,0,0,0,0,0,0,0],
+      [0,1,0,3,0,3,0,1,0],
+      [0,0,0,0,0,0,0,0,0],
+      [1,0,0,0,0,0,0,0,1],
+    ],
+    foes:[
+      ["karasu","朧火",4,0,true],
+      ["oni","鬼衆・霞",2,1],
+      ["oni","鬼衆・霧",6,1],
+      ["slash","辻斬り・無明",1,2],
+      ["slash","辻斬り・宵闇",7,2],
+      ["karasu","烏・暁",8,4],
+      ["throw","黒手裏剣・朧",4,1],
+    ],
+  },
+  { // 第二章 亡霊の沼（往来可・再戦可）
+    title:"亡霊の沼",
+    ch2:true, next:null, item:{x:8,y:4},
+    intro:"沈んだ兵の怨嗟が漂う泥の海。腐蝕の主「ロトン」が獲物を待つ。",
+    bossName:"ロトン",
+    buff:{hp:1.9, atk:1.4},
+    terrain:[
+      [0,2,2,0,0,0,2,2,0],
+      [0,2,0,0,1,0,0,2,0],
+      [0,0,0,2,2,2,0,0,0],
+      [1,0,2,2,0,2,2,0,1],
+      [0,0,0,2,0,2,0,0,0],
+      [0,2,0,0,0,0,0,2,0],
+      [0,2,2,0,1,0,2,2,0],
+      [0,0,0,0,0,0,0,0,0],
+    ],
+    foes:[
+      ["genjutsu","ロトン",4,0,true],
+      ["karasu","亡霊烏・彷徨",2,2],
+      ["karasu","亡霊烏・啜泣",6,2],
+      ["oni","鬼衆・泥",4,4],
+      ["throw","黒手裏剣・澱",0,1],
+      ["throw","黒手裏剣・淀",8,1],
+      ["slash","辻斬り・水底",4,1],
+    ],
+  },
+  { // 第二章 最終決戦（峠と沼を制すると開放）
+    title:"月下の魔城",
+    ch2:true, ch2Final:true, next:null, item:null,
+    intro:"常闇が月を呑む刻、魔城の主が玉座から立つ。すべてを終わらせる最後の戦い。",
+    bossName:"常闇ノ皇",
+    buff:{hp:2.3, atk:1.5},
+    terrain:[
+      [3,3,3,0,0,0,3,3,3],
+      [3,0,0,0,1,0,0,0,3],
+      [0,0,2,0,0,0,2,0,0],
+      [0,1,2,2,0,2,2,1,0],
+      [0,0,0,0,0,0,0,0,0],
+      [1,0,0,2,0,2,0,0,1],
+      [0,0,0,0,0,0,0,0,0],
+      [3,0,0,0,0,0,0,0,3],
+    ],
+    foes:[
+      ["taisho","常闇ノ皇",4,0,true],
+      ["oni","鬼衆・常世",2,1],
+      ["oni","鬼衆・黄泉",6,1],
+      ["slash","辻斬り・月喰",4,2],
+      ["karasu","烏・無月",0,2],
+      ["karasu","烏・朔",8,2],
+      ["throw","黒手裏剣・宵",3,0],
+      ["throw","黒手裏剣・闇",5,0],
+      ["genjutsu","傀儡師・影繰",4,1],
+    ],
+  },
+];
+const SPECIAL_STAGE_IDX=STAGES.findIndex(st=>st.special);
+/* 導入会話。ステージ2はウカ勧誘済みかで分岐 */
+const C_ME='var(--ai-bright)', C_FOE='var(--shu-bright)', C_UKA='var(--kin)';
+const STAGE_DIALOGUE=[
+  [ {name:"ジン", color:C_ME, text:"偵察の報せ通りだ。羅刹坊の隊が、森を抜けて里へ向かっている。"},
+    {name:"疾風ハヤテ", color:C_ME, text:"なら森で迎え撃つまで。……全員、影を纏え。"},
+    {name:"羅刹坊", color:C_FOE, text:"ほう、鼠どもが湧いて出たか。踏み潰せ！"} ],
+  [ {name:"クオン", color:C_ME, text:"敵陣に……小さな影。あれって、まさか……"},
+    {name:"イズナ", color:C_ME, text:"ウカ・・・・・・どうして？"},
+    {name:"ウカ", color:C_UKA, text:"……姉さん。あたしは、あたしの道を行くって決めたの。"},
+    {name:"イズナ", color:C_ME, text:"嘘。ウカ、あなた目が泳いでる。……何を握られてるの？"},
+    {name:"ウカ", color:C_UKA, text:"うっ……。だ、だって……濡鴉さんに千円借りちゃったから！"},
+    {name:"イズナ", color:C_ME, text:"千円!?　そんなことで敵に回ったの!?"},
+    {name:"濡鴉", color:C_FOE, text:"借りたものは返す。それが忍びの掟よなぁ？　クックック……"},
+    {name:"ジン", color:C_ME, text:"……くだらん弱みだ。討つな。追い詰めて、目を覚まさせろ。"} ],
+  [ {name:"大天狗・魔羅坊", color:C_FOE, text:"よくぞここまで来た、里の残党ども。褒美に、灰にしてくれよう。"},
+    {name:"ジン", color:C_ME, text:"幻術の見せ場だ。……この一戦で、終わらせる。"} ],
+  [ {name:"疾風ハヤテ", color:C_ME, text:"竹が深い……。伏兵に気をつけろ。"},
+    {name:"クオン", color:C_ME, text:"あの影……ウカちゃん、こんな所にまで……"},
+    {name:"ウカ", color:C_UKA, text:"来ないで姉さん！　あたし、戦わなきゃいけないの……青竹丸さんに千円借りちゃったから！"},
+    {name:"イズナ", color:C_ME, text:"また千円!?　あなた一体いくら借りてるの!?"},
+    {name:"青竹丸", color:C_FOE, text:"利子は命で払ってもらう。竹の迷宮で、な。……フフフ。"},
+    {name:"イズナ", color:C_ME, text:"ウカ・・・・・・待ってて。借金ごと、必ず連れ戻すから。"} ],
+  [ {name:"偽イズナ", color:C_FOE, text:"ウカ、大好きよ。ずっとずっと、そばにいてあげる。"},
+    {name:"狂乱ウカ", color:C_FOE, text:"……ちがう。ちがうちがうちがう！　ねえさんの声は、そんなんじゃない！"},
+    {name:"ジン", color:C_ME, text:"幻術の群れが心の傷に巣食ったか……。見ろ、中央の祠を。"},
+    {name:"クオン", color:C_ME, text:"あそこで祈れば、イズナちゃんの魂を呼び戻せるかもしれない……！"},
+    {name:"疾風ハヤテ", color:C_ME, text:"ウカを止めるか、祠で祈るか。……どちらにせよ、あの子を救うぞ。"} ],
+  [ {name:"シオン", color:C_ME, text:"峠の霧……妖気で編まれています。式神で祓いながら進みましょう。"},
+    {name:"朧火", color:C_FOE, text:"へっ、月のねェ夜は俺らの独壇場よ。通行料は——命だ。"},
+    {name:"疾風ハヤテ", color:C_ME, text:"夜盗風情が。……疾風の意味を教えてやる。"} ],
+  [ {name:"クオン", color:C_ME, text:"うぅ……足元から、たくさんの声がする……"},
+    {name:"ロトン", color:C_FOE, text:"クチテ……クサッテ……ミナ、ワタシノ泥ニナル……"},
+    {name:"シオン", color:C_ME, text:"怨嗟の主です。祓うには、討つしかありません。"},
+    {name:"ジン", color:C_ME, text:"泥に足を取られるな。水路を避け、確実に進め。"} ],
+  [ {name:"常闇ノ皇", color:C_FOE, text:"よくぞ辿り着いた、月の遣いども。……この夜は、永遠に明けぬ。"},
+    {name:"シオン", color:C_ME, text:"常闇ノ皇……大天狗すら、あなたの傀儡だったのですね。"},
+    {name:"ジン", color:C_ME, text:"里の総力、ここに在り。——夜明けを、取り戻す！"},
+    {name:"ウカ", color:C_UKA, text:"みんな、行くよ！　今度こそ、ぜんぶ終わらせる！"} ],
+];
+const STAGE2_DIALOGUE_JOINED=[
+  {name:"ウカ", color:C_UKA, text:"この城の抜け道、あたしが知ってる。ついてきて、姉さん！"},
+  {name:"イズナ", color:C_ME, text:"ふふ、頼もしくなっちゃって。"},
+];
+let stageIdx=0;
+let TERRAIN=STAGES[0].terrain;
+/* 自軍のHP持ち越し用（name → hp） */
+let carryHP=null;
+
+/* ---- ユニット配置 ---- */
+let units=[];
+function makeRoster(){
+  const st=STAGES[stageIdx];
+  TERRAIN=st.terrain;
+  const mine=[
+    U("me","taisho","疾風ハヤテ",1,7),
+    U("me","slash","息吹イブキ",0,6),
+    U("me","throw","イズナ",2,6),
+    U("me","genjutsu","ジン",1,5,true),
+    U("me","heal","クオン",0,4),
+  ];
+  const sp=!!st.special;
+  if(UKA_JOINED && !sp){
+    if(UKA_GOD) mine.push(U("me","ukagod","大炎神ウカ",2,7));
+    else mine.push(U("me","uka","ウカ",2,7));
+  }
+  if(SHION_JOINED && (st.ch2 || sp)){
+    mine.push(U("me","onmyo","シオン",0,5));
+    mine.push(U("me","shishou","アンネ",1,4));
+    mine.push(U("me","bomb","ほんチい",0,3));
+  }
+  if(sp){ // 外伝: イズナは死亡中・ウカは敵側
+    const ix=mine.findIndex(u=>u.name==="イズナ");
+    if(ix>=0) mine.splice(ix,1);
+  }
+  // 大将の器：大将役はHP+6（脆い兵種でも大将を張れるように）
+  mine.forEach(u=>{ if(u.leader){ u.maxhp+=6; u.hp=u.maxhp; } });
+  // レベル成長を適用（名前ごとに持ち越し）
+  mine.forEach(u=>{
+    const p=progOf(u.name);
+    u.maxhp+=p.hp; u.hp=u.maxhp;
+    u.atkBonus=p.atk; u.defBonus=p.def;
+  });
+  // HP持ち越し（クリア報酬として最大値の40%回復、倒れた仲間は半分で復帰）
+  if(carryHP){
+    mine.forEach(u=>{
+      const prev=carryHP[u.name];
+      if(prev===undefined) return;
+      if(prev<=0) u.hp=Math.ceil(u.maxhp*0.5);
+      else u.hp=Math.min(u.maxhp, prev+Math.ceil(u.maxhp*0.4));
+    });
+  }
+  const srcFoes=(!sp&&(UKA_JOINED||!UKA_ENABLED))?st.foes.filter(f=>f[0]!=="uka"):st.foes;
+  const foes=srcFoes.map(([cls,name,x,y,leader])=>{
+    const u=U("foe",cls,name,x,y,!!leader);
+    u.maxhp=Math.round(u.maxhp*st.buff.hp);
+    u.hp=u.maxhp;
+    u.atkBuff=st.buff.atk;
+    return u;
+  });
+  units=[...mine,...foes];
+  // ジンの秘伝書バフ適用
+  const jin=mine.find(u=>u.name==="ジン");
+  if(jin&&JIN_BUFF.maxhp){ jin.maxhp+=JIN_BUFF.maxhp; jin.hp=Math.min(jin.maxhp, jin.hp+JIN_BUFF.maxhp); }
+  units.forEach((u,i)=>u.id=i);
+  sanitizeSpawns();
+}
+function U(side,cls,name,x,y,leader=false){
+  const c=CLASS[cls];
+  return {side,cls,name,x,y,leader,maxhp:c.hp,hp:c.hp,acted:false,el:null,atkBuff:1};
+}
+function atkOf(u){
+  let a=Math.round(CLASS[u.cls].atk*(u.atkBuff||1));
+  a+=(u.atkBonus||0);
+  if(u.name==="ジン") a+=JIN_BUFF.atk;
+  return a;
+}
+/* ---- 討ち取り・落命の台詞 ---- */
+const QUOTES={
+  "疾風ハヤテ":{kill:["疾きこと、風の如し。","峰打ちだ……嘘だがな。"],death:["不覚……！"]},
+  "息吹イブキ":{kill:["焔よ、鎮まれ。","燃え尽きなよ。"],death:["まだ……燃え尽きて、ない……"]},
+  "イズナ":{kill:["兎は、跳ねるよ。","ごめんね、痛かった？"],death:["まだ……終わらせない……！"]},
+  "ジン":{kill:["幻と知るがいい。","見えているものが、真とは限らん。"],death:["里を……頼む……"]},
+  "クオン":{kill:["痛いのは、嫌いなの。"],death:["みんな、ごめんね……"]},
+  "ウカ":{kill:["姉さん、見てて！","二刀は伊達じゃないよ！"],death:["姉さん……"]},
+  "大炎神ウカ":{kill:["焔よ、姉さんを守る刃となれ！","この炎は、もう迷わない！"],death:["ねえさん……ごめん……"]},
+  "シオン":{kill:["式神よ、喰らいなさい。","陰陽の理、見せてあげます。"],death:["月が……翳る……"]},
+  "アンネ":{kill:["団子のあとの、ひと仕事〜♪","シオンに手ぇ出すんじゃないよ！"],death:["だんご……食べそこねた……"]},
+  "ほんチい":{kill:["かったチい。","ちゅどーんチい。"],death:["ふはつ、チい……。"]},
+  "朧火":{kill:["月のねェ夜を恨みな！"],death:["ちっ……月が、出てきやがった……"]},
+  "ロトン":{kill:["クサレ……オチロ……"],death:["ヤット……クチハテ、ラレル……"]},
+  "常闇ノ皇":{kill:["塵に還れ。"],death:["夜が……明ける、だと……"]},
+  "_slash":{kill:["斬り捨て御免。"],death:["腕が、立つ……"]},
+  "狂乱ウカ":{kill:["ねえさんのいない世界なんて、いらない！"],death:["……ねえ、さん……？"]},
+  "_nise":{kill:["ウカ、みてて？　わたし、つよいでしょ。"],death:["わたしは……ほんものの、ねえさん……"]},
+  "羅刹坊":{kill:["弱い、弱すぎるわ！"],death:["里の鼠どもと……侮ったか……"]},
+  "濡鴉":{kill:["濡れ羽に沈め。"],death:["この……羽が、重い……"]},
+  "青竹丸":{kill:["幻に呑まれよ。"],death:["竹の……守りが、破られる……"]},
+  "大天狗・魔羅坊":{kill:["羽虫めが！"],death:["馬鹿な……この儂が、忍びごときに……！"]},
+  "_oni":{kill:["グハハ、潰れろ！"],death:["ぐ、おお……"]},
+  "_karasu":{kill:["カァ……獲物だ。"],death:["翼が……"]},
+  "_throw":{kill:["急所、頂き。"],death:["しくじった……"]},
+};
+function quoteOf(u,kind){
+  const q=QUOTES[u.name]||QUOTES["_"+u.cls];
+  if(!q||!q[kind]||!q[kind].length) return null;
+  return q[kind][Math.floor(Math.random()*q[kind].length)];
+}
+/* 吹き出し */
+function speak(u,text){
+  if(!text) return;
+  const cell=cells[u.y]&&cells[u.y][u.x]; if(!cell) return;
+  const wrap=$("#boardWrap");
+  const r=cell.getBoundingClientRect(), br=wrap.getBoundingClientRect();
+  const b=el("div","bubble "+(u.side==="me"?"b-me":"b-foe"));
+  b.textContent=text;
+  b.style.left=(r.left-br.left+r.width/2)+"px";
+  b.style.top=(r.top-br.top-6)+"px";
+  wrap.appendChild(b);
+  setTimeout(()=>b.remove(),2100);
+}
+/* 会話ウィンドウ */
+let dlgLines=[],dlgIdx=0,dlgDone=null;
+function showDialog(lines,done){
+  if(!lines||!lines.length){ if(done)done(); return; }
+  dlgLines=lines; dlgIdx=0; dlgDone=done||null;
+  $("#dlg").classList.add("show"); renderDlg();
+}
+function renderDlg(){
+  const l=dlgLines[dlgIdx];
+  $("#dlgName").textContent=l.name;
+  $("#dlgName").style.color=l.color||"var(--washi)";
+  $("#dlgText").textContent=l.text;
+  $("#dlgStep").textContent=(dlgIdx+1)+" / "+dlgLines.length;
+}
+/* 死亡処理の一元化(ウカは勧誘) */
+let UKA_JOINED=false;
+let UKA_ENABLED=true;   // マップ選択で「ウカなし」を選ぶとfalse
+let UKA_GOD=false;      // 大炎神ウカ覚醒
+let CH2=false;              // 第二章突入
+let CH2_CLEARED={};         // 第二章: クリア済みマップ
+let SHION_JOINED=false;     // 新キャラ・シオン加入
+let SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
+
+/* ほんチいの道連れ大爆発: 周囲3マスの敵に20ダメージ */
+function honchiiBlast(hc){
+  const cx=hc.x, cy=hc.y;
+  speak(hc,"……うそチい。");
+  setTimeout(()=>{
+    const flash=el("div","rageFlash");
+    document.body.appendChild(flash); setTimeout(()=>flash.remove(),850);
+    log(`<span class="sys">ほんチい、最後の大爆発——！「ちゅどーんチい。」</span>`);
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+      if(Math.abs(x-cx)+Math.abs(y-cy)>3) continue;
+      const f=el("div","rageFire");
+      f.style.animationDelay=(Math.abs(x-cx)+Math.abs(y-cy))*70+"ms";
+      cells[y][x].appendChild(f);
+      setTimeout(()=>f.remove(),1600);
+    }
+    shake();
+    setTimeout(()=>{
+      const targets=units.filter(u=>u.hp>0 && u.side==="foe" && Math.abs(u.x-cx)+Math.abs(u.y-cy)<=3);
+      targets.forEach((u,i)=>{
+        setTimeout(()=>{
+          if(u.hp<=0) return;
+          u.hp-=20;
+          fx(u,"splash","-20","#ffc06e");
+          refreshUnit(u);
+          if(u.hp<=0) handleDeath(u,null);
+        }, i*150);
+      });
+    },450);
+  },900);
+}
+
+/* ウカ闇落ち → 外伝マップへ */
+function startUkaRage(){
+  const flash=el("div","rageFlash");
+  document.body.appendChild(flash); setTimeout(()=>flash.remove(),850);
+  shake();
+  showDialog([
+    {name:"ウカ", color:C_FOE, text:"……ねえさん？　ねえ、さん……？"},
+    {name:"ウカ", color:C_FOE, text:"ねえさんがいない世界なんて許せない。"},
+    {name:"ジン", color:C_ME, text:"ウカ、待て——！　くっ、幻術の気配……あの子の心が、喰われる！"},
+    {name:"―", color:"var(--kin)", text:"ウカは炎とともに姿を消した。追え——焔獄の祭壇へ！"},
+  ], ()=>{
+    SPECIAL.active=true;
+    SPECIAL.izunaRevived=false;
+    SPECIAL.returnStage=stageIdx;
+    SPECIAL.returnAct=actNum;
+    carryHP=snapshotHP();   // 傷を負ったまま外伝へ（イズナ・ウカは編成外）
+    stageIdx=SPECIAL_STAGE_IDX;
+    restart();
+  });
+}
+
+/* 祈祷によるイズナ復活 */
+function izunaAliveOnBoard(){ return units.some(u=>u.side==="me"&&u.name==="イズナ"&&u.hp>0); }
+function reviveIzuna(){
+  const st=STAGES[stageIdx];
+  const sx=st.shrine.x, sy=st.shrine.y;
+  // 祠の周囲の空きマスを探す
+  let pos=null;
+  for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]]){
+    const x=sx+dx,y=sy+dy;
+    if(x<0||y<0||x>=COLS||y>=ROWS) continue;
+    if(TERRAIN[y][x]===2) continue;
+    if(unitAt(x,y)) continue;
+    pos=[x,y]; break;
+  }
+  if(!pos) pos=[sx,sy];
+  const u=U("me","throw","イズナ",pos[0],pos[1]);
+  const p=progOf("イズナ");
+  u.maxhp+=p.hp; u.atkBonus=p.atk; u.defBonus=p.def;
+  u.hp=Math.ceil(u.maxhp*0.6);
+  u.acted=true;
+  u.id=units.length;
+  units.push(u);
+  placeUnit(u);
+  SPECIAL.izunaRevived=true;
+  fx(u,"heal","復活!","#ffe27a");
+  log(`<span class="sys">祈りが届いた——イズナ、復活！</span>`);
+  showDialog([
+    {name:"イズナ", color:C_ME, text:"……ここは……？　そうだ、ウカ！"},
+    {name:"狂乱ウカ", color:C_FOE, text:"……ねえ、さん……？　ほんものの……？"},
+    {name:"偽イズナ", color:C_FOE, text:"だめよウカ、あれは偽物。わたしだけを見て？"},
+    {name:"イズナ", color:C_ME, text:"ウカ！　目を覚まして！　私は、ここにいるから！"},
+  ]);
+}
+function handleDeath(victim,killer){
+  if(victim.name==="ウカ"&&victim.side==="foe"){ recruitUka(victim); return; }
+  speak(victim, quoteOf(victim,"death"));
+  if(killer&&killer.hp>0) setTimeout(()=>speak(killer,quoteOf(killer,"kill")),650);
+  setTimeout(()=>{ killUnit(victim); },600);
+  victim.hp=0;
+  log(`<span class="sys">${victim.name}、討たれる。</span>`);
+  // ほんチいが倒れると、道連れの大爆発（周囲3マスの敵を吹き飛ばす）
+  if(victim.name==="ほんチい"&&victim.side==="me"){
+    setTimeout(()=>honchiiBlast(victim),900);
+  }
+  // ウカ加入中にイズナが倒れると、ウカが闇落ちして外伝マップへ（一度きり）
+  if(victim.name==="イズナ"&&victim.side==="me"&&UKA_JOINED&&!SPECIAL.done&&!SPECIAL.active){
+    setTimeout(()=>startUkaRage(),1100);
+    return; // 外伝へ移行するので通常の敗北判定はしない
+  }
+  if(victim.leader) setTimeout(()=>endGame(victim.side==="foe"),1200);
+}
+function recruitUka(u){
+  UKA_JOINED=true;
+  u.side="me"; u.leader=false; u.acted=true; u.atkBuff=1;
+  const p=progOf(u.name);
+  u.maxhp=CLASS.uka.hp+p.hp; u.atkBonus=p.atk; u.defBonus=p.def;
+  u.hp=Math.ceil(u.maxhp*0.55);
+  if(u.el){ u.el.remove(); u.el=null; }
+  placeUnit(u);
+  log(`<span class="sys">ウカが仲間になった！</span>`);
+  showDialog([
+    {name:"ウカ", color:C_UKA, text:"はぁ……はぁ……もう、動けない……"},
+    {name:"イズナ", color:C_ME, text:"ウカ！　もういいの。……こっちへおいで。"},
+    {name:"ウカ", color:C_UKA, text:"……姉さん。ごめん。あたし、ずっと意地張ってた。"},
+    {name:"ジン", color:C_ME, text:"話は里へ帰ってからだ。その二刀、今は里のために振るえ。"},
+  ]);
+}
+/* ジン強化(秘伝書)。全クリ後のリセットまで持続 */
+let JIN_BUFF={atk:0,maxhp:0};
+let itemPicked=[false,false,false,false];
+
+/* ---- レベル・経験値（名前ごとに持ち越し） ---- */
+let PROGRESS={};   // name → {lv, exp, atk, hp, def}
+let actNum=1;      // 第◯幕（進んだ戦の数）
+function progOf(name){
+  if(!PROGRESS[name]) PROGRESS[name]={lv:1, exp:0, atk:0, hp:0, def:0};
+  return PROGRESS[name];
+}
+function expNeed(lv){ return 18 + lv*12; }
+function gainExp(u, amt){
+  if(u.side!=="me" || u.hp<=0) return;
+  const p=progOf(u.name);
+  p.exp+=amt;
+  let leveled=false;
+  while(p.exp>=expNeed(p.lv)){
+    p.exp-=expNeed(p.lv);
+    p.lv++;
+    p.atk+=1; p.hp+=3;
+    if(p.lv%2===0) p.def+=1;
+    u.maxhp+=3; u.hp=Math.min(u.maxhp, u.hp+3);
+    u.atkBonus=(u.atkBonus||0)+1;
+    if(p.lv%2===0) u.defBonus=(u.defBonus||0)+1;
+    leveled=true;
+  }
+  if(leveled){
+    lvUpFx(u, p.lv);
+    log(`<span class="sys">${u.name}、Lv${p.lv} に上がった！ 攻+1 / 体力+3${p.lv%2===0?" / 防+1":""}</span>`);
+  }
+  refreshUnit(u);
+  if(sel===u) showInfo(u);
+}
+function lvUpFx(u, lv){
+  const cell=cells[u.y]&&cells[u.y][u.x]; if(!cell) return;
+  const wrap=$("#boardWrap");
+  const r=cell.getBoundingClientRect(), br=wrap.getBoundingClientRect();
+  const e=el("div","lvUpFx"); e.textContent="LEVEL UP!";
+  e.style.left=(r.left-br.left+r.width/2)+"px";
+  e.style.top=(r.top-br.top+r.height/2)+"px";
+  wrap.appendChild(e); setTimeout(()=>e.remove(),1100);
+}
+function defOf(u){ return CLASS[u.cls].def + (u.defBonus||0); }
+let stageItem=null; // {x,y,el}
+
+/* 水や重なりの上に湧かないよう最寄りの安全マスへ退避 */
+function sanitizeSpawns(){
+  const taken=new Set();
+  for(const u of units){
+    const bad=(x,y)=>x<0||y<0||x>=COLS||y>=ROWS||TERRAIN[y][x]===2||taken.has(x+","+y);
+    if(!bad(u.x,u.y)){ taken.add(u.x+","+u.y); continue; }
+    // BFSで最寄りの空きマス
+    const q=[[u.x,u.y]], seen=new Set([u.x+","+u.y]);
+    let found=null;
+    while(q.length&&!found){
+      const [x,y]=q.shift();
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=x+dx,ny=y+dy,k=nx+","+ny;
+        if(nx<0||ny<0||nx>=COLS||ny>=ROWS||seen.has(k))continue;
+        seen.add(k);
+        if(!bad(nx,ny)){ found=[nx,ny]; break; }
+        q.push([nx,ny]);
+      }
+    }
+    if(found){ u.x=found[0]; u.y=found[1]; }
+    taken.add(u.x+","+u.y);
+  }
+}
+
+/* ---- 忍SVGトークン（モーションシステムのフルSVGを使用） ---- */
+const CAST={"HAYATE":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <path d=\"M400 344 L448 288 L462 298 L414 354 Z\" fill=\"#3A383C\" stroke=\"#1C1C24\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M416 324 l9 7 M430 306 l9 7\" stroke=\"#F1EDE2\" stroke-width=\"4\" stroke-linecap=\"round\"/> <circle cx=\"456\" cy=\"292\" r=\"7\" fill=\"#D9A93F\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <rect x=\"322\" y=\"320\" width=\"36\" height=\"32\" fill=\"#6E7078\"/> <circle cx=\"331\" cy=\"328\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"341\" cy=\"332\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"351\" cy=\"328\" r=\"2.5\" fill=\"#4A4C54\"/> <ellipse cx=\"310\" cy=\"618\" rx=\"22\" ry=\"9\" fill=\"#26262A\" stroke=\"#1C1C24\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"618\" rx=\"22\" ry=\"9\" fill=\"#26262A\" stroke=\"#1C1C24\" stroke-width=\"5\"/> <path d=\"M284 470 L396 470 L404 594 C404 604 396 610 386 610 L294 610 C284 610 276 604 276 594 Z\" fill=\"#2A3458\" stroke=\"#1C1C24\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M340 500 L340 604\" stroke=\"#1C1C24\" stroke-width=\"5\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 408 260 442 262 478 L418 478 C420 442 414 408 404 380 C396 356 378 344 340 344 Z\" fill=\"#2A3458\" stroke=\"#1C1C24\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M314 346 L340 392 L366 346 L340 362 Z\" fill=\"#3A3C44\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M326 354 l7 7 7 -7 7 7 7 -7 M333 366 l7 7 7 -7\" fill=\"none\" stroke=\"#8A8C94\" stroke-width=\"3\"/> <path d=\"M310 352 L390 462 L376 472 L298 366 Z\" fill=\"#1E2640\" stroke=\"#1C1C24\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M368 414 L376 428 L392 430 L380 440 L384 456 L370 448 L356 456 L360 440 L348 430 L364 428 Z\" fill=\"#8A8C94\" opacity=\"0.9\"/> <path d=\"M266 452 L414 452 L416 476 L264 476 Z\" fill=\"#8A8C94\" stroke=\"#1C1C24\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M306 476 L322 476 L318 494 L310 494 Z M348 476 L364 476 L360 494 L352 494 Z\" fill=\"#6E7078\" stroke=\"#1C1C24\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C276 372 258 390 250 416 C246 432 256 442 272 438 C292 432 304 412 306 392 C307 380 305 370 300 366 Z\" fill=\"#2A3458\" stroke=\"#1C1C24\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M252 414 L212 424 C202 426 200 438 210 442 L246 448 C260 450 270 442 272 430 Z\" fill=\"#8A5A34\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M238 442 C238 456 240 468 246 476 M238 442 l-6 4 M246 476 l6 -2\" fill=\"none\" stroke=\"#B85830\" stroke-width=\"4\" stroke-linecap=\"round\"/> <circle cx=\"242\" cy=\"482\" r=\"4\" fill=\"#4878B8\" stroke=\"#1C1C24\" stroke-width=\"3\"/> <path d=\"M212 428 C186 428 164 414 152 392 C144 376 150 360 166 356 C158 344 166 330 180 332 C178 318 192 308 204 316 C212 300 232 300 240 314 C252 308 264 316 262 328 C270 336 268 350 258 354 C264 372 258 396 244 410 C234 420 222 426 212 428 Z\" fill=\"#8A5A34\" stroke=\"#1C1C24\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M206 380 C196 396 192 412 194 426 C206 424 216 414 222 400 Z\" fill=\"#6A4228\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <path d=\"M232 344 C244 352 250 366 248 380 C238 378 230 368 228 356 Z\" fill=\"#B8916A\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <path d=\"M158 366 C146 368 138 376 136 386 L168 384 C170 376 166 368 158 366 Z\" fill=\"#D8A030\" stroke=\"#1C1C24\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <circle cx=\"178\" cy=\"352\" r=\"7\" fill=\"#E8C030\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <circle cx=\"180\" cy=\"352\" r=\"3\" fill=\"#1C1C24\"/> <path d=\"M214 424 l-6 14 M226 422 l-2 14\" stroke=\"#D8A030\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C406 372 424 406 430 454 C434 482 422 496 404 492 C384 486 374 452 372 414 C371 392 372 375 380 366 Z\" fill=\"#2A3458\" stroke=\"#1C1C24\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M428 440 L394 434 L390 470 L422 478 Z\" fill=\"#3A3C44\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M394 470 C410 466 422 472 424 482 C426 492 416 499 404 497 C394 495 388 488 388 478 C388 473 390 471 394 470 Z\" fill=\"#F2E0CC\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 72 C304 68 272 80 250 104 L224 92 L246 126 L212 130 L242 156 C226 176 218 200 216 228 L200 240 L218 252 C222 288 234 314 252 326 L428 326 C446 314 458 288 462 252 L480 240 L464 228 C462 200 454 176 438 156 L468 130 L434 126 L456 92 L430 104 C408 80 376 68 340 72 Z\" fill=\"#6E7078\" stroke=\"#1C1C24\" stroke-width=\"8\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F2E0CC\" stroke=\"#1C1C24\" stroke-width=\"7\"/> </g> <g> <path d=\"M282 244 L314 250\" fill=\"none\" stroke=\"#1C1C24\" stroke-width=\"6\" stroke-linecap=\"round\"/> <path d=\"M366 250 L398 244\" fill=\"none\" stroke=\"#1C1C24\" stroke-width=\"6\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"13\" ry=\"15\" fill=\"#fff\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <g> <ellipse cx=\"297\" cy=\"273\" rx=\"8\" ry=\"10\" fill=\"#E8C030\"/> <ellipse cx=\"297\" cy=\"274\" rx=\"3.6\" ry=\"5\" fill=\"#4A3808\"/> <circle cx=\"294\" cy=\"267\" r=\"2\" fill=\"#fff\"/> </g> </g> <path d=\"M286 272 Q297 279 308 272\" fill=\"none\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"13\" ry=\"15\" fill=\"#fff\" stroke=\"#1C1C24\" stroke-width=\"4\"/> <g> <ellipse cx=\"383\" cy=\"273\" rx=\"8\" ry=\"10\" fill=\"#E8C030\"/> <ellipse cx=\"383\" cy=\"274\" rx=\"3.6\" ry=\"5\" fill=\"#4A3808\"/> <circle cx=\"380\" cy=\"267\" r=\"2\" fill=\"#fff\"/> </g> </g> <path d=\"M372 272 Q383 279 394 272\" fill=\"none\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M398 286 l8 -3\" stroke=\"#C8A878\" stroke-width=\"4\" stroke-linecap=\"round\"/> <ellipse cx=\"274\" cy=\"292\" rx=\"9\" ry=\"4\" fill=\"#E0A090\" opacity=\"0.2\"/> <ellipse cx=\"406\" cy=\"292\" rx=\"9\" ry=\"4\" fill=\"#E0A090\" opacity=\"0.2\"/> <path d=\"M278 292 C298 280 382 280 402 292 L398 334 C372 346 308 346 282 334 Z\" fill=\"#2A3458\" stroke=\"#1C1C24\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M330 312 Q340 315 350 311\" fill=\"none\" stroke=\"#1E2640\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M328 309 Q340 313 352 308 Q349 326 340 327 Q331 326 328 309 Z\" fill=\"#1E2640\" stroke=\"#1E2640\" stroke-width=\"4\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M256 244 C246 150 286 104 340 100 C394 104 434 148 424 244 L400 228 L408 188 L378 224 L358 190 L348 232 L322 194 L314 232 L292 202 L284 238 L262 246 Z\" fill=\"#6E7078\" stroke=\"#1C1C24\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M304 118 C312 138 312 160 304 178 L288 168 C294 152 296 134 292 120 Z\" fill=\"#8A8C94\" stroke=\"#1C1C24\" stroke-width=\"4\"/> </g> </g>","IBUKI":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <g data-wag=\"1\" data-k=\"13\" data-damp=\"0.95\" data-front=\"1\"> <circle cx=\"462\" cy=\"430\" r=\"0\" fill=\"none\"/> <path d=\"M566 348 C550 366 554 380 562 388 C540 386 528 402 533 422 C518 434 520 458 535 468 C529 490 549 507 571 501 C593 509 613 494 611 474 C625 462 622 438 608 430 C617 412 606 394 590 394 C597 377 587 358 566 348 Z\" fill=\"#9A5ECB\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M568 372 C558 384 562 392 568 398 C552 398 546 410 550 424 C540 432 542 448 552 454 C549 468 562 478 577 474 C592 480 605 470 603 456 C612 448 610 432 600 428 C606 416 598 404 587 405 C592 392 584 379 568 372 Z\" fill=\"#B57FE0\" opacity=\"0.9\"/> <path d=\"M572 400 C564 402 560 410 562 418 L556 430 C552 452 556 462 566 464 L562 448 L570 452 L570 464 L578 464 L578 452 L586 448 L582 464 C592 462 596 452 592 430 L586 418 C588 410 584 402 576 400 L574 392 Z\" fill=\"#7A4AAE\"/> <circle cx=\"568\" cy=\"412\" r=\"2.4\" fill=\"#E4D2F4\"/><circle cx=\"580\" cy=\"412\" r=\"2.4\" fill=\"#E4D2F4\"/> <path d=\"M560 440 C563 447 568 451 574 452 M580 438 C588 436 590 443 584 445 C590 447 588 454 580 452\" fill=\"none\" stroke=\"#E4D2F4\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> </g> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F2E3D6\"/> <ellipse cx=\"310\" cy=\"620\" rx=\"24\" ry=\"9\" fill=\"#C9A06B\" stroke=\"#26262E\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"620\" rx=\"24\" ry=\"9\" fill=\"#C9A06B\" stroke=\"#26262E\" stroke-width=\"5\"/> <ellipse cx=\"310\" cy=\"612\" rx=\"17\" ry=\"9\" fill=\"#F1EDE2\" stroke=\"#26262E\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"612\" rx=\"17\" ry=\"9\" fill=\"#F1EDE2\" stroke=\"#26262E\" stroke-width=\"5\"/> <path d=\"M310 606 v8 M370 606 v8\" stroke=\"#26262E\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <path d=\"M264 468 L416 468 L426 594 C426 604 416 610 404 610 L276 610 C264 610 254 604 254 594 Z\" fill=\"#5A4A8C\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M310 472 L306 606 M340 474 L340 608 M370 472 L374 606\" fill=\"none\" stroke=\"#47396F\" stroke-width=\"5\"/> <path d=\"M340 344 C300 344 280 356 272 380 C260 412 254 452 256 500 L424 500 C426 452 420 412 408 380 C400 356 380 344 340 344 Z\" fill=\"#26262A\" stroke=\"#26262E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M286 372 C276 412 272 452 272 494\" fill=\"none\" stroke=\"#B03A3A\" stroke-width=\"5\" stroke-dasharray=\"9 9\"/> <path d=\"M394 372 C404 412 408 452 408 494\" fill=\"none\" stroke=\"#B03A3A\" stroke-width=\"5\" stroke-dasharray=\"9 9\"/> <path d=\"M316 346 L340 400 L364 346 L352 336 L340 366 L328 336 Z\" fill=\"#5A4A8C\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M322 344 L340 384 L358 344 L349 337 L340 360 L331 337 Z\" fill=\"#F1EDE2\" stroke=\"#26262E\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M312 354 C318 396 326 414 340 422 C354 414 362 396 368 354\" fill=\"none\" stroke=\"#B03A3A\" stroke-width=\"4\"/> <circle cx=\"323\" cy=\"412\" r=\"9\" fill=\"#D9A93F\" stroke=\"#26262E\" stroke-width=\"4\"/> <circle cx=\"340\" cy=\"422\" r=\"10\" fill=\"#D9A93F\" stroke=\"#26262E\" stroke-width=\"4\"/> <circle cx=\"357\" cy=\"412\" r=\"9\" fill=\"#D9A93F\" stroke=\"#26262E\" stroke-width=\"4\"/> <path d=\"M322 462 L358 462 L360 480 L320 480 Z\" fill=\"#1C1C22\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M332 480 L326 500 M348 480 L354 500\" stroke=\"#1C1C22\" stroke-width=\"6\" stroke-linecap=\"round\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C274 372 258 398 254 434 C252 458 266 470 282 464 C296 458 302 438 304 414 C305 394 306 376 300 366 Z\" fill=\"#26262A\" stroke=\"#26262E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M258 430 C256 442 258 452 264 460\" fill=\"none\" stroke=\"#B03A3A\" stroke-width=\"4.5\" stroke-dasharray=\"8 8\"/> <path d=\"M282 446 Q294 430 306 446\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"5\"/> <ellipse cx=\"294\" cy=\"482\" rx=\"26\" ry=\"20\" fill=\"#8A5A37\" stroke=\"#26262E\" stroke-width=\"6\"/> <path d=\"M318 476 C330 472 336 477 337 486 C330 488 322 487 317 484 Z\" fill=\"#8A5A37\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M280 466 Q294 458 308 466\" fill=\"#8A5A37\" stroke=\"#26262E\" stroke-width=\"5\"/> <circle cx=\"294\" cy=\"461\" r=\"4\" fill=\"#5C3A22\" stroke=\"#26262E\" stroke-width=\"3\"/> <ellipse cx=\"294\" cy=\"437\" rx=\"13\" ry=\"11\" fill=\"#F2E3D6\" stroke=\"#26262E\" stroke-width=\"5\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C410 372 432 406 440 456 C444 486 430 500 412 496 C392 490 380 456 376 418 C374 396 372 376 380 366 Z\" fill=\"#26262A\" stroke=\"#26262E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M432 450 C436 462 434 474 428 484\" fill=\"none\" stroke=\"#B03A3A\" stroke-width=\"4.5\" stroke-dasharray=\"8 8\"/> <path d=\"M404 470 C420 467 432 473 434 484 C436 494 426 501 414 499 C404 497 398 490 398 480 C398 475 400 471 404 470 Z\" fill=\"#F2E3D6\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M406 477 q7 4 13 3\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> </g> <g data-wag=\"1\" data-k=\"18\" data-damp=\"0.93\" data-front=\"1\"> <circle cx=\"262\" cy=\"408\" r=\"0\" fill=\"none\"/> <path d=\"M146 428 L118 398 L152 406 Z\" fill=\"#6FAE58\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M224 420 L252 390 L220 400 Z\" fill=\"#6FAE58\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M144 422 L128 404 L148 410 Z\" fill=\"#E8A83C\" stroke=\"#26262E\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M226 414 L242 396 L222 404 Z\" fill=\"#E8A83C\" stroke=\"#26262E\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M166 402 L160 376 L182 396 Z\" fill=\"#E8A83C\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M202 398 L210 372 L186 393 Z\" fill=\"#E8A83C\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M185 396 C232 396 254 434 248 478 C262 486 258 506 242 502 C238 518 216 528 200 518 C184 530 160 522 156 506 C140 506 136 488 150 482 C142 444 150 400 185 396 Z\" fill=\"#6FAE58\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M170 420 l11 -4 M195 414 l11 -4\" stroke=\"#8E4E8E\" stroke-width=\"5\" stroke-linecap=\"round\"/> <ellipse cx=\"172\" cy=\"443\" rx=\"12\" ry=\"10\" fill=\"#fff\" stroke=\"#26262E\" stroke-width=\"4\"/> <circle cx=\"174\" cy=\"444\" r=\"5.5\" fill=\"#C23A6E\"/><circle cx=\"174\" cy=\"444\" r=\"2.2\" fill=\"#3A1020\"/> <ellipse cx=\"212\" cy=\"439\" rx=\"12\" ry=\"10\" fill=\"#fff\" stroke=\"#26262E\" stroke-width=\"4\"/> <circle cx=\"210\" cy=\"440\" r=\"5.5\" fill=\"#C23A6E\"/><circle cx=\"210\" cy=\"440\" r=\"2.2\" fill=\"#3A1020\"/> <path d=\"M158 434 L184 430 M198 428 L224 431\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"4.5\" stroke-linecap=\"round\"/> <path d=\"M156 466 C176 486 208 484 224 462 C216 480 196 488 178 483 C168 480 160 474 156 466 Z\" fill=\"#472F3A\" stroke=\"#26262E\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M162 468 l6 6 6 -7 6 7 6 -7 6 7 6 -7 6 6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <ellipse cx=\"236\" cy=\"490\" rx=\"14\" ry=\"10\" fill=\"#6FAE58\" stroke=\"#26262E\" stroke-width=\"5\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 70 C245 70 186 150 194 268 C197 305 210 330 240 336 C252 338 258 326 254 312 C270 332 298 340 306 322 C320 336 360 336 374 322 C382 340 410 332 426 312 C422 326 428 338 440 336 C470 330 483 305 486 268 C494 150 435 70 340 70 Z\" fill=\"#3B3A63\" stroke=\"#26262E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F2E3D6\" stroke=\"#26262E\" stroke-width=\"7\"/> </g> <g> <path d=\"M282 254 C292 248 306 247 316 250\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M364 250 C374 247 388 248 398 254\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M278 262 l-8 -3 M402 262 l8 -3 M282 290 l-7 4 M398 290 l7 4\" stroke=\"#7A5C8E\" stroke-width=\"4\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#26262E\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"10\" fill=\"#5FAE4A\"/> <circle cx=\"297\" cy=\"274\" r=\"4.5\" fill=\"#1E3318\"/> <circle cx=\"293\" cy=\"268\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M281 260 C288 255 306 255 313 260\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 279 309 272\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#26262E\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"10\" fill=\"#5FAE4A\"/> <circle cx=\"383\" cy=\"274\" r=\"4.5\" fill=\"#1E3318\"/> <circle cx=\"379\" cy=\"268\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M367 260 C374 255 392 255 399 260\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"6\" stroke-linecap=\"round\"/> </g> <path d=\"M371 272 Q383 279 395 272\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse cx=\"276\" cy=\"298\" rx=\"11\" ry=\"5\" fill=\"#D9A0AC\" opacity=\"0.25\"/> <ellipse cx=\"404\" cy=\"298\" rx=\"11\" ry=\"5\" fill=\"#D9A0AC\" opacity=\"0.25\"/> <path d=\"M339 288 l2 3\" stroke=\"#C9A28E\" stroke-width=\"3\" stroke-linecap=\"round\"/> <path d=\"M330 305 Q340 307 350 304\" fill=\"none\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M328 302 Q340 306 352 301 Q349 321 340 322 Q331 321 328 302 Z\" fill=\"#96404C\" stroke=\"#26262E\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <g data-k=\"45\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.3\"> <circle cx=\"272\" cy=\"176\" r=\"0\" fill=\"none\"/> <path d=\"M262 172 C244 226 244 304 262 338 C270 352 290 348 288 328 C280 288 280 226 290 180 Z\" fill=\"#4A4878\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> <g data-k=\"50\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.3\"> <circle cx=\"408\" cy=\"176\" r=\"0\" fill=\"none\"/> <path d=\"M418 172 C436 226 436 304 418 338 C410 352 390 348 392 328 C400 288 400 226 390 180 Z\" fill=\"#4A4878\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> <path d=\"M256 232 C246 132 284 84 340 80 C396 84 434 132 424 232 C410 234 394 228 382 225 C366 222 352 214 340 212 C328 214 314 222 298 225 C286 228 270 234 256 232 Z\" fill=\"#4A4878\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <g data-k=\"55\" data-damp=\"0.88\" data-fz=\"1.4\" data-fx=\"0.5\"> <circle cx=\"342\" cy=\"102\" r=\"0\" fill=\"none\"/> <path d=\"M330 102 C324 66 338 34 364 22 C350 50 352 82 358 102 Z\" fill=\"#4A4878\" stroke=\"#26262E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <rect x=\"326\" y=\"94\" width=\"30\" height=\"13\" rx=\"5\" fill=\"#C99B3F\" stroke=\"#26262E\" stroke-width=\"4\"/> </g> </g> </g>","IZUNA":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <g data-wag=\"1\" data-k=\"17\" data-damp=\"0.93\"> <circle cx=\"426\" cy=\"480\" r=\"0\" fill=\"none\"/> <path d=\"M252 512 C204 528 168 562 156 598 C176 606 214 594 242 566 C258 550 262 528 252 512 Z\" fill=\"#26242A\" stroke=\"#1A181E\" stroke-width=\"6\" stroke-linejoin=\"round\" transform=\"translate(360 0) scale(-1 1) translate(-360 0)\"/> <path d=\"M470 588 C486 570 484 550 468 546 C458 558 460 576 470 588 Z\" fill=\"#F4F0EC\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M468 512 C516 528 552 562 564 598 C544 606 506 594 478 566 C462 550 458 528 468 512 Z\" fill=\"#26242A\" stroke=\"#1A181E\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M548 590 C566 574 566 552 550 548 C540 560 540 578 548 590 Z\" fill=\"#F4F0EC\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F6E8DC\"/> <ellipse cx=\"310\" cy=\"618\" rx=\"22\" ry=\"8\" fill=\"#F1E8DC\" stroke=\"#1A181E\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"618\" rx=\"22\" ry=\"8\" fill=\"#F1E8DC\" stroke=\"#1A181E\" stroke-width=\"5\"/> <path d=\"M270 462 L410 462 L424 596 C424 606 414 612 402 612 L278 612 C266 612 256 606 256 596 Z\" fill=\"#B83838\" stroke=\"#1A181E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M298 468 L292 606 M340 470 L340 608 M382 468 L388 606\" fill=\"none\" stroke=\"#8E2A2A\" stroke-width=\"5\"/> <path d=\"M302 450 L378 450 L380 466 L300 466 Z\" fill=\"#E8B838\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 470 L316 488 L336 500 Z\" fill=\"#B83838\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 470 L364 488 L344 500 Z\" fill=\"#B83838\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 344 C300 344 282 356 274 380 C262 410 258 434 258 456 L422 456 C422 434 418 410 406 380 C398 356 380 344 340 344 Z\" fill=\"#F6F2EC\" stroke=\"#1A181E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M316 346 L340 394 L364 346 L352 338 L340 366 L328 338 Z\" fill=\"#26242A\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C268 372 246 412 240 464 C236 494 250 508 270 504 C292 498 304 460 306 418 C308 396 308 376 300 366 Z\" fill=\"#F6F2EC\" stroke=\"#1A181E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"264\" cy=\"482\" rx=\"15\" ry=\"12\" fill=\"#F6E8DC\" stroke=\"#1A181E\" stroke-width=\"5\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C412 372 434 412 440 464 C444 494 430 508 410 504 C388 498 376 460 374 418 C372 396 372 376 380 366 Z\" fill=\"#F6F2EC\" stroke=\"#1A181E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"416\" cy=\"482\" rx=\"15\" ry=\"12\" fill=\"#F6E8DC\" stroke=\"#1A181E\" stroke-width=\"5\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M270 118 L232 26 L326 84 Z\" fill=\"#6E7078\" stroke=\"#1A181E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M410 118 L448 26 L354 84 Z\" fill=\"#6E7078\" stroke=\"#1A181E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M272 108 L246 46 L316 88 Z\" fill=\"#F4F0EC\" stroke=\"#1A181E\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M408 108 L434 46 L364 88 Z\" fill=\"#F4F0EC\" stroke=\"#1A181E\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M340 72 C248 72 194 148 200 262 C202 330 208 396 224 428 C238 442 252 430 252 408 C250 370 250 320 254 286 C270 306 296 312 306 296 C320 312 360 312 374 296 C384 312 410 306 426 286 C430 320 430 370 428 408 C428 430 442 442 456 428 C472 396 478 330 480 262 C486 148 432 72 340 72 Z\" fill=\"#26242A\" stroke=\"#1A181E\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M254 300 C252 340 252 380 254 408 M426 300 C428 340 428 380 426 408\" fill=\"none\" stroke=\"#4878D8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F6E8DC\" stroke=\"#1A181E\" stroke-width=\"7\"/> </g> <g> <path d=\"M283 250 Q297 245 311 249\" fill=\"none\" stroke=\"#26242A\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M369 249 Q383 245 397 250\" fill=\"none\" stroke=\"#26242A\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#1A181E\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"10\" fill=\"#9080D8\"/> <circle cx=\"297\" cy=\"274\" r=\"4.5\" fill=\"#2A2048\"/> <circle cx=\"293\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M283 260 Q297 253 311 260\" fill=\"none\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 280 309 272\" fill=\"none\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#1A181E\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"10\" fill=\"#9080D8\"/> <circle cx=\"383\" cy=\"274\" r=\"4.5\" fill=\"#2A2048\"/> <circle cx=\"379\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M369 260 Q383 253 397 260\" fill=\"none\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M371 272 Q383 280 395 272\" fill=\"none\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <circle cx=\"280\" cy=\"294\" r=\"2.6\" fill=\"#3A3438\"/> <ellipse cx=\"276\" cy=\"297\" rx=\"11\" ry=\"5\" fill=\"#F0A8B0\" opacity=\"0.3\"/> <ellipse cx=\"404\" cy=\"297\" rx=\"11\" ry=\"5\" fill=\"#F0A8B0\" opacity=\"0.3\"/> <path d=\"M330 304 Q340 310 351 302\" fill=\"none\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M327 301 Q340 306 353 300 Q349 322 340 323 Q331 322 327 301 Z\" fill=\"#A84450\" stroke=\"#1A181E\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M256 250 C248 152 284 106 340 102 C396 106 432 152 424 250 C414 240 404 214 398 186 C388 210 372 224 358 222 L340 176 L322 222 C308 224 292 210 282 186 C276 214 266 240 256 250 Z\" fill=\"#26242A\" stroke=\"#1A181E\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> </g>","JIN":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <path d=\"M396 356 L446 282 L462 292 L412 366 Z\" fill=\"#3A3C44\" stroke=\"#1A1A20\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M414 320 l12 8 M428 300 l12 8 M442 280 l12 8\" stroke=\"#F1EDE2\" stroke-width=\"4\" stroke-linecap=\"round\"/> <ellipse cx=\"408\" cy=\"356\" rx=\"14\" ry=\"8\" fill=\"#55575F\" stroke=\"#1A1A20\" stroke-width=\"5\" transform=\"rotate(-56 408 356)\"/> <rect x=\"322\" y=\"320\" width=\"36\" height=\"32\" fill=\"#6E7078\"/> <circle cx=\"330\" cy=\"328\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"340\" cy=\"332\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"350\" cy=\"328\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"335\" cy=\"342\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"346\" cy=\"342\" r=\"2.5\" fill=\"#4A4C54\"/> <ellipse cx=\"310\" cy=\"616\" rx=\"22\" ry=\"10\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"616\" rx=\"22\" ry=\"10\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"5\"/> <path d=\"M284 468 L396 468 L404 594 C404 604 396 610 386 610 L294 610 C284 610 276 604 276 594 Z\" fill=\"#3A3C44\" stroke=\"#1A1A20\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M340 500 L340 604\" stroke=\"#26262A\" stroke-width=\"5\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 408 260 442 262 478 L418 478 C420 442 414 408 404 380 C396 356 378 344 340 344 Z\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M316 346 L340 390 L364 346 L340 362 Z\" fill=\"#6E7078\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <circle cx=\"334\" cy=\"358\" r=\"2\" fill=\"#4A4C54\"/><circle cx=\"346\" cy=\"358\" r=\"2\" fill=\"#4A4C54\"/><circle cx=\"340\" cy=\"368\" r=\"2\" fill=\"#4A4C54\"/> <path d=\"M266 452 L414 452 L416 476 L264 476 Z\" fill=\"#55575F\" stroke=\"#1A1A20\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <rect x=\"300\" y=\"478\" width=\"28\" height=\"20\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#1A1A20\" stroke-width=\"4\"/> <rect x=\"352\" y=\"478\" width=\"28\" height=\"20\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#1A1A20\" stroke-width=\"4\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C272 372 254 408 248 458 C244 486 256 500 274 496 C294 490 304 456 306 416 C308 394 308 376 300 366 Z\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M250 432 C246 448 248 462 256 472 L280 462 C272 450 270 438 272 426 Z\" fill=\"#55575F\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <circle cx=\"258\" cy=\"444\" r=\"3\" fill=\"#8A8C94\"/><circle cx=\"264\" cy=\"458\" r=\"3\" fill=\"#8A8C94\"/> <ellipse cx=\"266\" cy=\"484\" rx=\"15\" ry=\"12\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"5\"/> <g> <path d=\"M266 448 L278 474 L304 486 L278 498 L266 524 L254 498 L228 486 L254 474 Z\" fill=\"#6E7078\" stroke=\"#1A1A20\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <circle cx=\"266\" cy=\"486\" r=\"7\" fill=\"#2A2A30\" stroke=\"#1A1A20\" stroke-width=\"4\"/> </g> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C408 372 426 408 432 458 C436 486 424 500 406 496 C386 490 376 456 374 416 C372 394 372 376 380 366 Z\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M430 432 C434 448 432 462 424 472 L400 462 C408 450 410 438 408 426 Z\" fill=\"#55575F\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <circle cx=\"422\" cy=\"444\" r=\"3\" fill=\"#8A8C94\"/><circle cx=\"416\" cy=\"458\" r=\"3\" fill=\"#8A8C94\"/> <ellipse cx=\"414\" cy=\"484\" rx=\"15\" ry=\"12\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"5\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 74 C250 74 194 150 200 262 C203 298 216 322 246 330 L434 330 C464 322 477 298 480 262 C486 150 430 74 340 74 Z\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <g data-k=\"55\" data-damp=\"0.88\" data-fz=\"1.0\" data-fx=\"0.4\"> <circle cx=\"288\" cy=\"96\" r=\"0\" fill=\"none\"/> <path d=\"M286 98 L258 72 L294 84 Z\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#26262A\" stroke=\"#1A1A20\" stroke-width=\"7\"/> </g> <g> <rect x=\"266\" y=\"242\" width=\"148\" height=\"54\" rx=\"27\" fill=\"#F2DFC8\" stroke=\"#1A1A20\" stroke-width=\"5\"/> <g> <ellipse cx=\"299\" cy=\"270\" rx=\"13\" ry=\"14\" fill=\"#fff\" stroke=\"#1A1A20\" stroke-width=\"4\"/> <g> <circle cx=\"299\" cy=\"271\" r=\"5.5\" fill=\"#1A1A20\"/> <circle cx=\"296\" cy=\"268\" r=\"1.6\" fill=\"#fff\"/> </g> <path d=\"M285 259 L313 264\" fill=\"none\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M287 271 Q299 278 311 271\" fill=\"none\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"381\" cy=\"270\" rx=\"13\" ry=\"14\" fill=\"#fff\" stroke=\"#1A1A20\" stroke-width=\"4\"/> <g> <circle cx=\"381\" cy=\"271\" r=\"5.5\" fill=\"#1A1A20\"/> <circle cx=\"378\" cy=\"268\" r=\"1.6\" fill=\"#fff\"/> </g> <path d=\"M367 264 L395 259\" fill=\"none\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M369 271 Q381 278 393 271\" fill=\"none\" stroke=\"#1A1A20\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse cx=\"279\" cy=\"284\" rx=\"9\" ry=\"4\" fill=\"#D89890\" opacity=\"0.2\"/> <ellipse cx=\"401\" cy=\"284\" rx=\"9\" ry=\"4\" fill=\"#D89890\" opacity=\"0.2\"/> <path d=\"M330 312 Q340 315 350 311\" fill=\"none\" stroke=\"#101014\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M328 309 Q340 313 352 308 Q349 326 340 327 Q331 326 328 309 Z\" fill=\"#101014\" stroke=\"#101014\" stroke-width=\"4\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M262 226 Q340 206 418 226 L418 252 Q340 230 262 252 Z\" fill=\"#55575F\" stroke=\"#1A1A20\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M300 224 l9 9 -9 9 -9 -9 Z\" fill=\"#8A8C94\" stroke=\"#1A1A20\" stroke-width=\"3\"/> <path d=\"M340 218 l9 9 -9 9 -9 -9 Z\" fill=\"#8A8C94\" stroke=\"#1A1A20\" stroke-width=\"3\"/> <path d=\"M380 224 l9 9 -9 9 -9 -9 Z\" fill=\"#8A8C94\" stroke=\"#1A1A20\" stroke-width=\"3\"/> </g> </g>","QUON":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <g data-wag=\"1\" data-k=\"18\" data-damp=\"0.93\"> <circle cx=\"432\" cy=\"474\" r=\"0\" fill=\"none\"/> <path d=\"M446 500 C498 496 528 462 524 424 C520 398 498 390 488 404 C500 428 488 456 450 470 C442 476 440 492 446 500 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M514 432 C522 416 514 400 498 402 C494 412 500 426 510 432 Z\" fill=\"#F8F6F0\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <g data-wag=\"1\" data-k=\"15\" data-damp=\"0.94\" data-front=\"1\"> <circle cx=\"240\" cy=\"262\" r=\"0\" fill=\"none\"/> <path d=\"M152 202 C142 220 146 236 156 244 C142 248 138 266 148 278 C158 290 178 288 184 274 C196 276 202 264 196 254 C202 244 196 230 186 228 C190 214 176 200 162 202 Z\" fill=\"#DCEFF8\" stroke=\"#90C8E8\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M160 226 C154 238 158 252 168 258 C178 262 188 256 188 246 C188 236 178 228 170 228 Z\" fill=\"#fff\" opacity=\"0.85\"/> </g> <g data-wag=\"1\" data-k=\"17\" data-damp=\"0.94\" data-front=\"1\"> <circle cx=\"470\" cy=\"420\" r=\"0\" fill=\"none\"/> <path d=\"M552 372 C544 388 548 402 556 408 C544 412 540 428 550 438 C558 448 576 446 582 434 C592 436 598 424 592 416 C598 406 592 394 582 392 C586 380 574 368 562 370 Z\" fill=\"#DCEFF8\" stroke=\"#90C8E8\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M560 394 C554 404 558 416 566 420 C574 424 582 418 582 410 C582 402 574 394 566 394 Z\" fill=\"#fff\" opacity=\"0.85\"/> </g> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F8F6F0\"/> <rect x=\"298\" y=\"530\" width=\"26\" height=\"80\" rx=\"11\" fill=\"#6E7078\" stroke=\"#22242C\" stroke-width=\"5\"/> <rect x=\"356\" y=\"530\" width=\"26\" height=\"80\" rx=\"11\" fill=\"#6E7078\" stroke=\"#22242C\" stroke-width=\"5\"/> <ellipse cx=\"311\" cy=\"614\" rx=\"20\" ry=\"9\" fill=\"#55575F\" stroke=\"#22242C\" stroke-width=\"5\"/> <ellipse cx=\"369\" cy=\"614\" rx=\"20\" ry=\"9\" fill=\"#55575F\" stroke=\"#22242C\" stroke-width=\"5\"/> <path d=\"M312 350 L368 350 L374 552 L306 552 Z\" fill=\"#4A6EA8\" stroke=\"#22242C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M340 344 C300 344 280 358 272 384 C258 430 252 500 254 560 L306 560 C302 490 308 410 340 352 C372 410 378 490 374 560 L426 560 C428 500 422 430 408 384 C400 358 380 344 340 344 Z\" fill=\"#2A2C34\" stroke=\"#22242C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M316 466 L364 466 L366 484 L314 484 Z\" fill=\"#F1EDE2\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 474 L322 490 M340 474 L358 490\" stroke=\"#F1EDE2\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M296 352 C312 336 368 336 384 352 C392 366 388 382 372 386 C352 392 328 392 308 386 C292 382 288 366 296 352 Z\" fill=\"#D89040\" stroke=\"#B87428\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <g data-k=\"28\" data-damp=\"0.9\" data-fz=\"0.7\" data-fx=\"0.4\"> <circle cx=\"302\" cy=\"378\" r=\"0\" fill=\"none\"/> <path d=\"M300 372 C264 386 234 416 222 452 C238 462 272 450 296 420 C306 406 306 386 300 372 Z\" fill=\"#D89040\" stroke=\"#B87428\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <g data-front=\"1\"> <circle cx=\"302\" cy=\"370\" r=\"0\" fill=\"none\"/> <path d=\"M300 368 C272 374 254 410 248 458 C244 486 256 500 274 496 C294 490 304 456 306 416 C308 394 308 376 300 368 Z\" fill=\"#2A2C34\" stroke=\"#22242C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"268\" cy=\"480\" rx=\"15\" ry=\"13\" fill=\"#F8F6F0\" stroke=\"#22242C\" stroke-width=\"5\"/> <path d=\"M262 474 v8 M270 473 v9\" stroke=\"#D8CCC4\" stroke-width=\"3\" stroke-linecap=\"round\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"370\" r=\"0\" fill=\"none\"/> <path d=\"M380 368 C408 374 426 410 432 458 C436 486 424 500 406 496 C386 490 376 456 374 416 C372 394 372 376 380 368 Z\" fill=\"#2A2C34\" stroke=\"#22242C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"412\" cy=\"480\" rx=\"15\" ry=\"13\" fill=\"#F8F6F0\" stroke=\"#22242C\" stroke-width=\"5\"/> <path d=\"M406 474 v8 M414 473 v9\" stroke=\"#D8CCC4\" stroke-width=\"3\" stroke-linecap=\"round\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M268 112 L234 48 L306 86 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M412 112 L446 48 L374 86 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M266 104 L246 64 L292 88 Z\" fill=\"#E8C8D0\" stroke=\"#22242C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M414 104 L434 64 L388 88 Z\" fill=\"#E8C8D0\" stroke=\"#22242C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M340 72 C246 76 190 152 198 266 C201 300 214 324 244 332 C230 314 224 292 236 288 C252 306 280 312 288 296 C302 320 378 320 392 296 C400 312 428 306 444 288 C456 292 450 314 436 332 C466 324 479 300 482 266 C490 152 434 76 340 72 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F8F6F0\" stroke=\"#22242C\" stroke-width=\"7\"/> </g> <g> <path d=\"M268 298 l16 -4 M268 308 l16 -4 M412 298 l-16 -4 M412 308 l-16 -4\" stroke=\"#B8BCC4\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <path d=\"M284 250 Q297 244 310 248\" fill=\"none\" stroke=\"#3670B8\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M370 248 Q383 244 396 250\" fill=\"none\" stroke=\"#3670B8\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#22242C\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"10\" fill=\"#E0B048\"/> <circle cx=\"297\" cy=\"274\" r=\"4.5\" fill=\"#3A2A10\"/> <circle cx=\"293\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M283 260 Q297 252 311 259\" fill=\"none\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 280 309 272\" fill=\"none\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#22242C\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"10\" fill=\"#5888C8\"/> <circle cx=\"383\" cy=\"274\" r=\"4.5\" fill=\"#182A48\"/> <circle cx=\"379\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M369 259 Q383 252 397 260\" fill=\"none\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M371 272 Q383 280 395 272\" fill=\"none\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse cx=\"276\" cy=\"294\" rx=\"11\" ry=\"6\" fill=\"#F0A8A8\" opacity=\"0.3\"/> <ellipse cx=\"404\" cy=\"294\" rx=\"11\" ry=\"6\" fill=\"#F0A8A8\" opacity=\"0.3\"/> <path d=\"M328 304 Q340 310 352 302\" fill=\"none\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M350 304 l5 9 6 -8\" fill=\"#fff\" stroke=\"#22242C\" stroke-width=\"3\" stroke-linejoin=\"round\"/> <path d=\"M326 301 Q340 306 354 300 Q350 322 340 323 Q330 322 326 301 Z\" fill=\"#96404C\" stroke=\"#22242C\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M256 250 C246 150 286 104 340 100 C394 104 434 150 424 250 L398 236 L404 194 L378 232 L360 198 L348 240 L322 200 L314 240 L292 208 L286 244 L262 252 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <g data-k=\"50\" data-damp=\"0.86\" data-fz=\"1.5\" data-fx=\"0.5\"> <circle cx=\"352\" cy=\"102\" r=\"0\" fill=\"none\"/> <path d=\"M346 104 C340 72 358 44 386 40 C366 56 364 82 372 102 Z\" fill=\"#4A90D8\" stroke=\"#22242C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> </g> </g>","KANAONI":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <path d=\"M262 352 C230 356 204 376 192 404 C210 412 236 406 256 388 L268 398 C258 418 258 440 268 456 C282 442 290 418 288 396 Z\" fill=\"#C8A878\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M418 352 C450 356 476 376 488 404 C470 412 444 406 424 388 L412 398 C422 418 422 440 412 456 C398 442 390 418 392 396 Z\" fill=\"#C8A878\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M212 384 l14 -8 M224 398 l12 -10 M456 386 l-14 -8 M446 400 l-12 -10 M272 420 l10 -8 M408 422 l-10 -8\" stroke=\"#E8D0A8\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <rect x=\"322\" y=\"322\" width=\"36\" height=\"32\" fill=\"#6E7078\"/> <circle cx=\"331\" cy=\"330\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"341\" cy=\"334\" r=\"2.5\" fill=\"#4A4C54\"/><circle cx=\"351\" cy=\"330\" r=\"2.5\" fill=\"#4A4C54\"/> <ellipse cx=\"310\" cy=\"616\" rx=\"23\" ry=\"10\" fill=\"#26262A\" stroke=\"#201814\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"616\" rx=\"23\" ry=\"10\" fill=\"#26262A\" stroke=\"#201814\" stroke-width=\"5\"/> <path d=\"M284 468 L396 468 L404 594 C404 604 396 610 386 610 L294 610 C284 610 276 604 276 594 Z\" fill=\"#2A3244\" stroke=\"#201814\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M340 500 L340 604\" stroke=\"#201814\" stroke-width=\"5\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 408 260 442 262 478 L418 478 C420 442 414 408 404 380 C396 356 378 344 340 344 Z\" fill=\"#2A3E44\" stroke=\"#201814\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M314 346 L340 392 L366 346 L340 362 Z\" fill=\"#3A3C44\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M328 356 l6 6 6 -6 6 6 6 -6 M334 368 l6 6 6 -6\" fill=\"none\" stroke=\"#8A8C94\" stroke-width=\"3\"/> <path d=\"M312 352 C324 392 356 392 368 352 M334 398 L340 412 L346 398\" fill=\"none\" stroke=\"#B89058\" stroke-width=\"6\" stroke-linecap=\"round\"/> <path d=\"M266 452 L414 452 L416 476 L264 476 Z\" fill=\"#55575F\" stroke=\"#201814\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <rect x=\"303\" y=\"478\" width=\"26\" height=\"18\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#201814\" stroke-width=\"4\"/> <rect x=\"351\" y=\"478\" width=\"26\" height=\"18\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#201814\" stroke-width=\"4\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C274 372 256 406 250 454 C246 482 258 496 276 492 C296 486 306 452 308 414 C309 392 308 375 300 366 Z\" fill=\"#2A3E44\" stroke=\"#201814\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M252 442 L286 436 L290 470 L258 478 Z\" fill=\"#55575F\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M256 456 L288 450\" stroke=\"#201814\" stroke-width=\"3.5\"/> <ellipse cx=\"272\" cy=\"488\" rx=\"14\" ry=\"12\" fill=\"#F2E0D0\" stroke=\"#201814\" stroke-width=\"5\"/> <g> <path d=\"M276 494 L262 502 L228 574 L248 586 L286 508 Z\" fill=\"#8A8C94\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M236 570 L252 580\" stroke=\"#C8CCD4\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M278 492 L294 482 L300 492 L284 502 Z\" fill=\"#3A3428\" stroke=\"#201814\" stroke-width=\"4\" stroke-linejoin=\"round\"/> </g> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C406 372 424 406 430 454 C434 482 422 496 404 492 C384 486 374 452 372 414 C371 392 372 375 380 366 Z\" fill=\"#2A3E44\" stroke=\"#201814\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M428 442 L394 436 L390 470 L422 478 Z\" fill=\"#55575F\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M424 456 L392 450\" stroke=\"#201814\" stroke-width=\"3.5\"/> <path d=\"M394 470 C410 466 422 472 424 482 C426 492 416 499 404 497 C394 495 388 488 388 478 C388 473 390 471 394 470 Z\" fill=\"#F2E0D0\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 70 C248 70 192 148 198 262 C201 300 216 326 248 334 L432 334 C464 326 479 300 482 262 C488 148 432 70 340 70 Z\" fill=\"#2A3E44\" stroke=\"#201814\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M244 92 C282 68 324 60 360 66 L352 102 C316 94 280 98 252 112 Z\" fill=\"#34505A\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"260\" y=\"164\" width=\"160\" height=\"168\" rx=\"52\" fill=\"#A82828\" stroke=\"#201814\" stroke-width=\"7\"/> </g> <g> <path d=\"M296 172 L272 116 L254 128 C258 152 272 172 288 182 Z\" fill=\"#C8B890\" stroke=\"#201814\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M384 172 L408 116 L426 128 C422 152 408 172 392 182 Z\" fill=\"#C8B890\" stroke=\"#201814\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M300 208 C316 200 326 202 334 212 M380 208 C364 200 354 202 346 212 M320 186 C334 180 346 180 360 186\" fill=\"none\" stroke=\"#7A1C1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M278 240 L316 250\" fill=\"none\" stroke=\"#4A1010\" stroke-width=\"9\" stroke-linecap=\"round\"/> <path d=\"M364 250 L402 240\" fill=\"none\" stroke=\"#4A1010\" stroke-width=\"9\" stroke-linecap=\"round\"/> <g> <path d=\"M282 262 C292 254 308 254 314 264 C308 274 290 274 282 262 Z\" fill=\"#D8A030\" stroke=\"#201814\" stroke-width=\"4\"/> <g> <circle cx=\"298\" cy=\"264\" r=\"5\" fill=\"#E03020\"/> <circle cx=\"298\" cy=\"264\" r=\"8\" fill=\"#E03020\" opacity=\"0.35\"/> </g> </g> <path d=\"M284 264 Q298 271 312 264\" fill=\"none\" stroke=\"#201814\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <path d=\"M398 262 C388 254 372 254 366 264 C372 274 390 274 398 262 Z\" fill=\"#D8A030\" stroke=\"#201814\" stroke-width=\"4\"/> <g> <circle cx=\"382\" cy=\"264\" r=\"5\" fill=\"#E03020\"/> <circle cx=\"382\" cy=\"264\" r=\"8\" fill=\"#E03020\" opacity=\"0.35\"/> </g> </g> <path d=\"M368 264 Q382 271 396 264\" fill=\"none\" stroke=\"#201814\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M296 292 C310 284 370 284 384 292 L380 322 C360 332 320 332 300 322 Z\" fill=\"#4A1414\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M304 294 L316 316 L324 296 Z\" fill=\"#C8CCD4\" stroke=\"#201814\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/> <path d=\"M376 294 L364 316 L356 296 Z\" fill=\"#C8CCD4\" stroke=\"#201814\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/> <path d=\"M330 324 L338 306 L346 324 Z\" fill=\"#C8CCD4\" stroke=\"#201814\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/> <path d=\"M318 308 Q340 314 362 308\" fill=\"none\" stroke=\"#2A0808\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M316 304 Q340 312 364 304 Q358 328 340 329 Q322 328 316 304 Z\" fill=\"#2A0808\" stroke=\"#2A0808\" stroke-width=\"4\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M258 196 C270 130 410 130 422 196 L410 216 C396 168 284 168 270 216 Z\" fill=\"#2A3E44\" stroke=\"#201814\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M262 210 Q340 192 418 210 L418 232 Q340 212 262 232 Z\" fill=\"#8E4828\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <g data-k=\"42\" data-damp=\"0.88\" data-fz=\"0.8\" data-fx=\"0.4\"> <circle cx=\"268\" cy=\"216\" r=\"0\" fill=\"none\"/> <path d=\"M266 208 L216 202 L240 234 Z\" fill=\"#8E4828\" stroke=\"#201814\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> </g> </g>","KARURA":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <g data-k=\"22\" data-damp=\"0.92\" data-fz=\"0.5\" data-fx=\"0.3\"> <circle cx=\"256\" cy=\"378\" r=\"0\" fill=\"none\"/> <path d=\"M250 370 C204 340 144 332 98 350 C124 360 128 374 112 382 C138 386 146 398 132 408 C158 410 168 420 158 432 C192 436 228 418 250 394 C256 386 256 376 250 370 Z\" fill=\"#1E1E28\" stroke=\"#14141C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <g data-k=\"22\" data-damp=\"0.92\" data-fz=\"0.5\" data-fx=\"0.3\"> <circle cx=\"424\" cy=\"378\" r=\"0\" fill=\"none\"/> <path d=\"M430 370 C476 340 536 332 582 350 C556 360 552 374 568 382 C542 386 534 398 548 408 C522 410 512 420 522 432 C488 436 452 418 430 394 C424 386 424 376 430 370 Z\" fill=\"#1E1E28\" stroke=\"#14141C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F2E0D4\"/> <ellipse cx=\"310\" cy=\"618\" rx=\"21\" ry=\"8\" fill=\"#26262A\" stroke=\"#14141C\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"618\" rx=\"21\" ry=\"8\" fill=\"#26262A\" stroke=\"#14141C\" stroke-width=\"5\"/> <path d=\"M340 344 C300 344 282 356 274 380 C260 424 254 500 256 576 C256 590 266 596 280 596 L400 596 C414 596 424 590 424 576 C426 500 420 424 406 380 C398 356 380 344 340 344 Z\" fill=\"#26262A\" stroke=\"#14141C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M314 346 L340 396 L366 346\" fill=\"none\" stroke=\"#6A48A8\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M310 350 L296 470 M370 350 L384 470\" fill=\"none\" stroke=\"#6A48A8\" stroke-width=\"9\" stroke-linecap=\"round\"/> <circle cx=\"302\" cy=\"398\" r=\"11\" fill=\"#F4F0EC\" stroke=\"#14141C\" stroke-width=\"4\"/> <circle cx=\"378\" cy=\"398\" r=\"11\" fill=\"#F4F0EC\" stroke=\"#14141C\" stroke-width=\"4\"/> <circle cx=\"294\" cy=\"452\" r=\"11\" fill=\"#F4F0EC\" stroke=\"#14141C\" stroke-width=\"4\"/> <circle cx=\"386\" cy=\"452\" r=\"11\" fill=\"#F4F0EC\" stroke=\"#14141C\" stroke-width=\"4\"/> <path d=\"M300 470 L380 470 L382 488 L298 488 Z\" fill=\"#6A48A8\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 488 L322 504 M340 488 L358 504\" stroke=\"#6A48A8\" stroke-width=\"7\" stroke-linecap=\"round\"/> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C408 372 428 408 434 458 C438 486 426 500 408 496 C388 490 378 456 376 416 C374 394 372 376 380 366 Z\" fill=\"#26262A\" stroke=\"#14141C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"412\" cy=\"482\" rx=\"14\" ry=\"12\" fill=\"#F2E0D4\" stroke=\"#14141C\" stroke-width=\"5\"/> </g> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C282 370 272 388 270 414 C270 432 282 438 292 432 C302 424 306 402 306 386 C306 374 304 368 300 366 Z\" fill=\"#26262A\" stroke=\"#14141C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M288 400 L296 400 L296 428 L288 428 Z\" fill=\"#F2E0D4\" stroke=\"#14141C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M298 398 L306 398 L306 428 L298 428 Z\" fill=\"#F2E0D4\" stroke=\"#14141C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <ellipse cx=\"297\" cy=\"438\" rx=\"13\" ry=\"12\" fill=\"#F2E0D4\" stroke=\"#14141C\" stroke-width=\"5\"/> <circle cx=\"283\" cy=\"452\" r=\"4.5\" fill=\"#5888C8\" stroke=\"#14141C\" stroke-width=\"3\"/> <circle cx=\"292\" cy=\"456\" r=\"4.5\" fill=\"#5888C8\" stroke=\"#14141C\" stroke-width=\"3\"/> <circle cx=\"302\" cy=\"457\" r=\"4.5\" fill=\"#5888C8\" stroke=\"#14141C\" stroke-width=\"3\"/> <circle cx=\"311\" cy=\"453\" r=\"4.5\" fill=\"#5888C8\" stroke=\"#14141C\" stroke-width=\"3\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 70 C246 70 192 146 198 260 C200 330 206 372 218 398 C232 408 246 398 244 378 C242 338 244 300 248 272 L432 272 C436 300 438 338 436 378 C434 398 448 408 462 398 C474 372 480 330 482 260 C488 146 434 70 340 70 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M246 380 L232 430 L260 404 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M434 380 L448 430 L420 404 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F2E0D4\" stroke=\"#14141C\" stroke-width=\"7\"/> </g> <g> <path d=\"M286 246 Q298 242 310 246\" fill=\"none\" stroke=\"#242438\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M370 246 Q382 242 394 246\" fill=\"none\" stroke=\"#242438\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"14\" ry=\"16\" fill=\"#fff\" stroke=\"#14141C\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"9.5\" fill=\"#4898A8\"/> <circle cx=\"297\" cy=\"274\" r=\"4.2\" fill=\"#14242A\"/> <circle cx=\"293\" cy=\"268\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M283 260 L311 259\" fill=\"none\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 279 309 272\" fill=\"none\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"14\" ry=\"16\" fill=\"#fff\" stroke=\"#14141C\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"9.5\" fill=\"#4898A8\"/> <circle cx=\"383\" cy=\"274\" r=\"4.2\" fill=\"#14242A\"/> </g> </g> <path d=\"M371 272 Q383 279 395 272\" fill=\"none\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse cx=\"276\" cy=\"294\" rx=\"9\" ry=\"4\" fill=\"#E0A0A0\" opacity=\"0.2\"/> <ellipse cx=\"404\" cy=\"294\" rx=\"9\" ry=\"4\" fill=\"#E0A0A0\" opacity=\"0.2\"/> <path d=\"M280 294 C300 282 380 282 400 294 L396 334 C372 346 308 346 284 334 Z\" fill=\"#1E1E24\" stroke=\"#14141C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M330 314 Q340 317 350 313\" fill=\"none\" stroke=\"#0E0E14\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M328 311 Q340 315 352 310 Q349 328 340 329 Q331 328 328 311 Z\" fill=\"#0E0E14\" stroke=\"#0E0E14\" stroke-width=\"4\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M258 246 C252 158 282 112 330 106 C314 130 302 168 298 210 L284 244 C274 246 266 248 258 246 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M310 108 C372 112 410 156 419 214 C423 256 419 306 407 340 C397 354 376 350 380 330 C372 306 358 288 352 262 C346 226 330 180 310 144 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M300 106 C292 130 288 160 288 190 L310 184 C308 156 312 128 320 108 Z\" fill=\"#242438\" stroke=\"#14141C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> </g>","SHION":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F6E4D8\"/> <rect x=\"297\" y=\"522\" width=\"27\" height=\"86\" rx=\"12\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"5\"/> <rect x=\"356\" y=\"522\" width=\"27\" height=\"86\" rx=\"12\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"5\"/> <ellipse cx=\"310\" cy=\"614\" rx=\"20\" ry=\"8\" fill=\"#55575F\" stroke=\"#201A1C\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"614\" rx=\"20\" ry=\"8\" fill=\"#55575F\" stroke=\"#201A1C\" stroke-width=\"5\"/> <path d=\"M288 476 L392 476 L398 540 L282 540 Z\" fill=\"#3A5058\" stroke=\"#201A1C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M282 534 l13 13 13 -11 13 11 13 -11 13 11 13 -11 13 11 13 -13 L398 556 L282 556 Z\" fill=\"#26262A\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 410 262 444 264 482 L416 482 C418 444 414 410 404 380 C396 356 378 344 340 344 Z\" fill=\"#3A5058\" stroke=\"#201A1C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M292 350 L306 330 L318 352 L332 328 L346 352 L360 328 L372 352 L386 332 L396 354 C404 368 398 382 384 386 C356 394 322 394 296 386 C282 382 278 366 286 356 Z\" fill=\"#26262A\" stroke=\"#1A1418\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M266 428 L414 428 L418 480 L262 480 Z\" fill=\"#E89030\" stroke=\"#201A1C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M284 428 l13 0 -11 52 -13 0 Z M320 428 l13 0 -6 52 -13 0 Z M356 428 l13 0 2 52 -13 0 Z M390 428 l13 0 8 52 -13 0 Z\" fill=\"#26262A\"/> <path d=\"M262 446 L418 446 L418 462 L262 462 Z\" fill=\"#8E48C8\" stroke=\"#201A1C\" stroke-width=\"4\"/> <path d=\"M340 440 L314 454 L336 468 Z\" fill=\"#8E48C8\" stroke=\"#201A1C\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M340 440 L366 454 L344 468 Z\" fill=\"#8E48C8\" stroke=\"#201A1C\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <circle cx=\"340\" cy=\"452\" r=\"7\" fill=\"#7A3AB0\" stroke=\"#201A1C\" stroke-width=\"4\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C280 372 268 392 264 416 C263 430 272 438 284 434 C296 428 302 408 304 390 C305 378 304 370 300 366 Z\" fill=\"#3A5058\" stroke=\"#201A1C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M258 430 L294 424 L300 470 L262 478 Z\" fill=\"#3A3C44\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M262 444 L296 438 M264 458 L298 452\" stroke=\"#201A1C\" stroke-width=\"3.5\"/> <ellipse cx=\"280\" cy=\"488\" rx=\"14\" ry=\"12\" fill=\"#3A3C44\" stroke=\"#201A1C\" stroke-width=\"5\"/> <path d=\"M268 494 L254 550 L276 500 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M280 498 L276 558 L290 500 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M292 494 L306 548 L300 492 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C400 372 412 392 416 416 C417 430 408 438 396 434 C384 428 378 408 376 390 C375 378 376 370 380 366 Z\" fill=\"#3A5058\" stroke=\"#201A1C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M422 430 L386 424 L380 470 L418 478 Z\" fill=\"#3A3C44\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M418 444 L384 438 M416 458 L382 452\" stroke=\"#201A1C\" stroke-width=\"3.5\"/> <ellipse cx=\"400\" cy=\"488\" rx=\"14\" ry=\"12\" fill=\"#3A3C44\" stroke=\"#201A1C\" stroke-width=\"5\"/> <g> <path d=\"M412 494 L426 550 L404 500 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M400 498 L404 558 L390 500 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M388 494 L374 548 L380 492 Z\" fill=\"#6E7078\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> </g> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <g data-k=\"30\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.4\"> <circle cx=\"352\" cy=\"108\" r=\"0\" fill=\"none\"/> <path d=\"M346 110 C300 66 292 24 330 6 C318 40 348 54 366 36 C352 70 392 76 406 50 C404 88 408 110 382 118 C368 122 354 118 346 110 Z\" fill=\"#7A3030\" stroke=\"#201A1C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M330 40 C338 52 352 56 362 50 M372 74 C382 82 394 82 400 74\" fill=\"none\" stroke=\"#944040\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M352 108 L326 92 L336 116 Z\" fill=\"#7A48C8\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M356 108 L382 90 L374 116 Z\" fill=\"#7A48C8\" stroke=\"#201A1C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> </g> <path d=\"M340 76 C248 76 194 150 200 262 C203 298 216 322 246 330 L434 330 C464 322 477 298 480 262 C486 150 432 76 340 76 Z\" fill=\"#7A3030\" stroke=\"#201A1C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M228 258 L206 330 L248 312 Z\" fill=\"#7A3030\" stroke=\"#201A1C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M452 258 L474 330 L432 312 Z\" fill=\"#7A3030\" stroke=\"#201A1C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F6E4D8\" stroke=\"#201A1C\" stroke-width=\"7\"/> </g> <g> <path d=\"M284 246 L312 253\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M368 253 L396 246\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#201A1C\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"10\" fill=\"#E87890\"/> <path d=\"M297 269 l4 5 -4 5 -4 -5 Z\" fill=\"#3A1018\"/> <circle cx=\"293\" cy=\"267\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M283 258 L312 258\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 280 309 272\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#201A1C\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"10\" fill=\"#E87890\"/> <path d=\"M383 269 l4 5 -4 5 -4 -5 Z\" fill=\"#3A1018\"/> <circle cx=\"379\" cy=\"267\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M368 258 L397 258\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M371 272 Q383 280 395 272\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M284 290 Q297 295 310 290\" fill=\"none\" stroke=\"#8E2020\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.75\"/> <path d=\"M370 290 Q383 295 396 290\" fill=\"none\" stroke=\"#8E2020\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.75\"/> <ellipse cx=\"274\" cy=\"296\" rx=\"10\" ry=\"5\" fill=\"#F0A0A8\" opacity=\"0.4\"/> <ellipse cx=\"406\" cy=\"296\" rx=\"10\" ry=\"5\" fill=\"#F0A0A8\" opacity=\"0.4\"/> <path d=\"M331 306 L349 306\" fill=\"none\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M328 303 Q340 306 352 303 Q348 322 340 323 Q332 322 328 303 Z\" fill=\"#A84450\" stroke=\"#201A1C\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M256 248 C246 150 286 104 340 100 C394 104 434 150 424 248 L404 244 C400 208 396 184 390 166 C378 192 362 206 348 208 L340 172 L332 208 C318 206 302 192 290 166 C284 184 280 208 276 244 L262 248 Z\" fill=\"#7A3030\" stroke=\"#201A1C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> </g>","DAN":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <path d=\"M398 348 L446 280 L462 290 L414 358 Z\" fill=\"#3A3A40\" stroke=\"#18181C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M416 322 l10 7 M430 302 l10 7\" stroke=\"#F1EDE2\" stroke-width=\"4\" stroke-linecap=\"round\"/> <circle cx=\"456\" cy=\"284\" r=\"7\" fill=\"#D9A93F\" stroke=\"#18181C\" stroke-width=\"4\"/> <path d=\"M316 344 L340 388 L364 344 L340 358 Z\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M328 352 l6 6 6 -6 M322 362 l6 6 6 -6 6 6 6 -6\" fill=\"none\" stroke=\"#8A8C94\" stroke-width=\"3\"/> <ellipse cx=\"310\" cy=\"616\" rx=\"23\" ry=\"10\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"616\" rx=\"23\" ry=\"10\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"5\"/> <path d=\"M284 468 L396 468 L404 594 C404 604 396 610 386 610 L294 610 C284 610 276 604 276 594 Z\" fill=\"#26262A\" stroke=\"#18181C\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M340 500 L340 604\" stroke=\"#18181C\" stroke-width=\"5\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 408 260 442 262 478 L418 478 C420 442 414 408 404 380 C396 356 378 344 340 344 Z\" fill=\"#26262A\" stroke=\"#18181C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M310 348 C300 388 296 428 296 470 M370 348 C380 388 384 428 384 470\" fill=\"none\" stroke=\"#D83030\" stroke-width=\"4.5\"/> <path d=\"M316 346 L340 392 L364 346\" fill=\"none\" stroke=\"#D83030\" stroke-width=\"4\"/> <path d=\"M266 452 L414 452 L416 476 L264 476 Z\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <rect x=\"302\" y=\"478\" width=\"26\" height=\"18\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#18181C\" stroke-width=\"4\"/> <rect x=\"352\" y=\"478\" width=\"26\" height=\"18\" rx=\"4\" fill=\"#4A4C54\" stroke=\"#18181C\" stroke-width=\"4\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C274 372 256 406 250 454 C246 482 258 496 276 492 C296 486 306 452 308 414 C309 392 308 375 300 366 Z\" fill=\"#26262A\" stroke=\"#18181C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M254 434 C252 444 252 454 254 462\" fill=\"none\" stroke=\"#D83030\" stroke-width=\"4.5\"/> <path d=\"M252 462 L284 456 L288 474 L258 480 Z\" fill=\"#B83030\" stroke=\"#18181C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <ellipse cx=\"272\" cy=\"488\" rx=\"15\" ry=\"13\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"5\"/> <g> <path d=\"M280 480 L300 470 L306 482 L288 494 Z\" fill=\"#3A3A40\" stroke=\"#18181C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M290 476 l6 8 M298 472 l5 8\" stroke=\"#F1EDE2\" stroke-width=\"3\" stroke-linecap=\"round\"/> <path d=\"M278 490 q12 -10 22 -4\" fill=\"none\" stroke=\"#D9A93F\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M274 496 L212 576 L228 584 L288 502 Z\" fill=\"#D83030\" opacity=\"0.4\"/> <path d=\"M276 496 L220 570 L230 576 L286 500 Z\" fill=\"#FF7050\" stroke=\"#C42020\" stroke-width=\"3\" stroke-linejoin=\"round\"/> </g> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C406 372 424 406 430 454 C434 482 422 496 404 492 C384 486 374 452 372 414 C371 392 372 375 380 366 Z\" fill=\"#26262A\" stroke=\"#18181C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M426 434 C428 444 428 454 426 462\" fill=\"none\" stroke=\"#D83030\" stroke-width=\"4.5\"/> <path d=\"M428 462 L396 456 L392 474 L422 480 Z\" fill=\"#B83030\" stroke=\"#18181C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <ellipse cx=\"408\" cy=\"488\" rx=\"15\" ry=\"13\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"5\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M340 70 C248 70 192 148 198 262 C201 300 216 326 248 334 L432 334 C464 326 479 300 482 262 C488 148 432 70 340 70 Z\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M244 96 C280 72 320 62 356 66 L348 100 C312 94 276 96 250 110 Z\" fill=\"#3A3A40\" stroke=\"#18181C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"7\"/> </g> <g> <path d=\"M266 236 L272 316 C298 336 382 336 408 316 L414 236 C392 222 288 222 266 236 Z\" fill=\"#3E3E46\" stroke=\"#18181C\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M272 250 L266 236 M408 250 L414 236\" stroke=\"#18181C\" stroke-width=\"4\"/> <ellipse cx=\"340\" cy=\"272\" rx=\"86\" ry=\"8\" fill=\"#D83030\" opacity=\"0.35\"/> <g> <circle cx=\"340\" cy=\"272\" r=\"19\" fill=\"#D83030\" opacity=\"0.55\"/> <g> <circle cx=\"340\" cy=\"272\" r=\"12\" fill=\"#F06040\"/> <circle cx=\"340\" cy=\"272\" r=\"5.5\" fill=\"#FFD0B0\"/> </g> </g> <path d=\"M326 272 L354 272\" fill=\"none\" stroke=\"#D83030\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M320 306 L360 306 L356 322 L324 322 Z\" fill=\"#1C1C20\" stroke=\"#18181C\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M330 310 v8 M340 310 v8 M350 310 v8\" stroke=\"#3E3E46\" stroke-width=\"3.5\"/> <path d=\"M332 314 L348 314\" fill=\"none\" stroke=\"#0E0E12\" stroke-width=\"0.1\" opacity=\"0.1\"/> <path d=\"M330 310 L350 310 L348 320 L332 320 Z\" fill=\"#D83030\" opacity=\"0\"/> </g> <g> <path d=\"M258 232 Q340 212 422 232 L422 258 Q340 236 258 258 Z\" fill=\"#55575F\" stroke=\"#18181C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M302 232 l8 8 -8 8 -8 -8 Z M340 226 l8 8 -8 8 -8 -8 Z M378 232 l8 8 -8 8 -8 -8 Z\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"3\"/> <path d=\"M258 232 C256 190 268 150 292 124 L300 140 C280 164 270 196 270 232 Z\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M422 232 C424 190 412 150 388 124 L380 140 C400 164 410 196 410 232 Z\" fill=\"#2E2E34\" stroke=\"#18181C\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> </g>","ANNE":"<g id=\"body\"> <circle id=\"pivot_body\" cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <path d=\"M400 344 L436 310 L448 320 L412 354 Z\" fill=\"#3A383C\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M414 332 l8 6 M424 322 l8 6\" stroke=\"#F1EDE2\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <circle cx=\"444\" cy=\"314\" r=\"6\" fill=\"#D9A93F\" stroke=\"#241E18\" stroke-width=\"3.5\"/> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F8E6D8\"/> <rect x=\"297\" y=\"520\" width=\"27\" height=\"88\" rx=\"12\" fill=\"#6E7078\" stroke=\"#241E18\" stroke-width=\"5\"/> <rect x=\"356\" y=\"520\" width=\"27\" height=\"88\" rx=\"12\" fill=\"#6E7078\" stroke=\"#241E18\" stroke-width=\"5\"/> <ellipse cx=\"310\" cy=\"614\" rx=\"20\" ry=\"8\" fill=\"#55575F\" stroke=\"#241E18\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"614\" rx=\"20\" ry=\"8\" fill=\"#55575F\" stroke=\"#241E18\" stroke-width=\"5\"/> <path d=\"M340 346 C302 346 284 358 278 382 C268 416 264 474 266 528 C266 540 276 546 288 546 L392 546 C404 546 414 540 414 528 C416 474 412 416 402 382 C396 358 378 346 340 346 Z\" fill=\"#58904A\" stroke=\"#241E18\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M316 348 L340 394 L364 348 L352 340 L340 366 L328 340 Z\" fill=\"#3A6838\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M266 462 L414 462 L416 484 L264 484 Z\" fill=\"#B8A040\" stroke=\"#241E18\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M340 466 L316 476 L336 486 Z\" fill=\"#A89038\" stroke=\"#241E18\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M340 466 L364 476 L344 486 Z\" fill=\"#A89038\" stroke=\"#241E18\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M292 348 C310 332 370 332 388 348 C398 364 394 382 376 388 C352 396 328 396 304 388 C286 382 282 364 292 348 Z\" fill=\"#B83030\" stroke=\"#241E18\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <g id=\"swing_scarf\" data-k=\"26\" data-damp=\"0.9\" data-fz=\"0.7\" data-fx=\"0.5\"> <circle id=\"pivot_swing_scarf\" cx=\"300\" cy=\"376\" r=\"0\" fill=\"none\"/> <path d=\"M298 368 C258 376 220 404 200 442 C186 430 184 408 196 392 C182 396 172 388 176 374 C204 350 262 344 298 356 C306 360 306 366 298 368 Z\" fill=\"#B83030\" stroke=\"#241E18\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <g id=\"armL\" data-front=\"1\"> <circle id=\"pivot_armL\" cx=\"302\" cy=\"372\" r=\"0\" fill=\"none\"/> <path d=\"M300 370 C278 378 264 404 260 438 C258 458 270 466 284 460 C298 452 306 426 306 402 C306 386 305 375 300 370 Z\" fill=\"#58904A\" stroke=\"#241E18\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M258 432 L292 426 L296 466 L262 474 Z\" fill=\"#4A4C52\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M260 448 L294 442\" stroke=\"#8A6848\" stroke-width=\"4\"/> <ellipse cx=\"278\" cy=\"482\" rx=\"14\" ry=\"12\" fill=\"#F8E6D8\" stroke=\"#241E18\" stroke-width=\"5\"/> <g id=\"weapon\"> <path d=\"M272 486 L226 538\" stroke=\"#B89040\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"262\" cy=\"498\" r=\"14\" fill=\"#88C060\" stroke=\"#241E18\" stroke-width=\"5\"/> <circle cx=\"248\" cy=\"514\" r=\"14\" fill=\"#F4F0E8\" stroke=\"#241E18\" stroke-width=\"5\"/> <circle cx=\"234\" cy=\"530\" r=\"14\" fill=\"#F0B0C8\" stroke=\"#241E18\" stroke-width=\"5\"/> </g> </g> <g id=\"armR\" data-front=\"1\"> <circle id=\"pivot_armR\" cx=\"378\" cy=\"372\" r=\"0\" fill=\"none\"/> <path d=\"M380 370 C402 378 416 404 420 438 C422 458 410 466 396 460 C382 452 374 426 374 402 C374 386 375 375 380 370 Z\" fill=\"#58904A\" stroke=\"#241E18\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M422 432 L388 426 L384 466 L418 474 Z\" fill=\"#4A4C52\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M420 448 L386 442\" stroke=\"#8A6848\" stroke-width=\"4\"/> <ellipse cx=\"402\" cy=\"482\" rx=\"14\" ry=\"12\" fill=\"#F8E6D8\" stroke=\"#241E18\" stroke-width=\"5\"/> </g> </g> <g id=\"head\"> <circle id=\"pivot_head\" cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle id=\"pivot_neck\" cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g id=\"hairBack\"> <g id=\"swing_topknot\" data-k=\"42\" data-damp=\"0.88\" data-fz=\"1.2\" data-fx=\"0.5\"> <circle id=\"pivot_swing_topknot\" cx=\"340\" cy=\"98\" r=\"0\" fill=\"none\"/> <path d=\"M332 100 C322 68 328 40 348 24 C344 46 352 60 366 58 C384 42 396 44 398 58 C384 62 372 76 366 96 C356 106 342 108 332 100 Z\" fill=\"#4A3828\" stroke=\"#241E18\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <rect x=\"326\" y=\"90\" width=\"26\" height=\"10\" rx=\"4\" fill=\"#B83030\" stroke=\"#241E18\" stroke-width=\"3.5\"/> </g> <path d=\"M340 76 C248 76 194 150 200 260 C203 296 216 320 246 328 L434 328 C464 320 477 296 480 260 C486 150 432 76 340 76 Z\" fill=\"#4A3828\" stroke=\"#241E18\" stroke-width=\"8\" stroke-linejoin=\"round\"/> </g> <g id=\"face\"> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F8E6D8\" stroke=\"#241E18\" stroke-width=\"7\"/> </g> <g id=\"features\"> <path id=\"browL\" d=\"M284 248 L312 244\" fill=\"none\" stroke=\"#4A3828\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path id=\"browR\" d=\"M368 244 L396 248\" fill=\"none\" stroke=\"#4A3828\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g id=\"eyeL\"> <ellipse cx=\"297\" cy=\"272\" rx=\"13\" ry=\"15\" fill=\"#fff\" stroke=\"#241E18\" stroke-width=\"4\"/> <g id=\"irisL\"> <circle cx=\"297\" cy=\"273\" r=\"9.5\" fill=\"#6A5A88\"/> <circle cx=\"297\" cy=\"274\" r=\"4.2\" fill=\"#2A2038\"/> <circle cx=\"294\" cy=\"268\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M284 260 Q297 254 310 260\" fill=\"none\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path id=\"eyeLClosed\" d=\"M286 272 Q297 279 308 272\" fill=\"none\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g id=\"eyeR\"> <ellipse cx=\"383\" cy=\"272\" rx=\"13\" ry=\"15\" fill=\"#fff\" stroke=\"#241E18\" stroke-width=\"4\"/> <g id=\"irisR\"> <circle cx=\"383\" cy=\"273\" r=\"9.5\" fill=\"#6A5A88\"/> <circle cx=\"383\" cy=\"274\" r=\"4.2\" fill=\"#2A2038\"/> <circle cx=\"380\" cy=\"268\" r=\"2.2\" fill=\"#fff\"/> </g> <path d=\"M370 260 Q383 254 396 260\" fill=\"none\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path id=\"eyeRClosed\" d=\"M372 272 Q383 279 394 272\" fill=\"none\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse id=\"blushL\" cx=\"274\" cy=\"294\" rx=\"13\" ry=\"7\" fill=\"#F2A8B0\" opacity=\"0.55\"/> <ellipse id=\"blushR\" cx=\"406\" cy=\"294\" rx=\"13\" ry=\"7\" fill=\"#F2A8B0\" opacity=\"0.55\"/> <path id=\"mouthClosed\" d=\"M330 304 Q335 309 340 304 Q345 309 350 304\" fill=\"none\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path id=\"mouthOpen\" d=\"M328 302 Q340 306 352 302 Q348 320 340 321 Q332 320 328 302 Z\" fill=\"#A84450\" stroke=\"#241E18\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g id=\"hairFront\"> <path d=\"M256 246 C250 152 284 108 340 104 C396 108 430 152 424 246 L402 244 L396 210 L390 244 L350 246 L343 212 L336 246 L294 244 L288 210 L282 244 Z\" fill=\"#4A3828\" stroke=\"#241E18\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> </g>","HONCHII":"<g id=\"body\"> <circle id=\"pivot_body\" cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F8DFC8\"/> <ellipse cx=\"310\" cy=\"616\" rx=\"22\" ry=\"11\" fill=\"#F8DFC8\" stroke=\"#241D1A\" stroke-width=\"6\"/> <ellipse cx=\"370\" cy=\"616\" rx=\"22\" ry=\"11\" fill=\"#F8DFC8\" stroke=\"#241D1A\" stroke-width=\"6\"/> <path d=\"M340 344 C300 344 282 356 274 380 C258 430 250 520 252 592 C252 604 262 610 276 610 L404 610 C418 610 428 604 428 592 C430 520 422 430 406 380 C398 356 380 344 340 344 Z\" fill=\"#2B2521\" stroke=\"#241D1A\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M314 346 L340 392 L366 346 L354 336 L340 362 L326 336 Z\" fill=\"#F7F3EA\" stroke=\"#241D1A\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M312 350 L340 400 L368 350\" fill=\"none\" stroke=\"#241D1A\" stroke-width=\"6\" stroke-linecap=\"round\"/> <g id=\"tea_bowl\"> <path d=\"M282 450 C282 500 300 516 340 516 C380 516 398 500 398 450 Z\" fill=\"#CBC08E\" stroke=\"#241D1A\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <ellipse cx=\"340\" cy=\"450\" rx=\"58\" ry=\"13\" fill=\"#B9AE7E\" stroke=\"#241D1A\" stroke-width=\"6\"/> <path d=\"M290 472 C318 486 364 482 392 464\" fill=\"none\" stroke=\"#241D1A\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <path d=\"M292 490 C318 501 362 499 390 484\" fill=\"none\" stroke=\"#241D1A\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <rect x=\"326\" y=\"514\" width=\"28\" height=\"12\" rx=\"5\" fill=\"#B9AE7E\" stroke=\"#241D1A\" stroke-width=\"5\"/> </g> <g id=\"swing_steam\" data-wag=\"1\" data-k=\"18\" data-damp=\"0.92\" data-front=\"1\"> <circle id=\"pivot_swing_steam\" cx=\"340\" cy=\"452\" r=\"0\" fill=\"none\"/> <path d=\"M330 384 C323 400 337 408 330 424\" fill=\"none\" stroke=\"#E4A93C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <path d=\"M350 376 C343 394 357 402 350 418\" fill=\"none\" stroke=\"#E4A93C\" stroke-width=\"6\" stroke-linecap=\"round\"/> </g> <g id=\"armL\" data-front=\"1\"> <circle id=\"pivot_armL\" cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C270 372 250 410 242 462 C238 492 250 506 268 502 C290 496 302 460 306 420 C308 396 310 374 300 366 Z\" fill=\"#2B2521\" stroke=\"#241D1A\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <g fill=\"#F2B9C4\"> <circle cx=\"268\" cy=\"452\" r=\"7\"/><circle cx=\"279\" cy=\"460\" r=\"7\"/><circle cx=\"275\" cy=\"473\" r=\"7\"/><circle cx=\"261\" cy=\"473\" r=\"7\"/><circle cx=\"257\" cy=\"460\" r=\"7\"/> </g> <ellipse cx=\"284\" cy=\"482\" rx=\"17\" ry=\"14\" fill=\"#F8DFC8\" stroke=\"#241D1A\" stroke-width=\"6\"/> <path d=\"M276 476 q8 -3 14 1 M276 486 q8 -3 14 1\" fill=\"none\" stroke=\"#241D1A\" stroke-width=\"3\" stroke-linecap=\"round\"/> </g> <g id=\"armR\" data-front=\"1\"> <circle id=\"pivot_armR\" cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C410 372 430 410 438 462 C442 492 430 506 412 502 C390 496 378 460 374 420 C372 396 370 374 380 366 Z\" fill=\"#2B2521\" stroke=\"#241D1A\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <g fill=\"#F2B9C4\"> <circle cx=\"412\" cy=\"452\" r=\"7\"/><circle cx=\"423\" cy=\"460\" r=\"7\"/><circle cx=\"419\" cy=\"473\" r=\"7\"/><circle cx=\"405\" cy=\"473\" r=\"7\"/><circle cx=\"401\" cy=\"460\" r=\"7\"/> </g> <ellipse cx=\"396\" cy=\"482\" rx=\"17\" ry=\"14\" fill=\"#F8DFC8\" stroke=\"#241D1A\" stroke-width=\"6\"/> <path d=\"M390 476 q8 -3 14 1 M390 486 q8 -3 14 1\" fill=\"none\" stroke=\"#241D1A\" stroke-width=\"3\" stroke-linecap=\"round\"/> </g> </g> <g id=\"head\"> <circle id=\"pivot_head\" cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle id=\"pivot_neck\" cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g id=\"hairBack\"> <g id=\"swing_ribbon\" data-k=\"30\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.3\"> <circle id=\"pivot_swing_ribbon\" cx=\"468\" cy=\"132\" r=\"0\" fill=\"none\"/> <path d=\"M460 100 L545 62 L528 128 L562 146 L482 180 Z\" fill=\"#1F1A17\" stroke=\"#1F1A17\" stroke-width=\"6\" stroke-linejoin=\"round\"/> </g> <path d=\"M340 70 C245 70 186 150 194 268 C197 305 210 330 240 336 C252 338 258 326 254 312 C270 332 298 340 306 322 C320 336 360 336 374 322 C382 340 410 332 426 312 C422 326 428 338 440 336 C470 330 483 305 486 268 C494 150 435 70 340 70 Z\" fill=\"#C4453B\" stroke=\"#241D1A\" stroke-width=\"8\" stroke-linejoin=\"round\"/> </g> <g id=\"face\"> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F8DFC8\" stroke=\"#241D1A\" stroke-width=\"7\"/> </g> <g id=\"features\"> <g id=\"eyeL\"><g id=\"irisL\"><circle cx=\"297\" cy=\"272\" r=\"13\" fill=\"#211B18\"/></g></g> <path id=\"eyeLClosed\" d=\"M285 272 Q297 281 309 272\" fill=\"none\" stroke=\"#211B18\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g id=\"eyeR\"><g id=\"irisR\"><circle cx=\"383\" cy=\"272\" r=\"13\" fill=\"#211B18\"/></g></g> <path id=\"eyeRClosed\" d=\"M371 272 Q383 281 395 272\" fill=\"none\" stroke=\"#211B18\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <ellipse id=\"blushL\" cx=\"276\" cy=\"296\" rx=\"13\" ry=\"7\" fill=\"#F2A9B4\" opacity=\"0.35\"/> <ellipse id=\"blushR\" cx=\"404\" cy=\"296\" rx=\"13\" ry=\"7\" fill=\"#F2A9B4\" opacity=\"0.35\"/> <path id=\"mouthClosed\" d=\"M326 300 Q340 313 354 300\" fill=\"none\" stroke=\"#211B18\" stroke-width=\"6\" stroke-linecap=\"round\"/> <path id=\"mouthOpen\" d=\"M324 298 Q340 304 356 298 Q352 322 340 323 Q328 322 324 298 Z\" fill=\"#8f3a4e\" stroke=\"#211B18\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g id=\"hairFront\"> <g id=\"swing_hairL\" data-k=\"45\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.3\"> <circle id=\"pivot_swing_hairL\" cx=\"272\" cy=\"172\" r=\"0\" fill=\"none\"/> <path d=\"M262 168 C246 220 246 300 262 332 C270 346 288 342 286 322 C278 280 278 220 288 176 Z\" fill=\"#C4453B\" stroke=\"#241D1A\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> <g id=\"swing_hairR\" data-k=\"50\" data-damp=\"0.9\" data-fz=\"0.8\" data-fx=\"0.3\"> <circle id=\"pivot_swing_hairR\" cx=\"408\" cy=\"172\" r=\"0\" fill=\"none\"/> <path d=\"M418 168 C434 220 434 300 418 332 C410 346 392 342 394 322 C402 280 402 220 392 176 Z\" fill=\"#C4453B\" stroke=\"#241D1A\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> <g id=\"swing_flower\" data-k=\"70\" data-damp=\"0.85\" data-fz=\"1.2\" data-fx=\"0.4\"> <circle id=\"pivot_swing_flower\" cx=\"450\" cy=\"186\" r=\"0\" fill=\"none\"/> <g transform=\"translate(450,186)\"> <g fill=\"#F6C3CD\" stroke=\"#241D1A\" stroke-width=\"5\"> <ellipse cx=\"0\" cy=\"-17\" rx=\"10\" ry=\"13\"/> <ellipse cx=\"16\" cy=\"-5\" rx=\"10\" ry=\"13\" transform=\"rotate(72 16 -5)\"/> <ellipse cx=\"10\" cy=\"14\" rx=\"10\" ry=\"13\" transform=\"rotate(144 10 14)\"/> <ellipse cx=\"-10\" cy=\"14\" rx=\"10\" ry=\"13\" transform=\"rotate(216 -10 14)\"/> <ellipse cx=\"-16\" cy=\"-5\" rx=\"10\" ry=\"13\" transform=\"rotate(288 -16 -5)\"/> </g> <path d=\"M0 0 L0 -9 M0 0 L8 4 M0 0 L-8 4 M0 0 L6 -7 M0 0 L-6 -7\" stroke=\"#241D1A\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> </g> </g> <path d=\"M256 256 C248 170 282 116 340 112 C398 116 432 170 424 256 L404 260 L399 222 L393 260 L352 262 L347 224 L341 262 L300 262 L295 224 L289 262 L262 260 Z\" fill=\"#C4453B\" stroke=\"#241D1A\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> </g>","ROTTEN_CN":"<g id=\"body\"> <circle id=\"pivot_body\" cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#7AA878\"/> <path d=\"M326 330 l14 10 12 -6 v14 l-26 -4 Z\" fill=\"#3A4438\" opacity=\"0.7\"/> <ellipse cx=\"310\" cy=\"618\" rx=\"22\" ry=\"9\" fill=\"#4A4038\" stroke=\"#201C14\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"618\" rx=\"22\" ry=\"9\" fill=\"#4A4038\" stroke=\"#201C14\" stroke-width=\"5\"/> <path d=\"M284 470 L396 470 L404 594 C404 604 396 610 386 610 L294 610 C284 610 276 604 276 594 Z\" fill=\"#5A5040\" stroke=\"#201C14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M300 520 C310 512 322 514 328 524 C324 536 310 538 302 532 Z M360 560 C370 552 382 554 388 564 C384 576 370 578 362 572 Z\" fill=\"#6A2820\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 408 260 442 262 478 L418 478 C420 442 414 408 404 380 C396 356 378 344 340 344 Z\" fill=\"#5A5040\" stroke=\"#201C14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M310 352 L392 462 L378 472 L298 366 Z\" fill=\"#3A342C\" stroke=\"#201C14\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M296 388 C308 380 322 382 328 392 C324 404 308 406 300 398 Z M376 420 C388 412 400 416 404 426 C398 436 384 436 378 430 Z M320 440 C330 434 340 436 344 444 C340 452 328 452 322 448 Z\" fill=\"#6A2820\"/> <path d=\"M266 452 L414 452 L416 476 L264 476 Z\" fill=\"#8A8C94\" stroke=\"#201C14\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M306 476 L322 476 L318 494 L310 494 Z M348 476 L364 476 L360 494 L352 494 Z\" fill=\"#6E7078\" stroke=\"#201C14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <g id=\"armL\" data-front=\"1\"> <circle id=\"pivot_armL\" cx=\"302\" cy=\"372\" r=\"0\" fill=\"none\"/> <path d=\"M300 370 C278 378 264 402 260 434 C258 454 270 462 284 456 C298 448 306 424 306 400 C306 384 305 375 300 370 Z\" fill=\"#5A5040\" stroke=\"#201C14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M262 424 C274 416 288 418 294 428 C290 442 272 444 264 436 Z\" fill=\"#6A2820\"/> <path d=\"M262 436 L288 430 L292 452 L266 458 Z\" fill=\"#B8A890\" stroke=\"#201C14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M270 440 l12 8\" stroke=\"#8A2820\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M258 468 C266 458 280 456 288 464 C294 472 290 484 280 486 C276 492 268 492 264 486 C256 488 250 480 254 474 Z\" fill=\"#7AA878\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <g id=\"armR\" data-front=\"1\"> <circle id=\"pivot_armR\" cx=\"378\" cy=\"372\" r=\"0\" fill=\"none\"/> <path d=\"M380 370 C402 378 416 402 420 434 C422 454 410 462 396 456 C382 448 374 424 374 400 C374 384 375 375 380 370 Z\" fill=\"#5A5040\" stroke=\"#201C14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M382 400 C392 394 402 396 406 404 C402 414 390 414 384 408 Z\" fill=\"#6A2820\"/> <path d=\"M422 468 C414 458 400 456 392 464 C386 472 390 484 400 486 C404 492 412 492 416 486 C424 488 430 480 426 474 Z\" fill=\"#7AA878\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M416 476 l6 4\" stroke=\"#5A2818\" stroke-width=\"4\" stroke-linecap=\"round\"/> </g> </g> <g id=\"head\"> <circle id=\"pivot_head\" cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle id=\"pivot_neck\" cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g id=\"hairBack\"> <path d=\"M414 96 L470 56 M470 56 l-16 -2 M470 56 l-4 16 M470 56 l14 -10 M470 56 l10 14\" stroke=\"#201C14\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M452 44 L478 26 L488 40 L464 58 Z\" fill=\"#E8E6E0\" stroke=\"#201C14\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M466 34 L479 25 L484 32 L472 42 Z\" fill=\"#201C14\"/> <path d=\"M340 74 C248 74 194 148 200 260 C203 296 216 320 246 328 L434 328 C464 320 477 296 480 260 C486 148 432 74 340 74 Z\" fill=\"#4A4038\" stroke=\"#201C14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M404 100 C412 116 418 134 420 152 L400 144 C398 128 400 112 404 100 Z\" fill=\"#6A2820\" opacity=\"0.8\"/> </g> <g id=\"face\"> <rect x=\"260\" y=\"162\" width=\"160\" height=\"170\" rx=\"54\" fill=\"#7AA878\" stroke=\"#201C14\" stroke-width=\"7\"/> </g> <g id=\"features\"> <path d=\"M270 288 C282 280 296 282 302 292 C296 302 280 302 272 296 Z\" fill=\"#4A5848\" opacity=\"0.8\"/> <path d=\"M368 214 C380 208 392 210 398 218 C392 226 378 226 370 222 Z\" fill=\"#4A5848\" opacity=\"0.8\"/> <path d=\"M282 246 L316 250\" fill=\"none\" stroke=\"#3A4438\" stroke-width=\"6\" stroke-linecap=\"round\"/> <g id=\"eyeL\"> <circle cx=\"297\" cy=\"272\" r=\"17\" fill=\"#F6F2E8\" stroke=\"#201C14\" stroke-width=\"4.5\"/> <g id=\"irisL\"> <circle cx=\"299\" cy=\"273\" r=\"4.5\" fill=\"#5A3838\"/> </g> </g> <path id=\"eyeLClosed\" d=\"M283 272 Q297 280 311 272\" fill=\"none\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M280 292 Q297 298 314 292\" fill=\"none\" stroke=\"#3A4438\" stroke-width=\"5\" stroke-linecap=\"round\"/> <ellipse cx=\"383\" cy=\"270\" rx=\"17\" ry=\"16\" fill=\"#201C14\" stroke=\"#14100C\" stroke-width=\"4\"/> <ellipse cx=\"380\" cy=\"266\" rx=\"5\" ry=\"4\" fill=\"#3A362E\"/> <path id=\"eyeRClosed\" d=\"M369 270 Q383 277 397 270\" fill=\"none\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g id=\"swing_drool\" data-wag=\"1\" data-k=\"26\" data-damp=\"0.9\" data-front=\"1\"> <circle id=\"pivot_swing_drool\" cx=\"348\" cy=\"326\" r=\"0\" fill=\"none\"/> <path d=\"M346 324 C348 342 348 358 350 372\" fill=\"none\" stroke=\"#C8E8D0\" stroke-width=\"6\" stroke-linecap=\"round\"/> <ellipse cx=\"350\" cy=\"380\" rx=\"7\" ry=\"10\" fill=\"#C8E8D0\" stroke=\"#9AC8A8\" stroke-width=\"3\"/> </g> <path id=\"mouthClosed\" d=\"M320 302 C334 314 356 312 366 298 L360 322 C346 332 330 330 322 318 Z\" fill=\"#3A1418\" stroke=\"#201C14\" stroke-width=\"4.5\" stroke-linejoin=\"round\"/> <path d=\"M326 306 l8 8 8 -6 8 6 8 -8\" fill=\"none\" stroke=\"#E8E4D8\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path id=\"mouthOpen\" d=\"M316 298 C334 312 358 310 370 294 Q364 330 342 332 Q322 330 316 298 Z\" fill=\"#3A1418\" stroke=\"#201C14\" stroke-width=\"4.5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g id=\"hairFront\"> <path d=\"M250 176 C262 106 418 106 430 176 L414 194 C398 152 282 152 266 194 Z\" fill=\"#4A4038\" stroke=\"#201C14\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M254 198 Q340 180 426 198 L426 230 Q340 208 254 230 Z\" fill=\"#3A4048\" stroke=\"#201C14\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M280 200 Q340 188 400 200 L400 226 Q340 212 280 226 Z\" fill=\"#8A8C94\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M304 202 l7 7 -7 7 -7 -7 Z M340 198 l7 7 -7 7 -7 -7 Z M376 202 l7 7 -7 7 -7 -7 Z\" fill=\"#201C14\"/> <g id=\"swing_bandTail\" data-k=\"42\" data-damp=\"0.88\" data-fz=\"0.8\" data-fx=\"0.4\"> <circle id=\"pivot_swing_bandTail\" cx=\"262\" cy=\"210\" r=\"0\" fill=\"none\"/> <path d=\"M260 202 L212 194 L234 226 Z\" fill=\"#3A4048\" stroke=\"#201C14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> </g> </g>","ROTON":"<g> <ellipse cx=\"340\" cy=\"600\" rx=\"185\" ry=\"34\" fill=\"#22301E\" stroke=\"#141A10\" stroke-width=\"7\"/> <ellipse cx=\"340\" cy=\"592\" rx=\"160\" ry=\"26\" fill=\"#31452A\" opacity=\"0.85\"/> <path d=\"M190 588 C176 566 186 548 204 552 C214 556 218 574 210 588 Z\" fill=\"#3E5634\" stroke=\"#141A10\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M492 590 C508 570 500 550 482 554 C472 558 468 576 476 590 Z\" fill=\"#3E5634\" stroke=\"#141A10\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M340 128 C260 128 210 192 206 292 C203 356 216 420 214 470 C212 508 224 540 250 560 C222 556 208 566 214 582 C244 600 300 608 340 608 C380 608 436 600 466 582 C472 566 458 556 430 560 C456 540 468 508 466 470 C464 420 477 356 474 292 C470 192 420 128 340 128 Z\" fill=\"#4A6A42\" stroke=\"#141A10\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M250 200 C238 250 236 320 242 380 C230 372 222 340 222 300 C222 258 232 222 250 200 Z\" fill=\"#3A5434\" opacity=\"0.9\"/> <path d=\"M430 200 C442 250 444 320 438 380 C450 372 458 340 458 300 C458 258 448 222 430 200 Z\" fill=\"#3A5434\" opacity=\"0.9\"/> <path d=\"M276 452 C270 492 274 528 288 552 L306 540 C296 516 294 486 298 458 Z\" fill=\"#5A7A50\" opacity=\"0.8\"/> <path d=\"M404 452 C410 492 406 528 392 552 L374 540 C384 516 386 486 382 458 Z\" fill=\"#5A7A50\" opacity=\"0.8\"/> <path d=\"M300 132 C296 108 306 88 326 82 C318 100 322 118 332 128 Z\" fill=\"#4A6A42\" stroke=\"#141A10\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M368 126 C374 100 392 86 412 88 C398 100 392 116 392 132 Z\" fill=\"#4A6A42\" stroke=\"#141A10\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M228 300 C196 296 172 312 164 338 C182 348 210 342 228 326 Z\" fill=\"#4A6A42\" stroke=\"#141A10\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M170 336 C160 352 162 368 172 378 C158 380 148 372 146 358 C144 346 154 336 170 336 Z\" fill=\"#3E5634\" stroke=\"#141A10\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M452 300 C484 296 508 312 516 338 C498 348 470 342 452 326 Z\" fill=\"#4A6A42\" stroke=\"#141A10\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M510 336 C520 352 518 368 508 378 C522 380 532 372 534 358 C536 346 526 336 510 336 Z\" fill=\"#3E5634\" stroke=\"#141A10\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M252 236 C246 258 248 282 258 298 C270 288 274 264 268 244 Z\" fill=\"#6E4E86\" opacity=\"0.55\"/> <path d=\"M424 350 C418 372 420 396 430 412 C442 402 446 378 440 358 Z\" fill=\"#6E4E86\" opacity=\"0.55\"/> <g>  <path d=\"M268 240 C276 222 300 216 314 228 C316 246 302 262 284 262 C272 260 266 252 268 240 Z\" fill=\"#141A10\"/>  <path d=\"M366 228 C380 216 404 222 412 240 C414 252 408 260 396 262 C378 262 364 246 366 228 Z\" fill=\"#141A10\"/>  <circle cx=\"292\" cy=\"242\" r=\"9\" fill=\"#C8E858\"/>  <circle cx=\"292\" cy=\"242\" r=\"15\" fill=\"#C8E858\" opacity=\"0.3\"/>  <circle cx=\"390\" cy=\"242\" r=\"9\" fill=\"#C8E858\"/>  <circle cx=\"390\" cy=\"242\" r=\"15\" fill=\"#C8E858\" opacity=\"0.3\"/> </g> <path d=\"M262 322 L282 342 L302 318 L322 344 L340 316 L358 344 L378 318 L398 342 L418 322 C412 366 396 388 340 388 C284 388 268 366 262 322 Z\" fill=\"#141A10\" stroke=\"#141A10\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M286 344 L296 358 M340 340 L340 360 M394 344 L384 358\" stroke=\"#C8E858\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.7\"/> <path d=\"M300 380 C312 398 328 404 340 404 C352 404 368 398 380 380\" fill=\"none\" stroke=\"#7EA858\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.6\"/> <path d=\"M310 448 L322 436 L330 452 L342 438 L350 454 L362 440 L370 452\" fill=\"none\" stroke=\"#D8D4BE\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <ellipse cx=\"306\" cy=\"500\" rx=\"10\" ry=\"12\" fill=\"#D8D4BE\" stroke=\"#141A10\" stroke-width=\"4\"/> <path d=\"M370 496 C384 488 398 492 402 504 C398 514 382 516 372 508 Z\" fill=\"#D8D4BE\" stroke=\"#141A10\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <circle cx=\"262\" cy=\"180\" r=\"9\" fill=\"#7EA858\" stroke=\"#141A10\" stroke-width=\"4\"/> <circle cx=\"418\" cy=\"168\" r=\"7\" fill=\"#7EA858\" stroke=\"#141A10\" stroke-width=\"4\"/> <circle cx=\"340\" cy=\"112\" r=\"6\" fill=\"#7EA858\" stroke=\"#141A10\" stroke-width=\"3.5\"/> <path d=\"M240 420 C234 444 238 466 250 480 M440 420 C446 444 442 466 430 480\" fill=\"none\" stroke=\"#31452A\" stroke-width=\"6\" stroke-linecap=\"round\"/></g>","UKA":"<g> <circle cx=\"340\" cy=\"612\" r=\"0\" fill=\"none\"/> <g data-wag=\"1\" data-k=\"16\" data-damp=\"0.93\"> <circle cx=\"424\" cy=\"486\" r=\"0\" fill=\"none\"/> <path d=\"M452 528 C506 520 536 484 530 444 C524 418 500 412 492 428 C504 452 492 484 454 498 C444 504 444 520 452 528 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M520 452 C530 432 520 414 502 418 C498 430 506 446 516 452 Z\" fill=\"#F4F0E8\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> </g> <path d=\"M400 340 L432 312\" stroke=\"#26262A\" stroke-width=\"7\" stroke-linecap=\"round\"/> <path d=\"M430 304 l10 4 -4 10 -10 -4 Z\" fill=\"#D9A93F\" stroke=\"#201A14\" stroke-width=\"3\"/> <rect x=\"324\" y=\"322\" width=\"32\" height=\"30\" fill=\"#F6E4D0\"/> <rect x=\"296\" y=\"522\" width=\"28\" height=\"88\" rx=\"12\" fill=\"#F6F2EA\" stroke=\"#201A14\" stroke-width=\"5\"/> <rect x=\"356\" y=\"522\" width=\"28\" height=\"88\" rx=\"12\" fill=\"#F6F2EA\" stroke=\"#201A14\" stroke-width=\"5\"/> <path d=\"M296 530 L324 530 L324 540 L296 540 Z M356 530 L384 530 L384 540 L356 540 Z\" fill=\"#C83838\"/> <ellipse cx=\"310\" cy=\"616\" rx=\"20\" ry=\"8\" fill=\"#F1E8DC\" stroke=\"#201A14\" stroke-width=\"5\"/> <ellipse cx=\"370\" cy=\"616\" rx=\"20\" ry=\"8\" fill=\"#F1E8DC\" stroke=\"#201A14\" stroke-width=\"5\"/> <path d=\"M284 468 L396 468 L404 540 L276 540 Z\" fill=\"#C83838\" stroke=\"#201A14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M304 470 L298 538 M340 470 L340 538 M376 470 L382 538\" fill=\"none\" stroke=\"#9E2828\" stroke-width=\"4\"/> <path d=\"M340 344 C302 344 284 356 276 380 C266 410 262 442 264 472 L416 472 C418 442 414 410 404 380 C396 356 378 344 340 344 Z\" fill=\"#F6F2EA\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M316 346 L340 392 L364 346\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"6\" stroke-linejoin=\"round\"/> <path d=\"M372 348 L398 362 L296 470 L272 452 Z\" fill=\"#C83838\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linejoin=\"round\"/> <path d=\"M290 382 l15 -4 M288 398 l15 -4 M390 382 l-15 -4 M392 398 l-15 -4\" stroke=\"#C83838\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g data-front=\"1\"> <circle cx=\"302\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M300 366 C274 372 258 402 254 440 C252 462 264 472 280 466 C296 458 304 430 306 402 C307 386 306 374 300 366 Z\" fill=\"#F6F2EA\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <ellipse cx=\"276\" cy=\"482\" rx=\"14\" ry=\"12\" fill=\"#F6E4D0\" stroke=\"#201A14\" stroke-width=\"5\"/> </g> <g data-front=\"1\"> <circle cx=\"378\" cy=\"368\" r=\"0\" fill=\"none\"/> <path d=\"M380 366 C406 372 422 402 426 440 C428 462 416 472 400 466 C384 458 376 430 374 402 C373 386 374 374 380 366 Z\" fill=\"#F6F2EA\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <g> <path d=\"M404 490 L424 486 L432 530 L412 534 Z\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M413 498 l9 -2 M415 508 l9 -2 M417 518 l9 -2\" stroke=\"#C83838\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <path d=\"M424 484 L444 486 L442 532 L422 530 Z\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M430 494 l8 1 M429 504 l8 1 M428 514 l8 1\" stroke=\"#C83838\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> <path d=\"M444 488 L462 496 L450 538 L434 532 Z\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M448 500 l7 3 M445 510 l7 3 M442 520 l7 3\" stroke=\"#C83838\" stroke-width=\"3.5\" stroke-linecap=\"round\"/> </g> <ellipse cx=\"404\" cy=\"482\" rx=\"14\" ry=\"12\" fill=\"#F6E4D0\" stroke=\"#201A14\" stroke-width=\"5\"/> </g> </g> <g> <circle cx=\"340\" cy=\"248\" r=\"0\" fill=\"none\"/> <circle cx=\"340\" cy=\"330\" r=\"0\" fill=\"none\"/> <g> <path d=\"M258 128 L212 26 L322 86 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M422 128 L468 26 L358 86 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M262 114 L230 46 L306 88 Z\" fill=\"#F4F0E8\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M418 114 L450 46 L374 88 Z\" fill=\"#F4F0E8\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M254 82 C262 72 274 68 284 72 M426 82 C418 72 406 68 396 72\" fill=\"none\" stroke=\"#B08040\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M340 74 C248 74 194 148 200 260 C203 296 216 320 246 328 L434 328 C464 320 477 296 480 260 C486 148 432 74 340 74 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"8\" stroke-linejoin=\"round\"/> <path d=\"M234 250 C224 300 228 348 246 372 C258 382 270 372 266 354 C258 322 258 284 264 254 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M246 352 C252 368 262 374 266 366 C268 356 262 344 254 340 Z\" fill=\"#F4F0E8\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> <path d=\"M446 250 C456 300 452 348 434 372 C422 382 410 372 414 354 C422 322 422 284 416 254 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> <path d=\"M434 352 C428 368 418 374 414 366 C412 356 418 344 426 340 Z\" fill=\"#F4F0E8\" stroke=\"#201A14\" stroke-width=\"4\" stroke-linejoin=\"round\"/> </g> <g> <rect x=\"258\" y=\"160\" width=\"164\" height=\"172\" rx=\"56\" fill=\"#F6E4D0\" stroke=\"#201A14\" stroke-width=\"7\"/> </g> <g> <path d=\"M283 248 L311 242\" fill=\"none\" stroke=\"#B08040\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M369 242 L397 248\" fill=\"none\" stroke=\"#B08040\" stroke-width=\"5\" stroke-linecap=\"round\"/> <g> <ellipse cx=\"297\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"4\"/> <g> <circle cx=\"297\" cy=\"273\" r=\"10\" fill=\"#8878D8\"/> <circle cx=\"297\" cy=\"274\" r=\"4.5\" fill=\"#2A2050\"/> <circle cx=\"293\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M283 260 Q297 253 311 259\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M285 272 Q297 280 309 272\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <g> <ellipse cx=\"383\" cy=\"272\" rx=\"15\" ry=\"17\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"4\"/> <g> <circle cx=\"383\" cy=\"273\" r=\"10\" fill=\"#8878D8\"/> <circle cx=\"383\" cy=\"274\" r=\"4.5\" fill=\"#2A2050\"/> <circle cx=\"379\" cy=\"268\" r=\"2.4\" fill=\"#fff\"/> </g> <path d=\"M369 259 Q383 253 397 260\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linecap=\"round\"/> </g> <path d=\"M371 272 Q383 280 395 272\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0\"/> <path d=\"M260 288 l16 -2 M260 298 l16 3 M420 288 l-16 -2 M420 298 l-16 3\" stroke=\"#C09878\" stroke-width=\"3\" stroke-linecap=\"round\"/> <ellipse cx=\"276\" cy=\"294\" rx=\"11\" ry=\"6\" fill=\"#F0A0A8\" opacity=\"0.5\"/> <ellipse cx=\"404\" cy=\"294\" rx=\"11\" ry=\"6\" fill=\"#F0A0A8\" opacity=\"0.5\"/> <path d=\"M328 302 Q340 309 352 300\" fill=\"none\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M346 303 l5 8 5 -7\" fill=\"#fff\" stroke=\"#201A14\" stroke-width=\"3\" stroke-linejoin=\"round\"/> <path d=\"M325 299 Q340 306 355 298 Q350 323 340 324 Q330 323 325 299 Z\" fill=\"#A84450\" stroke=\"#201A14\" stroke-width=\"5\" stroke-linejoin=\"round\" opacity=\"0\"/> </g> <g> <path d=\"M256 248 C246 150 286 104 340 100 C394 104 434 150 424 248 L398 230 L404 188 L376 226 L358 192 L348 234 L322 196 L314 234 L292 202 L284 238 L262 250 Z\" fill=\"#D8A858\" stroke=\"#201A14\" stroke-width=\"7\" stroke-linejoin=\"round\"/> </g> </g>"};
+const CAST_MAP_ME={ "疾風ハヤテ":"HAYATE","息吹イブキ":"IBUKI","イズナ":"IZUNA","ジン":"JIN","クオン":"QUON","シオン":"SHION","アンネ":"ANNE","ほんチい":"HONCHII" };
+const SWAMP_IDX=STAGES.findIndex(st=>st.title==="亡霊の沼");
+function castKey(u){
+  if(u.name==="ロトン") return "ROTTEN_CN";   // ボスは公式ロトン
+  if(u.side==="foe" && stageIdx===SWAMP_IDX) return "ROTON"; // 眷属は泥の姿で統一
+  if(u.name==="ウカ"||u.name==="大炎神ウカ"||u.name==="狂乱ウカ") return "UKA";
+  if(u.cls==="nise") return "IZUNA";
+  if(u.side==="me") return CAST_MAP_ME[u.name]||"HAYATE";
+  if(u.cls==="taisho"||u.cls==="slash") return "DAN"; // ボス・辻斬り:斬
+  if(u.cls==="oni")    return "KANAONI";  // 鬼衆:金鬼
+  if(u.cls==="karasu") return "KARURA";   // 烏:カルラ(烏天狗)
+  return "SHION";                          // 手裏剣兵:紫苑
+}
+function tokenSVG(u){
+  const body=CAST[castKey(u)];
+  const flip = u.side==="foe" ? '<g transform="translate(680,0) scale(-1,1)">'+body+'</g>' : body;
+  return '<svg viewBox="100 -10 480 680" xmlns="http://www.w3.org/2000/svg">'+flip+'</svg>';
+}
+
+/* ---- 盤面描画 ---- */
+let cells=[];
+function drawBoard(){
+  board.innerHTML=""; cells=[];
+  for(let y=0;y<ROWS;y++){ cells[y]=[]; for(let x=0;x<COLS;x++){
+    const c=document.createElement("div");
+    c.className="cell";
+    const t=TERRAIN[y][x];
+    if(t===1)c.classList.add("terrain-tree");
+    if(t===2)c.classList.add("terrain-water");
+    if(t===3)c.classList.add("terrain-roof");
+    if(t===4)c.classList.add("terrain-shrine");
+    c.dataset.x=x; c.dataset.y=y;
+    c.addEventListener("click",()=>onCellClick(x,y));
+    board.appendChild(c); cells[y][x]=c;
+  }}
+  units.forEach(placeUnit);
+  placeItem();
+}
+function placeItem(){
+  stageItem=null;
+  const st=STAGES[stageIdx];
+  if(!st.item||itemPicked[stageIdx]) return;
+  const {x,y}=st.item;
+  const e=document.createElement("div");
+  e.className="itemScroll";
+  e.title="幻術の秘伝書(ジン専用)";
+  e.innerHTML=`<svg viewBox="0 0 40 40">
+    <rect x="7" y="10" width="26" height="20" rx="3" fill="#e8ddc0" stroke="#7a5a2a" stroke-width="2.5"/>
+    <rect x="4" y="8" width="6" height="24" rx="3" fill="#8e48a8" stroke="#4a2858" stroke-width="2"/>
+    <rect x="30" y="8" width="6" height="24" rx="3" fill="#8e48a8" stroke="#4a2858" stroke-width="2"/>
+    <path d="M14 16 h12 M14 20 h12 M14 24 h8" stroke="#7a5a2a" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+  cells[y][x].appendChild(e);
+  stageItem={x,y,el:e};
+}
+function placeUnit(u){
+  const el=document.createElement("div");
+  el.className="unit side-"+u.side+(u.leader?" leader":"")+(u.cls==="ukagod"?" god":"");
+  el.innerHTML=tokenSVG(u)+`<div class="hpbar"><i></i></div>`;
+  el.addEventListener("click",e=>{e.stopPropagation(); onUnitClick(u);});
+  el.style.pointerEvents="auto";
+  u.el=el; refreshUnit(u); moveUnitEl(u);
+  cells[u.y][u.x].appendChild(el);
+}
+function moveUnitEl(u){ cells[u.y][u.x].appendChild(u.el); }
+function refreshUnit(u){
+  if(!u.el) return;
+  u.el.querySelector(".hpbar > i").style.width=Math.max(0,u.hp/u.maxhp*100)+"%";
+  u.el.classList.toggle("acted", u.acted && u.side==="me");
+  let b=u.el.querySelector(".lvlBadge");
+  if(u.side==="me"){
+    const lv=progOf(u.name).lv;
+    if(!b){ b=el("div","lvlBadge"); u.el.appendChild(b); }
+    b.textContent="L"+lv;
+  } else if(b){ b.remove(); }
+}
+
+/* ---- 状態 ---- */
+let turn="me", sel=null, mode="idle";
+let moveCells=[], atkTargets=[];
+
+function unitAt(x,y){ return units.find(u=>u.hp>0 && u.x===x && u.y===y); }
+function alive(side){ return units.filter(u=>u.hp>0 && u.side===side); }
+
+/* ---- 移動範囲（BFS・水は不可） ---- */
+function reachable(u){
+  const cost={}; const key=(x,y)=>x+","+y;
+  cost[key(u.x,u.y)]=0; const q=[[u.x,u.y]]; const out=[];
+  while(q.length){
+    const [x,y]=q.shift(); const d=cost[key(x,y)];
+    if(d>=CLASS[u.cls].move) continue;
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const nx=x+dx, ny=y+dy;
+      if(nx<0||ny<0||nx>=COLS||ny>=ROWS) continue;
+      if(TERRAIN[ny][nx]===2) continue;           // 水は通れない
+      const occ=unitAt(nx,ny);
+      if(occ && occ.side!==u.side) continue;       // 敵で塞がれる
+      const nd=d+1;
+      if(cost[key(nx,ny)]===undefined || nd<cost[key(nx,ny)]){
+        cost[key(nx,ny)]=nd;
+        if(!occ) out.push([nx,ny]);
+        q.push([nx,ny]);
+      }
+    }
+  }
+  return out;
+}
+function inRange(u,x,y){ return Math.abs(u.x-x)+Math.abs(u.y-y)<=CLASS[u.cls].range; }
+function targetsFrom(u){
+  const r=[];
+  units.forEach(t=>{ if(t.hp<=0) return;
+    if(inRange(u,t.x,t.y)){
+      if(u.cls==="heal"){ if(t.side===u.side && t.hp<t.maxhp) r.push(t); }
+      else if(u.cls==="uka"||u.cls==="ukagod"||u.cls==="shishou"){
+        if(t.side!==u.side) r.push(t);
+        else if(t.hp<t.maxhp) r.push(t);   // 傷ついた味方も回復対象
+      }
+      else if(t.side!==u.side) r.push(t);
+    }
+  });
+  return r;
+}
+
+/* ---- ハイライト ---- */
+function clearHL(){
+  document.querySelectorAll(".cell.move,.cell.atk,.cell.sel")
+    .forEach(c=>c.classList.remove("move","atk","sel"));
+  moveCells=[]; atkTargets=[];
+}
+function showOptions(u){
+  clearHL();
+  cells[u.y][u.x].classList.add("sel");
+  if(u.acted) return;
+  moveCells=reachable(u);
+  moveCells.forEach(([x,y])=>cells[y][x].classList.add("move"));
+  atkTargets=targetsFrom(u);
+  atkTargets.forEach(t=>cells[t.y][t.x].classList.add("atk"));
+}
+
+/* ---- クリック処理 ---- */
+function onUnitClick(u){
+  if(turn!=="me") return;
+  // 攻撃対象として選ばれた敵
+  if(sel && mode==="chooseAtk" && atkTargets.includes(u)){ doAttack(sel,u); return; }
+  if(u.side==="me"){ sel=u; mode="chooseAtk"; showInfo(u); showOptions(u); }
+  else { // 敵をタップ → 情報だけ
+    showInfo(u);
+  }
+}
+function onCellClick(x,y){
+  if(turn!=="me"||!sel) return;
+  if(mode==="chooseAtk" && moveCells.some(c=>c[0]===x&&c[1]===y)){
+    moveUnit(sel,x,y);
+    showInfo(sel); showOptions(sel);
+  }
+}
+
+/* ---- 移動 ---- */
+function moveUnit(u,x,y){
+  u.x=x; u.y=y; moveUnitEl(u);
+  log(`<span class="me">${u.name}</span> が移動`);
+  if(stageItem && u.name==="ジン" && x===stageItem.x && y===stageItem.y){
+    itemPicked[stageIdx]=true;
+    JIN_BUFF.atk+=2; JIN_BUFF.maxhp+=4;
+    u.maxhp+=4; u.hp=Math.min(u.maxhp,u.hp+4);
+    refreshUnit(u);
+    stageItem.el.remove(); stageItem=null;
+    fx(u,"heal","秘伝書!","#c890e8");
+    log(`<span class="sys">ジン、幻術の秘伝書を会得! 攻撃+2 / 体力+4</span>`);
+  }
+}
+
+/* ---- 攻撃／回復 ---- */
+function terrainDef(u){ const t=TERRAIN[u.y][u.x]; return t===3?2:0; }
+function terrainEvd(u){ const t=TERRAIN[u.y][u.x]; return t===1?18:0; }
+
+/* 姉妹の掛け合い（イズナ⇔敵ウカ） */
+let sisterBanterIdx=0;
+const SISTER_BANTER=[
+  ["ウカ！　手加減しないよ！","のぞむところ……ちょっとだけ手加減して？"],
+  ["千円くらい、お姉ちゃんが払ってあげるから！","ほ、ほんと!?　……じゃなくて！　忍びに二言はないの！"],
+  ["帰ったら一緒にごはん、食べよ？","うっ……その手には、乗らないんだから……！"],
+  ["妹の借金の取り立てに来ました！","言い方ぁ！！"],
+];
+const UKA_SORRY=["ごめんっ、これも千円のため！","姉さんの仲間だけど、ごめんね！","あとで謝るから！　今は許して！"];
+function sisterBanter(a,d){
+  if(a.name==="イズナ" && d.name==="ウカ" && d.side==="foe"){
+    const pair=SISTER_BANTER[sisterBanterIdx++ % SISTER_BANTER.length];
+    speak(a, pair[0]);
+    setTimeout(()=>{ if(d.hp>0) speak(d, pair[1]); }, 1150);
+    return true;
+  }
+  if(a.name==="ウカ" && a.side==="foe" && d.side==="me"){
+    if(d.name==="イズナ"){
+      speak(a,"ごめんね姉さんっ！");
+      setTimeout(()=>{ if(d.hp>0) speak(d,"痛っ……この子ったら！"); }, 1150);
+    } else if(Math.random()<0.5){
+      speak(a, UKA_SORRY[Math.floor(Math.random()*UKA_SORRY.length)]);
+    }
+    return true;
+  }
+  return false;
+}
+const HONCHII_VOICE=["ぽいチい。","どーんチい。","いい風チい。","着火チい。","5さいチい。"];
+function doAttack(a,d){
+  const attacker=a, defender=d;
+  const sideCls = a.side==="me"?"me":"foe";
+  if(a!==d) sisterBanter(a,d);
+  if(a.cls==="bomb"&&a!==d&&Math.random()<0.6) speak(a, HONCHII_VOICE[Math.floor(Math.random()*HONCHII_VOICE.length)]);
+  if(a.cls==="heal" || ((a.cls==="uka"||a.cls==="ukagod"||a.cls==="shishou") && d.side===a.side)){
+    const amt=CLASS[a.cls].heal;
+    defender.hp=Math.min(defender.maxhp, defender.hp+amt);
+    fx(defender,"heal","+"+amt,"#8fd0a0");
+    log(`<span class="${sideCls}">${a.name}</span> が <b>${defender.name}</b> を ${amt} 回復`);
+    if(a.name==="アンネ"&&d.name==="シオン"){
+      speak(a,"師匠に任せな、シオン。");
+      setTimeout(()=>{ if(d.hp>0) speak(d,"……ありがとうございます、師匠。"); },1150);
+    }
+    gainExp(a, 12);
+    endAction(a); return;
+  }
+  // 命中判定
+  const evd=CLASS[defender.cls].evd + terrainEvd(defender);
+  if(Math.random()*100 < evd){
+    fx(defender,"miss","回避","#cfe6ff");
+    log(`<span class="${sideCls}">${a.name}</span> の攻撃を ${defender.name} が回避`);
+    endAction(a); return;
+  }
+  const def=defOf(defender) + terrainDef(defender);
+  let dmg=Math.max(1, atkOf(a) + rnd(-1,2) - def);
+  defender.hp-=dmg;
+  const kind = a.cls==="throw"?"splash":"slash";
+  fx(defender,kind,"-"+dmg, a.side==="me"?"#ffec6e":"#ff9d9d");
+  shake();
+  log(`<span class="${sideCls}">${a.name}</span> → <b>${defender.name}</b> に ${dmg} ダメージ`);
+
+  if(defender.hp<=0){
+    gainExp(a, 10 + (defender.leader?35:22));
+    handleDeath(defender,a);
+    refreshUnit(defender); endAction(a); return;
+  } else {
+    // 反撃（隣接・生存・射程内なら）
+    if(defender.hp>0 && a.cls!=="throw" && CLASS[defender.cls].range>=dist(a,defender) && defender.cls!=="heal"){
+      setTimeout(()=>{
+        if(a.hp<=0) return;
+        let cdmg=Math.max(1, atkOf(defender) + rnd(-1,1) - (defOf(a)+terrainDef(a)));
+        a.hp-=cdmg; fx(a,"slash","-"+cdmg,"#ffb0a0"); refreshUnit(a);
+        log(`<span class="${defender.side==='me'?'me':'foe'}">${defender.name}</span> の反撃 ${cdmg}`);
+        gainExp(defender, 6 + (a.hp<=0?(a.leader?35:22):0));
+        if(a.hp<=0){ handleDeath(a,defender); }
+        refreshUnit(defender);
+      },340);
+    }
+  }
+  gainExp(a, 8);
+  refreshUnit(defender);
+  // ほんチいの爆弾: 着弾点の隣接1マスを巻き込む（敵味方問わず・シュール仕様）
+  if(a.cls==="bomb"){
+    const sp=Math.max(1, Math.round(dmg*0.4));
+    const hitPos={x:defender.x,y:defender.y};
+    setTimeout(()=>{
+      units.filter(t=>t.hp>0 && t!==a && t!==defender && dist(t,hitPos)===1)
+        .forEach((t,i)=>{
+          setTimeout(()=>{
+            if(t.hp<=0) return;
+            t.hp-=sp;
+            fx(t,"splash","-"+sp,"#ffc06e");
+            refreshUnit(t);
+            log(`<span class="sys">爆風が ${t.name} を巻き込んだ (${sp})</span>`);
+            if(t.hp<=0) handleDeath(t, a.side!==t.side?a:null);
+          }, i*130);
+        });
+    }, 300);
+  }
+  endAction(a);
+}
+function endAction(u){
+  u.acted=true; refreshUnit(u); clearHL(); sel=null; mode="idle";
+  showInfo(null);
+  // 自軍全員行動済みなら自動でターン終了
+  autoEndCheck();
+}
+function killUnit(u){ u.hp=0; if(u.el){ u.el.remove(); } }
+
+/* ---- 情報パネル ---- */
+function showInfo(u){
+  const box=$("#info");
+  if(!u){ box.innerHTML=`<h2>選択中の忍</h2><div class="noSel">盤上の駒をタップすると詳細が出ます。</div>`; return; }
+  const c=CLASS[u.cls];
+  const canAct = u.side==="me" && !u.acted && turn==="me";
+  box.innerHTML=`
+    <h2>選択中の忍</h2>
+    <div class="infoName" style="color:${u.side==='me'?'var(--ai-bright)':'var(--shu-bright)'}">${u.name}</div>
+    <div class="infoRole">${c.name}・${c.role}${u.leader?"（大将）":""}</div>
+    ${u.side==="me"?(()=>{const p=progOf(u.name);return `
+    <div class="stat"><span>レベル</span><b style="color:var(--kin)">Lv ${p.lv}</b></div>
+    <div class="stat" style="border-bottom:none;"><span>経験値</span><b>${p.exp} / ${expNeed(p.lv)}</b></div>
+    <div class="expbar"><i style="width:${Math.min(100,p.exp/expNeed(p.lv)*100)}%"></i></div>`;})():""}
+    <div class="stat hp"><span>体力</span><b>${Math.max(0,u.hp)} / ${u.maxhp}</b></div>
+    <div class="stat"><span>攻撃</span><b>${atkOf(u)}${u.name==="ジン"&&JIN_BUFF.atk?` <span style="color:var(--sui)">(+${JIN_BUFF.atk})</span>`:""}</b></div>
+    <div class="stat"><span>防御</span><b>${defOf(u)}</b></div>
+    <div class="stat"><span>移動</span><b>${c.move}</b></div>
+    <div class="stat"><span>射程</span><b>${c.range}</b></div>
+    <div class="stat"><span>回避</span><b>${c.evd}%</b></div>
+    ${canAct?`<div class="acts">
+        ${SPECIAL.active&&!izunaAliveOnBoard()&&STAGES[stageIdx].shrine&&u.x===STAGES[stageIdx].shrine.x&&u.y===STAGES[stageIdx].shrine.y?`<button class="btn" id="prayBtn" style="border-color:var(--kin);color:var(--kin)">祈祷</button>`:``}
+        ${(u.cls==="heal"||u.cls==="uka"||u.cls==="ukagod"||u.cls==="shishou")&&u.hp<u.maxhp?`<button class="btn" id="selfHealBtn">自己回復</button>`:``}
+        <button class="btn" id="waitBtn">待機</button>
+      </div>`:``}`;
+  if(canAct){
+    $("#waitBtn").onclick=()=>{ u.acted=true; refreshUnit(u); clearHL(); sel=null; showInfo(null);
+      autoEndCheck(); };
+    const sh=$("#selfHealBtn");
+    if(sh) sh.onclick=()=>doAttack(u,u);
+    const pb=$("#prayBtn");
+    if(pb) pb.onclick=()=>{
+      fx(u,"heal","祈","#ffe27a");
+      log(`<span class="me">${u.name}</span> が祠に祈りを捧げた`);
+      reviveIzuna();
+      u.acted=true; refreshUnit(u); clearHL(); sel=null; showInfo(null);
+      autoEndCheck();
+    };
+  }
+}
+
+/* ---- ターン管理 ---- */
+function phaseTxt(t){ $("#phaseTxt").textContent=t; }
+function autoEndCheck(){
+  if(turn!=="me") return;
+  if(!alive("me").length || !alive("foe").length) return; // 決着時は何もしない
+  if(alive("me").every(x=>x.acted)){
+    phaseTxt("全員行動済み。敵ターンへ……");
+    setTimeout(()=>{ if(turn==="me" && alive("me").length && alive("foe").length) endTurn(); }, 750);
+  }
+}
+function endTurn(){
+  clearHL(); sel=null; mode="idle"; showInfo(null);
+  if(turn==="me"){ turn="foe"; setBanner(); phaseTxt("敵の動きを見よ…"); setTimeout(foeTurn,500); }
+  else { turn="me"; units.forEach(u=>{ if(u.side==="me") u.acted=false; });
+         units.forEach(refreshUnit); setBanner(); phaseTxt("駒を選んでください"); }
+}
+function setBanner(){
+  const tag=$("#turnTag");
+  if(turn==="me"){ tag.textContent="自軍のターン"; tag.className="turnTag me"; }
+  else { tag.textContent="敵軍のターン"; tag.className="turnTag foe"; }
+}
+
+/* ---- 敵AI ---- */
+const NISE_WHISPERS=["ウカ、大好きよ。","ずっと一緒よ、ウカ。","わたしを見て？　ねえさんはここよ。","いい子ね、ウカ。もっと暴れて？"];
+const UKA_RAGE=["黙れ！　ねえさんの声はそんなんじゃない！","うるさいうるさいうるさい！","おまえたちは、ぜんぶ偽物だ！！"];
+function foeTurn(){
+  // 外伝: 偽イズナが愛を囁き、ウカが怒り狂う
+  if(SPECIAL.active){
+    const nise=alive("foe").filter(u=>u.cls==="nise");
+    const uka=alive("foe").find(u=>u.name==="狂乱ウカ");
+    if(nise.length&&uka){
+      const n=nise[Math.floor(Math.random()*nise.length)];
+      speak(n, NISE_WHISPERS[Math.floor(Math.random()*NISE_WHISPERS.length)]);
+      setTimeout(()=>{ if(uka.hp>0) speak(uka, UKA_RAGE[Math.floor(Math.random()*UKA_RAGE.length)]); }, 1100);
+    }
+  }
+  const foes=alive("foe").slice();
+  let i=0;
+  (function step(){
+    if(i>=foes.length){ endTurn(); return; }
+    const u=foes[i++];
+    if(u.hp<=0){ step(); return; }
+    // 最も近い自軍を狙う
+    const targets=alive("me");
+    if(!targets.length){ step(); return; }
+    targets.sort((a,b)=>dist(u,a)-dist(u,b));
+    // 大将を優先的に（近ければ）
+    let goal=targets[0];
+    const near=targets.filter(t=>dist(u,t)<=CLASS[u.cls].move+CLASS[u.cls].range);
+    if(near.some(t=>t.leader)) goal=near.find(t=>t.leader);
+
+    // 射程内に入れる移動先を探す
+    const opts=reachable(u); opts.push([u.x,u.y]);
+    let best=null, bestScore=-1e9;
+    for(const [x,y] of opts){
+      const d=Math.abs(x-goal.x)+Math.abs(y-goal.y);
+      const canHit = alive("me").some(t=>Math.abs(x-t.x)+Math.abs(y-t.y)<=CLASS[u.cls].range);
+      let s=-d + (canHit?50:0) + (TERRAIN[y][x]===1?3:0);
+      if(s>bestScore){ bestScore=s; best=[x,y]; }
+    }
+    if(best && (best[0]!==u.x||best[1]!==u.y)){ u.x=best[0]; u.y=best[1]; moveUnitEl(u); }
+
+    // 攻撃
+    setTimeout(()=>{
+      const hitable=alive("me").filter(t=>dist(u,t)<=CLASS[u.cls].range);
+      if(hitable.length){
+        hitable.sort((a,b)=>a.hp-b.hp);
+        const killable=hitable.filter(t=>t.hp<=atkOf(u)-defOf(t));
+        const tgt = hitable.find(t=>t.leader)
+                 || killable[0]
+                 || hitable.find(t=>t.cls==="heal")
+                 || hitable[0];
+        doAttack(u,tgt);
+      }
+      setTimeout(step,420);
+    },260);
+  })();
+}
+
+/* ---- エフェクト等 ---- */
+function fx(u,kind,text,color){
+  const cell=cells[u.y][u.x]; const wrap=$("#boardWrap");
+  const r=cell.getBoundingClientRect(); const br=wrap.getBoundingClientRect();
+  const cx=r.left-br.left+r.width/2, cy=r.top-br.top+r.height/2;
+  if(kind==="slash"){
+    const s=el("div","fx slash"); s.style.left=cx+"px"; s.style.top=cy+"px";
+    s.innerHTML=`<svg viewBox="0 0 60 60"><path d="M8 46 Q30 10 52 40"/></svg>`;
+    wrap.appendChild(s); setTimeout(()=>s.remove(),320);
+  } else if(kind==="splash"){
+    const s=el("div","fx splash"); s.style.left=cx+"px"; s.style.top=cy+"px";
+    wrap.appendChild(s); setTimeout(()=>s.remove(),340);
+  }
+  const f=el("div","float"); f.textContent=text; f.style.color=color||"#fff";
+  f.style.left=(cx-10)+"px"; f.style.top=(cy-14)+"px";
+  wrap.appendChild(f); setTimeout(()=>f.remove(),800);
+}
+function shake(){ board.animate(
+  [{transform:'translate(0,0)'},{transform:'translate(-4px,2px)'},{transform:'translate(3px,-2px)'},{transform:'translate(0,0)'}],
+  {duration:180}); }
+function el(t,c){ const e=document.createElement(t); e.className=c; return e; }
+function dist(a,b){ return Math.abs(a.x-b.x)+Math.abs(a.y-b.y); }
+function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+function log(html){ const d=$("#log"); d.insertAdjacentHTML("afterbegin",`<div>${html}</div>`); }
+
+/* ---- 勝利ボーナス（敵全滅／味方全員生存） ---- */
+const VQ_ANNIHIL={
+  "疾風ハヤテ":"一人も逃さん。それが忍の掃討よ。",
+  "息吹イブキ":"全部燃やし尽くした……ふぅ、悪くない。",
+  "イズナ":"跳んで、跳ねて、ぜーんぶ片づけたよ！",
+  "ジン":"敵影、ゼロ。……完璧な幻術戦だ。",
+  "クオン":"これでもう、痛い思いをする人はいないね。",
+  "ウカ":"残らず二刀の錆にしてやったわ！",
+  "大炎神ウカ":"焔の前に、逃げ場などない。",
+  "シオン":"穢れは残らず、祓いました。",
+  "アンネ":"完全勝利〜！　ご褒美の団子はどこだい？",
+  "ほんチい":"さらちチい。",
+};
+const VQ_NOLOSS={
+  "疾風ハヤテ":"全員無事か。……上出来だ。",
+  "息吹イブキ":"あたしたち、まだまだ燃え尽きないから。",
+  "イズナ":"みんな揃って里へ帰れるね。",
+  "ジン":"一人も欠けさせない。それが大将の務めだ。",
+  "クオン":"よかった……誰も、いなくならなかった。",
+  "ウカ":"姉さんと一緒なら、負ける気がしないの！",
+  "大炎神ウカ":"この炎がある限り、誰も死なせない。",
+  "シオン":"全員無事……良い星回りです。",
+  "アンネ":"あたしの目の黒いうちは、誰も欠けさせないよ。",
+  "ほんチい":"ごばく、ゼロチい。",
+};
+const BONUS_EXP_ANNIHIL=20, BONUS_EXP_NOLOSS=15;
+function applyVictoryBonuses(){
+  const lines=[];
+  const annihil=alive("foe").length===0;
+  const noloss=units.filter(u=>u.side==="me").every(u=>u.hp>0);
+  const party=alive("me");
+  if(annihil){
+    log(`<span class="sys">敵、全滅！ 全員に経験値+${BONUS_EXP_ANNIHIL}</span>`);
+    lines.push({name:"—", color:"var(--kin)", text:`【敵全滅】 敵を一人残らず討ち取った！ 全員が経験値 +${BONUS_EXP_ANNIHIL} を得る。`});
+    party.forEach(u=>{ if(VQ_ANNIHIL[u.name]) lines.push({name:u.name, color:C_ME, text:VQ_ANNIHIL[u.name]}); });
+    party.forEach(u=>gainExp(u, BONUS_EXP_ANNIHIL));
+  }
+  if(noloss){
+    log(`<span class="sys">味方全員生存！ 全員に経験値+${BONUS_EXP_NOLOSS}</span>`);
+    lines.push({name:"—", color:"var(--kin)", text:`【全員生存】 一人も欠けずに勝ち抜いた！ 全員が経験値 +${BONUS_EXP_NOLOSS} を得る。`});
+    party.forEach(u=>{ if(VQ_NOLOSS[u.name]) lines.push({name:u.name, color:C_ME, text:VQ_NOLOSS[u.name]}); });
+    party.forEach(u=>gainExp(u, BONUS_EXP_NOLOSS));
+  }
+  return lines;
+}
+
+/* ---- 勝敗・ステージ進行 ---- */
+function endGame(win){
+  if(win && SPECIAL.active){ endSpecial(); return; }
+  const ov=$("#overlay"), box=$("#overlayBox");
+  const st=STAGES[stageIdx];
+  const isFinal = !st.next;
+  box.className="box "+(win?"win":"lose");
+  const btn=$("#restartBtn");
+  if(win && st.ch2 && !st.ch2Final){
+    CH2_CLEARED[stageIdx]=true;
+    $("#overlayKanji").textContent="討";
+    $("#overlayMsg").textContent=`${st.bossName}を討ち取った。峠と沼——二つの関を制せば、魔城への道が開く。`;
+    btn.textContent="進軍先を選ぶ ▸";
+    btn.onclick=()=>{ ov.classList.remove("show");
+      carryHP=snapshotHP();
+      openCh2Select(); };
+  } else if(win && st.ch2Final){
+    $("#overlayKanji").textContent="終";
+    $("#overlayMsg").textContent="常闇ノ皇、消滅。永い夜が明け、忍びの里に本当の朝が来る——完。";
+    btn.textContent="最初から";
+    btn.onclick=()=>{ ov.classList.remove("show"); fullReset(); };
+  } else if(win && !isFinal){
+    $("#overlayKanji").textContent="討";
+    $("#overlayMsg").textContent=`${st.bossName}を討ち取った。だが敵はさらに奥に潜む——`;
+    btn.textContent="進軍先を選ぶ ▸";
+    btn.onclick=()=>{ ov.classList.remove("show");
+      carryHP=snapshotHP();
+      openMapSelect(st.next); };
+  } else if(win && isFinal){
+    $("#overlayKanji").textContent="勝";
+    $("#overlayMsg").textContent="総大将・大天狗を討った——だが月が翳る。物語は、第二章へ。";
+    btn.textContent="第二章へ ▸";
+    btn.onclick=()=>{ ov.classList.remove("show");
+      carryHP=snapshotHP();
+      startChapter2(); };
+  } else {
+    $("#overlayKanji").textContent="敗";
+    $("#overlayMsg").textContent=`大将ジン、討たれる。${st.title}にて里の望みは潰えた…`;
+    btn.textContent="この幕をやり直す";
+    btn.onclick=()=>{ ov.classList.remove("show"); restart(); };
+  }
+  if(win){
+    const lines=applyVictoryBonuses();
+    showDialog(lines, ()=>ov.classList.add("show"));
+  } else {
+    ov.classList.add("show");
+  }
+}
+
+/* ---- 全リセット ---- */
+function fullReset(){
+  stageIdx=0; carryHP=null; actNum=1;
+  JIN_BUFF={atk:0,maxhp:0}; itemPicked=STAGES.map(()=>false);
+  UKA_JOINED=false; UKA_GOD=false; UKA_ENABLED=true; PROGRESS={};
+  SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
+  CH2=false; CH2_CLEARED={}; SHION_JOINED=false;
+  restart();
+}
+
+/* ---- 第二章開始（新キャラ・シオン加入） ---- */
+const CH2_INTRO=[
+  {name:"ジン", color:C_ME, text:"大天狗は討った。……だが、この空。月が、翳っていく。"},
+  {name:"？？？", color:"var(--kin)", text:"——常闇ノ皇。大天狗の背後に潜みし、真の敵の仕業です。"},
+  {name:"疾風ハヤテ", color:C_ME, text:"何者だ！"},
+  {name:"シオン", color:"var(--kin)", text:"陰陽師、シオン。月を守る家系の者。式神の腕、里のために振るいましょう。"},
+  {name:"クオン", color:C_ME, text:"射程3の遠距離攻撃……！　た、頼もしい……！"},
+  {name:"シオン", color:"var(--kin)", text:"魔城への道は峠と沼、二つの関に塞がれています。何度でも往き来し、力を蓄えなさい。"},
+  {name:"アンネ", color:"var(--kin)", text:"シオンや〜、置いてくんじゃないよ〜。……あ、この里、団子屋あるかい？"},
+  {name:"シオン", color:"var(--kin)", text:"師匠……今は団子より常闇ノ皇です。"},
+  {name:"アンネ", color:"var(--kin)", text:"わーってるよ。……あたしの弟子に傷ひとつ付けさせやしない。それだけは、団子に誓うさね。"},
+  {name:"ほんチい", color:"var(--kin)", text:"ほんチい。5さいの、かわいいおんなのこチい。"},
+  {name:"クオン", color:C_ME, text:"か、かわいい……！　あれ、でもその手に持ってるのって……"},
+  {name:"ほんチい", color:"var(--kin)", text:"……。（無言で爆弾を構えた）"},
+  {name:"疾風ハヤテ", color:C_ME, text:"おい、なぜ爆弾を構える。まだ敵はいないぞ。"},
+  {name:"ほんチい", color:"var(--kin)", text:"すぶり、チい。"},
+  {name:"―", color:"var(--kin)", text:"【第二章 開幕】シオン・アンネ・ほんチいが仲間になった！ 峠と沼は何度でも再戦でき、経験値を稼げる。両方を制せば魔城が開く。"},
+];
+function startChapter2(){
+  CH2=true; CH2_CLEARED={};
+  SHION_JOINED=true;
+  progOf("シオン");   // 成長枠を確保
+  showDialog(CH2_INTRO, ()=>openCh2Select());
+}
+
+/* ---- 第二章マップ選択（行ったり戻ったり・再戦可） ---- */
+function openCh2Select(){
+  const ms=$("#mapsel"), box=$("#mapChoices");
+  box.innerHTML="";
+  const idxs=STAGES.map((st,i)=>st.ch2?i:-1).filter(i=>i>=0);
+  const fields=idxs.filter(i=>!STAGES[i].ch2Final);
+  const finalUnlocked=fields.every(i=>CH2_CLEARED[i]);
+  idxs.forEach(i=>{
+    const st=STAGES[i];
+    const card=el("div","mapCard");
+    const locked=st.ch2Final&&!finalUnlocked;
+    const cleared=!!CH2_CLEARED[i];
+    card.innerHTML=`
+      <div class="mTitle">${st.title}${cleared?'　<span style="font-size:11px;color:var(--sui)">討伐済</span>':''}</div>
+      <div class="mDesc">${st.intro}</div>
+      <div class="mBoss">${locked?'<span style="color:var(--washi-dim)">※峠と沼を制すれば道が開く</span>':`敵将：${st.bossName}${cleared?'（再戦・経験値稼ぎ可）':''}`}</div>`;
+    if(locked){ card.style.opacity=".45"; card.style.cursor="default"; }
+    else card.onclick=()=>{
+      ms.classList.remove("show");
+      stageIdx=i; actNum++;
+      restart();
+    };
+    box.appendChild(card);
+  });
+  ms.classList.add("show");
+}
+
+/* ---- 外伝の決着: ウカ帰還（イズナ復活済みなら大炎神覚醒） ---- */
+function endSpecial(){
+  const awakened=SPECIAL.izunaRevived;
+  let lines;
+  if(awakened){
+    UKA_GOD=true;
+    lines=[
+      {name:"狂乱ウカ", color:C_FOE, text:"はぁ……はぁ……ねえさん……ほんものの、ねえさん……"},
+      {name:"イズナ", color:C_ME, text:"ずっとそばにいるよ。……おかえり、ウカ。"},
+      {name:"ウカ", color:C_UKA, text:"あたしの中の炎が……姉さんを守る力に、変わっていく……！"},
+      {name:"―", color:"var(--kin)", text:"ウカは【大炎神ウカ】として覚醒した！　焔を統べる力を得て、再び仲間になった。"},
+    ];
+  } else {
+    lines=[
+      {name:"狂乱ウカ", color:C_FOE, text:"はっ……あたし、何を……"},
+      {name:"ジン", color:C_ME, text:"幻は払った。……見ろ、祠の光が。イズナの魂が還ってくる。"},
+      {name:"イズナ", color:C_ME, text:"……ウカ。心配、かけたね。"},
+      {name:"ウカ", color:C_UKA, text:"ねえさん……！　ごめん、ごめんなさい……！"},
+      {name:"―", color:"var(--kin)", text:"イズナが息を吹き返した。ウカも正気に戻り、再び仲間になった。"},
+    ];
+  }
+  showDialog(lines, ()=>{
+    SPECIAL.active=false; SPECIAL.done=true;
+    UKA_JOINED=true;
+    stageIdx=SPECIAL.returnStage;
+    actNum=SPECIAL.returnAct;
+    carryHP=null;   // 決意も新たに全快で元の戦場へ
+    restart();
+  });
+}
+
+/* ---- マップ選択 ---- */
+function openMapSelect(nextIdxs){
+  const ms=$("#mapsel"), box=$("#mapChoices");
+  box.innerHTML="";
+  // 選択肢が1つでもカードで見せる（世界観重視）
+  nextIdxs.forEach(i=>{
+    const st=STAGES[i];
+    const card=el("div","mapCard");
+    const hasUka=st.foes.some(f=>f[0]==="uka")&&!UKA_JOINED;
+    const go=(ukaOn)=>{
+      ms.classList.remove("show");
+      UKA_ENABLED=ukaOn;
+      stageIdx=i; actNum++;
+      restart();
+    };
+    card.innerHTML=`
+      <div class="mTitle">${st.title}</div>
+      <div class="mDesc">${st.intro}</div>
+      <div class="mBoss">敵将：${st.bossName}${hasUka?'　<span style="color:var(--kin)">※ウカの影あり</span>':''}</div>`;
+    if(hasUka){
+      const opts=el("div","mapOpts");
+      const b1=document.createElement("button"); b1.textContent="ウカあり（勧誘可）";
+      const b2=document.createElement("button"); b2.textContent="ウカなし";
+      b1.onclick=e=>{e.stopPropagation(); go(true);};
+      b2.onclick=e=>{e.stopPropagation(); go(false);};
+      opts.appendChild(b1); opts.appendChild(b2);
+      card.appendChild(opts);
+    } else {
+      card.onclick=()=>go(true);
+    }
+    box.appendChild(card);
+  });
+  ms.classList.add("show");
+}
+function snapshotHP(){
+  const o={};
+  units.filter(u=>u.side==="me").forEach(u=>o[u.name]=u.hp);
+  return o;
+}
+function restart(){
+  turn="me"; sel=null; mode="idle";
+  if(SPECIAL.active) SPECIAL.izunaRevived=false;
+  $("#log").innerHTML="";
+  boot();
+}
+
+/* ---- 起動 ---- */
+function boot(){
+  makeRoster(); drawBoard(); setBanner();
+  phaseTxt("駒を選んでください");
+  const st=STAGES[stageIdx];
+  const KAN=["","一","二","三","四","五","六","七","八","九","十"];
+  $("#stageTitle").textContent=(st.special?"外伝　":`第${KAN[actNum]||actNum}幕　`)+st.title;
+  $("#endTurnBtn").onclick=()=>{ if(turn==="me") endTurn(); };
+  $("#debugSkip").onclick=()=>{
+    // 三幕クリア相当の状態を用意して第二章へ
+    ["疾風ハヤテ","息吹イブキ","イズナ","ジン","クオン","ウカ"].forEach(n=>{
+      PROGRESS[n]={lv:4, exp:0, atk:3, hp:9, def:2};
+    });
+    UKA_JOINED=true; UKA_GOD=false; UKA_ENABLED=true;
+    JIN_BUFF={atk:2, maxhp:4};
+    SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
+    carryHP=null; actNum=3;
+    log(`<span class="sys">【デバッグ】三幕クリア後の状態で第二章へ。</span>`);
+    startChapter2();
+  };
+  log(`<span class="sys">${st.title}。${st.intro}</span>`);
+  let d=STAGE_DIALOGUE[stageIdx]||[];
+  if((stageIdx===1||stageIdx===3)&&UKA_JOINED) d=STAGE2_DIALOGUE_JOINED;
+  else if((stageIdx===1||stageIdx===3)&&!UKA_ENABLED){
+    // ウカなし選択時はウカ絡みの台詞を除いた導入
+    d=d.filter(l=>l.name!=="ウカ"&&!/ウカ/.test(l.text));
+    if(!d.length) d=[{name:"疾風ハヤテ", color:C_ME, text:"敵陣は静かだ。……油断せず、行くぞ。"}];
+  }
+  showDialog(d);
+}
+/* 会話送り(一度だけ登録) */
+$("#dlg").addEventListener("click",()=>{
+  dlgIdx++;
+  if(dlgIdx>=dlgLines.length){
+    $("#dlg").classList.remove("show");
+    const f=dlgDone; dlgDone=null; if(f)f();
+  } else renderDlg();
+});
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,2951 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ぬいラボ — ぬいぐるみ型紙メーカー</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{--ink:#2b2440;--paper:#f6f3ec;--paper2:#efe9dd;--felt:#e8657a;--felt-dk:#c94b60;
+    --thread:#b7ad98;--ok:#4a8f6d;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+    background:var(--paper);color:var(--ink);min-height:100vh;
+    background-image:radial-gradient(var(--paper2) 1px,transparent 1px);background-size:22px 22px;}
+  header{padding:18px 22px 10px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  h1{font-size:20px;letter-spacing:.06em;font-weight:800;}
+  h1 .stitch{color:var(--felt);border-bottom:2px dashed var(--felt);padding-bottom:2px;}
+  header p{font-size:12px;color:#6f6885;}
+  .wrap{display:grid;gap:14px;grid-template-columns:1fr 1fr;padding:6px 22px 22px;max-width:1150px;margin:0 auto;}
+  @media(max-width:780px){.wrap{grid-template-columns:1fr;}}
+  .card{background:#fffdf8;border:1.5px solid var(--ink);border-radius:14px;
+    box-shadow:4px 4px 0 rgba(43,36,64,.12);overflow:hidden;display:flex;flex-direction:column;}
+  .card h2{font-size:12px;font-weight:700;letter-spacing:.14em;padding:10px 14px;
+    border-bottom:1.5px dashed var(--thread);display:flex;justify-content:space-between;
+    align-items:center;background:linear-gradient(#fffdf8,#fbf7ee);gap:8px;flex-wrap:wrap;}
+  .card h2 .hint{font-weight:500;letter-spacing:0;color:#8a839d;font-size:11px;}
+  .stage{position:relative;aspect-ratio:1/1;touch-action:none;}
+  .stage.short{aspect-ratio:5/3;}
+  canvas{display:block;width:100%;height:100%;}
+  #draw{cursor:crosshair;}
+  #view3dWrap{background:radial-gradient(circle at 50% 35%,#fffef9 0%,#f1ecdf 75%);}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#a49bb5;font-size:13px;text-align:center;padding:20px;pointer-events:none;line-height:1.9;}
+  .palette{display:none;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1.5px dashed var(--thread);
+    background:#fbf7ee;align-items:center;}
+  .palette.show{display:flex;}
+  .palette .pl{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#7d7566;margin-right:4px;}
+  .sw24{width:21px;height:21px;border-radius:6px;border:1.5px solid rgba(43,36,64,.25);cursor:pointer;
+    transition:transform .06s;}
+  .sw24:hover{transform:scale(1.15);}
+  .sw24.sel{border:2.5px solid var(--ink);transform:scale(1.12);}
+  .controls{grid-column:1/-1;background:#fffdf8;border:1.5px solid var(--ink);border-radius:14px;
+    box-shadow:4px 4px 0 rgba(43,36,64,.12);padding:14px 16px;
+    display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;}
+  .ctl{display:flex;flex-direction:column;gap:4px;min-width:140px;flex:1;}
+  .ctl label{font-size:12px;font-weight:700;display:flex;justify-content:space-between;}
+  .ctl label output{color:var(--felt-dk);font-variant-numeric:tabular-nums;}
+  input[type=range]{accent-color:var(--felt);width:100%;}
+  input[type=number],select{font:inherit;font-size:13px;padding:6px 8px;
+    border:1.5px solid var(--ink);border-radius:8px;background:#fff;width:100%;}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;}
+  button,label.filebtn{font:inherit;font-size:13px;font-weight:700;padding:9px 16px;border-radius:999px;
+    border:1.5px solid var(--ink);background:var(--felt);color:#fff;cursor:pointer;
+    box-shadow:2px 2px 0 rgba(43,36,64,.25);transition:transform .08s;display:inline-block;}
+  button:active,label.filebtn:active{transform:translate(2px,2px);box-shadow:none;}
+  button.ghost,label.filebtn.ghost{background:#fffdf8;color:var(--ink);}
+  button.big{background:var(--ok);}
+  button.mini,label.filebtn.mini{padding:5px 12px;font-size:11.5px;}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .mode{display:flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden;}
+  .mode button{border:none;border-radius:0;box-shadow:none;padding:6px 14px;font-size:12px;
+    background:#fffdf8;color:var(--ink);}
+  .mode button.on{background:var(--ink);color:#fff;}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none;}
+  .toggle input{width:18px;height:18px;accent-color:var(--felt);cursor:pointer;}
+  .badge{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--thread);
+    color:#7d7566;background:#faf6ec;}
+  .badge.ok{border-color:var(--ok);color:var(--ok);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;padding:8px 14px;color:#6f6885;
+    border-top:1.5px dashed var(--thread);}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;
+    border:1px solid rgba(43,36,64,.3);vertical-align:-2px;margin-right:4px;}
+  .foot{grid-column:1/-1;font-size:11.5px;color:#8a839d;line-height:1.8;padding:0 4px;}
+  .dartnote{color:var(--felt-dk);font-weight:700;}
+  .shape{grid-column:1/-1;background:#fbf7ee;border:1.5px dashed var(--thread);border-radius:12px;
+    padding:10px 16px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;}
+  .shape .lbl{font-size:12px;font-weight:800;letter-spacing:.1em;color:#7d7566;}
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<header>
+  <h1>ぬい<span class="stitch">ラボ</span> — 推しぬいメーカー</h1>
+  <p>えらんで、描いて、型紙に。すべての縫い合わせは長さピッタリ保証つき</p>
+  <div id="stepNav" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+    <button class="mini stepBtn on" data-step="1">1 ベース</button>
+    <button class="mini stepBtn" data-step="2">2 かお</button>
+    <button class="mini stepBtn" data-step="3">3 かみ</button>
+    <button class="mini stepBtn" data-step="4">4 からだ・ふく</button>
+    <button class="mini stepBtn" data-step="5">5 型紙にする</button>
+    <input id="nuiName" placeholder="推しの名前(型紙に印字)" maxlength="24"
+      style="margin-left:auto;border:1.5px solid var(--ink);border-radius:8px;
+      padding:5px 10px;font-size:12px;background:#fffdf8;min-width:180px;">
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <h2>STEP 1 かたちを描く
+      <span class="mode"><button id="mOutline" class="on">輪郭</button><button id="mFace" disabled>顔</button><button id="mArm" disabled>手</button><button id="mLeg" disabled>脚</button><button id="mHair" disabled>髪</button></span>
+      <span class="hint" id="modeHint">ひと筆書き・離すと自動で閉じる</span>
+    </h2>
+    <div class="palette" id="palette"><span class="pl">刺繍糸カラー(Brother参考)</span></div>
+    <div class="palette" id="faceTools">
+      <span class="pl">面</span>
+      <button class="mini ghost sideBtn on" data-side="front" style="background:var(--ink);color:#fff;">前</button>
+      <button class="mini ghost sideBtn" data-side="back">後ろ</button>
+      <span class="pl" style="margin-left:8px;">ペン</span>
+      <button class="mini ghost penW" data-w="1.6">細</button>
+      <button class="mini ghost penW on" data-w="2.5" style="background:var(--ink);color:#fff;">中</button>
+      <button class="mini ghost penW" data-w="4.2">太</button>
+      <label class="toggle" style="font-size:12px;margin-left:8px;">
+        <input type="checkbox" id="faceSym">左右対称に描く</label>
+      <button class="mini ghost" id="faceUndoBtn" style="margin-left:auto;">1つ戻す</button>
+      <button class="mini ghost" id="faceClearBtn2">全部消す</button>
+    </div>
+    <div class="stage"><canvas id="draw"></canvas>
+      <div class="empty" id="drawHint">正面から見た頭の形を<br>ひと筆で描いてください</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>STEP 2 立体プレビュー <span class="hint">ドラッグで回転</span></h2>
+    <div class="stage" id="view3dWrap">
+      <div class="empty" id="viewHint">輪郭ができると立体が現れます</div>
+    </div>
+    <div class="legend">
+      <span><span class="sw" style="background:#f3d9b8"></span>前</span>
+      <span><span class="sw" style="background:#c9dce8"></span>後ろ左</span>
+      <span><span class="sw" style="background:#cfe3cd"></span>後ろ右</span>
+      <span><span class="sw" style="background:#c94b60"></span>はぎ線・首・腕位置</span>
+    </div>
+  </section>
+
+  <div class="shape">
+    <span class="lbl">テンプレ</span>
+    <div class="ctl" style="max-width:120px;"><label>肌の色</label>
+      <select id="skinSel">
+        <option value="cream">ぬいクリーム</option>
+        <option value="milk">ミルク(白)</option>
+        <option value="momo">ももいろ</option>
+        <option value="komugi">こむぎ</option>
+        <option value="choco">チョコ</option>
+      </select></div>
+    <div class="ctl" style="max-width:170px;"><label>ベース</label>
+      <select id="presetSel">
+        <option value="none">手描きする</option>
+        <option value="plain">まっしろ(お絵描き用)</option>
+        <option value="human">ひとがた(推しぬい風)</option>
+        <option value="panda">パンダ</option>
+        <option value="teddy">テディベア</option>
+      </select></div>
+    <div class="ctl" style="max-width:110px;"><label>目</label>
+      <select id="eyeSel" disabled>
+        <option value="none">なし</option>
+        <option value="maru">丸目</option>
+        <option value="tare">たれ目</option>
+        <option value="tsuri">つり目</option>
+        <option value="jito">ジト目</option>
+        <option value="niko">にこ目(＾＾)</option>
+        <option value="guru">ぐるぐる目</option>
+        <option value="hoshi">星目</option>
+        <option value="heart">ハート目</option>
+        <option value="kira">きらきら目</option>
+        <option value="button">ボタン目</option>
+      </select></div>
+    <div class="ctl" style="max-width:110px;"><label>口</label>
+      <select id="mouthSel" disabled>
+        <option value="none">なし</option>
+        <option value="niko">にっこり</option>
+      </select></div>
+    <div class="ctl" style="max-width:110px;"><label>頬</label>
+      <select id="cheekSel" disabled>
+        <option value="none">なし</option>
+        <option value="hon">ほんのり</option>
+      </select></div>
+    <div class="ctl" style="max-width:130px;"><label>服</label>
+      <select id="clothesSel" disabled>
+        <option value="none">なし</option>
+        <option value="tshirt">Tシャツ</option>
+        <option value="dress">ワンピース</option>
+      </select></div>
+    <div class="ctl" style="max-width:110px;"><label>耳</label>
+      <select id="earSel" disabled>
+        <option value="none">なし</option>
+        <option value="kuma">くま</option>
+        <option value="neko">ねこ</option>
+        <option value="usagi">うさぎ</option>
+      </select></div>
+    <div class="ctl" style="max-width:120px;"><label>横毛</label>
+      <select id="sideSel" disabled>
+        <option value="none">なし</option>
+        <option value="short">みじかめ</option>
+        <option value="long">ながめ</option>
+      </select></div>
+    <div class="ctl" style="max-width:150px;"><label>髪のボリューム<output id="hpOut">35%</output></label>
+      <input type="range" id="hairPuff" min="0" max="100" step="1" value="35"></div>
+    <div class="ctl" style="max-width:120px;"><label>襟</label>
+      <select id="collarSel" disabled>
+        <option value="none">なし</option>
+        <option value="round">丸襟</option>
+        <option value="rib">リブ襟</option>
+      </select></div>
+    <span class="lbl" style="margin-left:10px;">かたち補正</span>
+    <label class="toggle" style="font-size:12px;"><input type="checkbox" id="axisChk" disabled>基準線を表示</label>
+    <div class="ctl" style="max-width:185px;"><label>対称化(基準線ミラー)</label>
+      <select id="symSel" disabled>
+        <option value="none">しない</option>
+        <option value="left">左半分を基準にミラー</option>
+        <option value="right">右半分を基準にミラー</option>
+      </select></div>
+    <div class="ctl"><label>なめらか補正<output id="smOut">0%</output></label>
+      <input type="range" id="smooth" min="0" max="100" step="1" value="0" disabled></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctl"><label>顔のまるみ(前)<output id="kfOut">0.70</output></label>
+      <input type="range" id="kf" min="0.15" max="1.3" step="0.01" value="0.70"></div>
+    <div class="ctl"><label>頭のまるみ(後ろ)<output id="kbOut">1.00</output></label>
+      <input type="range" id="kb" min="0.15" max="1.3" step="0.01" value="1.00"></div>
+    <div class="ctl"><label>体の長さ(対 頭)<output id="blOut">0.80×</output></label>
+      <input type="range" id="bodyLen" min="0.6" max="1.8" step="0.01" value="0.80"></div>
+    <div class="ctl"><label>手の位置(上から)<output id="atOut">18%</output></label>
+      <input type="range" id="armT" min="8" max="60" step="1" value="18"></div>
+    <div class="ctl"><label>脚の位置(上から)<output id="ltOut">70%</output></label>
+      <input type="range" id="legT" min="55" max="88" step="1" value="70"></div>
+    <div class="ctl" style="max-width:105px;"><label>頭の高さ(cm)</label>
+      <input type="number" id="hcm" value="12" min="4" max="60" step="0.5"></div>
+    <div class="ctl" style="max-width:150px;"><label>生地(伸び補正)</label>
+      <select id="fabric">
+        <option value="1.00">織物(補正なし)</option>
+        <option value="0.97">クリスタルボア(−3%)</option>
+        <option value="0.94" selected>ソフトボア(−6%)</option>
+      </select></div>
+    <label class="toggle"><input type="checkbox" id="bodyChk">体+手足</label>
+    <div class="btns">
+      <button class="ghost" id="faceClearBtn" disabled>顔を消す</button>
+      <button class="ghost" id="hairClearBtn" disabled>髪を消す</button>
+      <button class="ghost" id="clearBtn">全部やり直す</button>
+      <button class="big" id="pdfBtn" disabled>STEP 4 型紙PDFを作る</button>
+    </div>
+    <span class="badge" id="status">待機中</span>
+  </div>
+
+  <section class="card" style="grid-column:1/-1;">
+    <h2>STEP 3 型紙プレビュー
+      <span style="display:flex;gap:8px;align-items:center;">
+        <span class="hint">実線=仕上がり / 点線=縫い代7mm / 赤=ダーツ・根元カーブ・穴位置</span>
+        <button class="mini ghost" id="pngBtn" disabled>画像でDL</button>
+      </span></h2>
+    <div class="stage short"><canvas id="flat"></canvas>
+      <div class="empty" id="flatHint">立体ができると展開図が現れます</div>
+    </div>
+  </section>
+
+  <p class="foot" id="dartReport">
+    <b>ぬいラボの設計思想:</b>造形の自由はあなたに、縫える整合性はソフトに。
+    体のデフォルトは「頭大きめ・全高約2頭身・首なし直付け・細身チューブ胴・短い手足」——
+    ぬいぐるみ専門メーカーの黄金比と中韓ぬい標準体型を参考にしたかわいい比率です。
+    首・手足の穴・根元カーブ・足まわりのすべての縫い合わせ辺は長さが厳密に一致し、いせ込み不要です。
+    PDFには組み立て手順・使用糸リスト・合印・検寸バーが入ります。</p>
+</div>
+
+<div id="startOverlay" style="position:fixed;inset:0;z-index:60;background:rgba(43,36,64,.6);
+  display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fffdf8;border:2px solid var(--ink);border-radius:18px;
+    box-shadow:6px 6px 0 rgba(43,36,64,.25);max-width:460px;padding:26px 24px;text-align:center;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:.06em;">🧸 ぬいラボへようこそ</div>
+    <p style="font-size:12.5px;color:#6b6480;margin:10px 0 18px;">
+      描いた形が、そのまま縫える型紙になります。<br>まずは作り方をえらんでください。</p>
+    <button id="startOshi" style="display:block;width:100%;padding:14px;margin-bottom:10px;
+      background:var(--felt);color:#fff;border:2px solid var(--ink);border-radius:12px;
+      font-size:15px;font-weight:800;cursor:pointer;">💖 推しぬいをつくる(おすすめ)</button>
+    <button id="startTeddy" style="display:block;width:100%;padding:12px;margin-bottom:10px;
+      background:#fffdf8;border:2px solid var(--ink);border-radius:12px;
+      font-size:13px;font-weight:700;cursor:pointer;">🧸 テディベアをつくる</button>
+    <button id="startFree" style="display:block;width:100%;padding:12px;
+      background:#fffdf8;border:2px solid var(--ink);border-radius:12px;
+      font-size:13px;font-weight:700;cursor:pointer;">✏️ じぶんで描く・どうぶつをつくる</button>
+    <p style="font-size:11px;color:#8a839d;margin-top:12px;">
+      推しぬい:ひとがたベース+髪+服がセットされ、顔を描くだけで完成します</p>
+  </div>
+</div>
+<div id="exportModal" style="display:none;position:fixed;inset:0;z-index:50;
+  background:rgba(43,36,64,.55);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fffdf8;border:2px solid var(--ink);border-radius:16px;
+    box-shadow:6px 6px 0 rgba(43,36,64,.25);max-width:min(920px,94vw);max-height:92vh;
+    display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;
+      padding:10px 14px;border-bottom:1.5px dashed var(--thread);">
+      <b id="exportTitle" style="font-size:13px;letter-spacing:.08em;"></b>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <a id="exportLink" href="#" target="_blank" download
+          style="font-size:12px;font-weight:700;color:var(--felt-dk);">別タブで開く/保存</a>
+        <button class="mini ghost" id="exportClose">閉じる</button>
+      </span>
+    </div>
+    <div id="exportHint" style="font-size:11.5px;color:#8a839d;padding:6px 14px;"></div>
+    <div style="overflow:auto;padding:10px;flex:1;background:#efe9dd;">
+      <img id="exportImg" style="display:none;max-width:100%;border:1px solid #ccc;background:#fff;">
+      <iframe id="exportFrame" style="display:none;width:100%;height:70vh;border:1px solid #ccc;background:#fff;"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+// ============ 24色(Brother参考) ============
+const THREADS=[
+  ['001 White','#f8f8f6'],['010 Cream','#f2e6bc'],['205 Yellow','#f6d211'],['214 Gold','#e3a422'],
+  ['208 Orange','#ef7e26'],['030 Vermilion','#e8542e'],['800 Red','#cf2438'],['807 Carmine','#dd3d6d'],
+  ['079 Salmon','#f2949c'],['085 Pink','#f3aec7'],['810 Rose','#e56ba0'],['804 Lavender','#c4a7d7'],
+  ['614 Purple','#7c4d9f'],['007 Prussian','#20386f'],['406 Blue','#2266b3'],['405 Ultramarine','#3d4fa8'],
+  ['017 Sky','#7ec3e6'],['502 Mint','#7bcbb2'],['534 Teal','#0b7d6d'],['507 Emerald','#1d9c4d'],
+  ['513 Lime','#a5c63b'],['843 Beige','#d7bd9d'],['058 Brown','#6a4527'],['900 Black','#221f22'],
+];
+let curColor=THREADS[23][1];
+let curPenW=2.5;
+let drawSide='front';
+
+// ============ 幾何 ============
+function pointInPoly(x,y,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function nearestOnPoly(x,y,poly){
+  let best=Infinity;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const ax=poly[j].x,ay=poly[j].y,bx=poly[i].x,by=poly[i].y;
+    const dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy;
+    let t=L2>0?((x-ax)*dx+(y-ay)*dy)/L2:0;t=Math.max(0,Math.min(1,t));
+    const px=ax+dx*t,py=ay+dy*t,d=(x-px)*(x-px)+(y-py)*(y-py);
+    if(d<best)best=d;
+  }
+  return Math.sqrt(best);
+}
+function nearestPtOnPoly(x,y,poly){
+  let best=Infinity,bx=x,by=y;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const ax=poly[j].x,ay=poly[j].y,bx2=poly[i].x,by2=poly[i].y;
+    const dx=bx2-ax,dy=by2-ay,L2=dx*dx+dy*dy;
+    let t=L2>0?((x-ax)*dx+(y-ay)*dy)/L2:0;t=Math.max(0,Math.min(1,t));
+    const px=ax+dx*t,py=ay+dy*t,d=(x-px)*(x-px)+(y-py)*(y-py);
+    if(d<best){best=d;bx=px;by=py;}
+  }
+  return {x:bx,y:by};
+}
+function resampleClosed(p,n){
+  const c=p.slice();c.push({x:p[0].x,y:p[0].y});
+  let total=0;const segs=[];
+  for(let i=0;i<c.length-1;i++){const L=Math.hypot(c[i+1].x-c[i].x,c[i+1].y-c[i].y);segs.push(L);total+=L;}
+  if(total<=0)return p.slice(0,n);
+  const step=total/n,out=[];let acc=0,si=0;
+  for(let k=0;k<n;k++){
+    const target=k*step;
+    while(acc+segs[si]<target&&si<segs.length-1){acc+=segs[si];si++;}
+    const f=segs[si]>0?(target-acc)/segs[si]:0;
+    out.push({x:c[si].x+(c[si+1].x-c[si].x)*f,y:c[si].y+(c[si+1].y-c[si].y)*f});
+  }
+  return out;
+}
+function clipDir(poly,c,axis,keepGE){
+  const val=p=>axis==='x'?p.x:p.y;
+  const inS=p=>keepGE?val(p)>=c:val(p)<=c;
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length],ia=inS(a),ib=inS(b);
+    if(ia)out.push(a);
+    if(ia!==ib){
+      const t=(c-val(a))/(val(b)-val(a));
+      out.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+    }
+  }
+  return out;
+}
+function polyArea(p){let s=0;for(let i=0,j=p.length-1;i<p.length;j=i++){s+=(p[j].x*p[i].y-p[i].x*p[j].y);}return Math.abs(s)/2;}
+function localSmooth(arr,center,win,iters){
+  const n=arr.length;
+  for(let it=0;it<iters;it++){
+    for(let w=-win;w<=win;w++){
+      const i=((center+w)%n+n)%n;
+      const a=arr[(i-1+n)%n],b=arr[(i+1)%n];
+      arr[i]={x:(arr[i].x+(a.x+b.x)/2)/2,y:(arr[i].y+(a.y+b.y)/2)/2};
+    }
+  }
+}
+function ellipsePerim(a,b){
+  const h=((a-b)/(a+b))**2;
+  return Math.PI*(a+b)*(1+3*h/(10+Math.sqrt(4-3*h)));
+}
+
+// ============ 状態 ============
+let rawNorm=null,poly=null,dmax=0,polyCx=0,norm=null,axisX=null;
+let faceStrokes=[],panels=null,mode='outline',neck=null;
+let ears=null; // {kind,r,ang,color} 頭の外周はぎ線に挟む別体パーツ
+let sideHair='none';
+function earShapePts(kind,re){ // ローカル:弦=x(−re..re)、+yへ立つ
+  const p=[];
+  if(kind==='usagi'){ // 長い楕円(高さ2.6×)
+    for(let s=0;s<=24;s++){const a=Math.PI*s/24;
+      p.push({x:-re*.8*Math.cos(a),y:re*2.6*Math.sin(a)});}
+  }else if(kind==='neko'){ // 三角(側辺ややカーブ)
+    for(let s=0;s<=10;s++){const t=s/10;
+      p.push({x:-re+t*re,y:re*1.7*Math.pow(t,1.15)});}
+    for(let s=1;s<=10;s++){const t=s/10;
+      p.push({x:t*re,y:re*1.7*Math.pow(1-t,1.15)});}
+  }else{ // くま:半円
+    for(let s=0;s<=20;s++){const a=Math.PI*s/20;
+      p.push({x:-re*Math.cos(a),y:re*Math.sin(a)});}
+  }
+  return p;
+}
+function earColor(){
+  if(ears&&ears.color)return ears.color;
+  return hair&&hair.front?hair.front.color:'#'+theme.skin.toString(16).padStart(6,'0');
+}
+let hair=null; // {ang, front:{shape,color}|null, back:{shape,color}|null} 外周はぎ線に挟む髪
+let curHair=null;
+let clothesKind='none';
+let bodyTune={wide:1,limbR:1,limbLen:1};
+let collarKind='none';
+const CLOTHES={tshirt:{ease:1.04,flare:0,hemT:.58,color:0xf2f2ee,name:'T-SHIRT'},
+  dress:{ease:1.04,flare:.38,hemT:.88,color:0xf3aec7,name:'DRESS'}};
+const $=id=>document.getElementById(id);
+const kfEl=$('kf'),kbEl=$('kb'),hcmEl=$('hcm'),fabricEl=$('fabric'),bodyChk=$('bodyChk');
+const symSel=$('symSel'),smoothEl=$('smooth'),smOut=$('smOut'),axisChk=$('axisChk');
+const bodyLenEl=$('bodyLen'),blOut=$('blOut'),armTEl=$('armT'),atOut=$('atOut'),legTEl=$('legT'),ltOut=$('ltOut');
+const status=$('status'),pdfBtn=$('pdfBtn'),pngBtn=$('pngBtn'),dartReport=$('dartReport');
+const mOutline=$('mOutline'),mFace=$('mFace'),mArm=$('mArm'),mLeg=$('mLeg'),
+  modeHint=$('modeHint'),faceClearBtn=$('faceClearBtn'),faceToolsEl=$('faceTools'),
+  faceSymEl=$('faceSym'),faceUndoBtn=$('faceUndoBtn'),faceClearBtn2=$('faceClearBtn2'),
+  mHair=$('mHair'),hairClearBtn=$('hairClearBtn');
+
+let MUZ={on:false}; // テディ:3枚はぎヘッド(側面×2+頭中央マチ)モード
+// ---- テディヘッドの断面ロフト:側面プロファイル+マチ幅からリング列を生成 ----
+function teddyHeadGeom(){
+  const hd=headDims(),R=hd.h/2,cy0=(hd.yMin+hd.yMax)/2,cx0=hd.xc;
+  // 上シーム(マチの通り道):鼻先→鼻上→ひたい→頭頂→後頭部→首後ろ (z前+,y上+)
+  const TOP=[[.98,-.12],[.92,.10],[.66,.58],[.18,1.00],[-.42,.86],[-.78,.38],[-.72,-.42],[-.58,-.82]]
+    .map(p=>({z:p[0]*R,y:p[1]*R}));
+  // 下シーム(あご):首前→あご下→鼻先下→鼻先(TOP[0]に合流)
+  const BOT=[[.10,-.92],[.48,-.80],[.82,-.46],[.98,-.12]]
+    .map(p=>({z:p[0]*R,y:p[1]*R}));
+  // マチ半幅 w/2(uに沿って):鼻先せまい→頭頂ひろい→首後ろ細い
+  const WU=[.07,.10,.19,.28,.27,.20,.12,.08].map(v=>v*hd.w);
+  const U=TOP.length;
+  // 側面の最大半幅=前ビューの輪郭半幅(高さ依存):描いた輪郭に連動
+  const halfW=y=>{
+    let best=0;
+    for(let i=0;i<poly.length;i++){
+      const a=poly[i],b=poly[(i+1)%poly.length];
+      if((a.y-y)*(b.y-y)<=0&&Math.abs(a.y-b.y)>1e-9){
+        const t=(y-a.y)/(b.y-a.y);
+        best=Math.max(best,Math.abs(a.x+(b.x-a.x)*t-cx0));
+      }
+    }
+    return Math.max(best,hd.w*.12);
+  };
+  // 下シームをTOPと同数に再サンプル(u対応)
+  const botR=[];
+  for(let i=0;i<U;i++){
+    const t=i/(U-1);
+    const fi=t*(BOT.length-1),i0=Math.floor(fi),f=fi-i0;
+    const a=BOT[Math.min(i0,BOT.length-1)],b=BOT[Math.min(i0+1,BOT.length-1)];
+    botR.push({z:a.z+(b.z-a.z)*f,y:a.y+(b.y-a.y)*f});
+  }
+  botR.reverse(); // u=0(鼻先)から始まるよう TOP と向きを揃える
+  // リング列:各uで マチ縁(±w/2)→側面ふくらみ→あご中心
+  const K=14,rings=[];
+  for(let i=0;i<U;i++){
+    const T={z:TOP[i].z,y:TOP[i].y},B={z:botR[i].z,y:botR[i].y},w2=WU[i];
+    const yMid=(T.y+B.y)/2;
+    const X=Math.max(w2*1.15,halfW(cy0+yMid)*.96);
+    const ring=[]; // 片側(x≤0)のみ、φ∈[φw..π]
+    const phw=Math.asin(Math.min(1,w2/X));
+    for(let k2=0;k2<=K;k2++){
+      const ph=phw+(Math.PI-phw)*k2/K;
+      const blend=(1-Math.cos(ph))/2;
+      ring.push({x:-X*Math.sin(ph),
+        y:cy0+T.y+(B.y-T.y)*blend,
+        z:T.z+(B.z-T.z)*blend});
+    }
+    rings.push({ring,T:{z:T.z,y:cy0+T.y},w2});
+  }
+  return {rings,U,K,hd,cx0,cy0,TOP,botR,WU};
+}
+function teddyNeckScale(g){ // 首まわりを既存の首周長に厳密一致させる倍率
+  if(!neck)return 1;
+  const last=g.rings[g.U-1].ring;
+  let per=0;
+  for(let i=1;i<last.length;i++)
+    per+=Math.hypot(last[i].x-last[i-1].x,last[i].y-last[i-1].y,last[i].z-last[i-1].z);
+  per=per*2+g.rings[g.U-1].w2*2; // 両側+マチ端
+  return neck.perim/Math.max(per,1e-6);
+}
+
+function muzzleBump(x,y){
+  if(!MUZ.on)return 0;
+  const d=Math.hypot(x-MUZ.cx,y-MUZ.cy)/MUZ.r;
+  if(d>=1)return 0;
+  const c=Math.cos(Math.PI/2*d);
+  return MUZ.h*c*c; // C1連続のなだらかな山
+}
+function surfH(x,y,k){
+  const mz=(MUZ.on&&k===+kfEl.value)?1:0;
+  if(!poly||!pointInPoly(x,y,poly))return (mz?muzzleBump(x,y):0)+ 0;
+  const d=nearestOnPoly(x,y,poly);
+  return k*Math.sqrt(Math.max(0,d*(2*dmax-d)));
+}
+function headDims(){
+  let xMin=Infinity,xMax=-Infinity,yMin=Infinity,yMax=-Infinity;
+  poly.forEach(p=>{xMin=Math.min(xMin,p.x);xMax=Math.max(xMax,p.x);
+    yMin=Math.min(yMin,p.y);yMax=Math.max(yMax,p.y);});
+  return {w:xMax-xMin,h:yMax-yMin,yMin,yMax,xc:(xMin+xMax)/2};
+}
+function cmPerUnit(){return (+hcmEl.value)/headDims().h;}
+
+// ============ かたち補正 ============
+function processOutline(){
+  if(!rawNorm)return;
+  let p=rawNorm.map(q=>({x:q.x,y:q.y}));
+  if(symSel.value!=='none'&&axisX!==null){
+    const half=clipDir(p,axisX,'x',symSel.value==='right');
+    if(half.length>=3){
+      const mir=half.map(q=>({x:2*axisX-q.x,y:q.y})).reverse();
+      const joined=half.concat(mir);
+      localSmooth(joined,0,6,4);
+      localSmooth(joined,half.length,6,4);
+      p=resampleClosed(joined,140);
+    }
+  }
+  const w=+smoothEl.value/100;
+  if(w>0){
+    const iters=Math.round(w*28),lam=.5,n=p.length;
+    for(let it=0;it<iters;it++){
+      const np=new Array(n);
+      for(let i=0;i<n;i++){
+        const a=p[(i-1+n)%n],b=p[(i+1)%n];
+        np[i]={x:p[i].x+lam*((a.x+b.x)/2-p[i].x),y:p[i].y+lam*((a.y+b.y)/2-p[i].y)};
+      }
+      p=np;
+    }
+    p=resampleClosed(p,140);
+  }
+  poly=p;
+}
+
+// ============ パレット ============
+const palEl=$('palette');
+THREADS.forEach(([name,hex],i)=>{
+  const b=document.createElement('div');
+  b.className='sw24'+(i===23?' sel':'');
+  b.style.background=hex;b.title=name;
+  b.addEventListener('click',()=>{
+    curColor=hex;
+    palEl.querySelectorAll('.sw24').forEach(e=>e.classList.remove('sel'));
+    b.classList.add('sel');
+  });
+  palEl.appendChild(b);
+});
+
+// ============ 描画キャンバス ============
+const drawCv=$('draw'),dctx=drawCv.getContext('2d');
+const drawHint=$('drawHint');
+let pts=[],drawing=false,curFace=null,curLimb=null;
+
+// ---- 手足エディタ:根元カーブ=胴体の縫い目に彫るスクープと同一の半楕円 ----
+// 胴体側:はぎ線に沿って縦V・深さDの半楕円が彫られる。
+// 手足の根元カーブはその「型を取った」凸側の半楕円——形も長さも定義から完全一致。
+function makeRootArc(V,D){ // 正規化:弦=1(=V)、体側へ(−y)膨らむ
+  const k=D/V,o=[];
+  for(let s=0;s<=24;s++){
+    const t=Math.PI*s/24;
+    o.push({x:-.5*Math.cos(t), y:-k*Math.sin(t)});
+  }
+  return {pts:o,aspect:k};
+}
+let ROOT_ARCS={arm:makeRootArc(2.3,1.0), leg:makeRootArc(1.9,.7)}; // 穴と同比率で初期化
+const arcOf=m=>ROOT_ARCS[m==='leg'?'leg':'arm'];
+// デフォルトシルエット(根元弦=1・y下向き・右端→左端の順)
+const DEF_ARM=[{x:.5,y:0},{x:.58,y:.28},{x:.56,y:.62},{x:.34,y:.86},{x:0,y:.94},
+  {x:-.34,y:.86},{x:-.56,y:.62},{x:-.58,y:.28},{x:-.5,y:0}]; // 短めぷっくりミトン
+const DEF_LEG=[{x:.5,y:0},{x:.55,y:.35},{x:.5,y:.72},{x:.68,y:.78},{x:.74,y:1.0},
+  {x:.26,y:1.06},{x:-.36,y:1.02},{x:-.48,y:.72},{x:-.55,y:.35},{x:-.5,y:0}]; // 短めまるっと足
+let limbShapesRaw={arm:DEF_ARM.map(p=>({...p})),leg:DEF_LEG.map(p=>({...p}))};
+function limbShape(which){ // なめらか補正スライダーを手足にも適用(端点は固定)
+  let p=limbShapesRaw[which].map(q=>({...q}));
+  const w=+smoothEl.value/100;
+  if(w<=0||p.length<5)return p;
+  const iters=Math.round(w*18),lam=.5,n=p.length;
+  for(let it=0;it<iters;it++){
+    for(let i=1;i<n-1;i++){
+      p[i]={x:p[i].x+lam*((p[i-1].x+p[i+1].x)/2-p[i].x),
+            y:p[i].y+lam*((p[i-1].y+p[i+1].y)/2-p[i].y)};
+    }
+  }
+  return p;
+}
+
+function limbFrame(){ // エディタ内の根元カーブ配置(px)
+  const r=drawCv.getBoundingClientRect();
+  return {cx:r.width/2,cy:r.height*.24,W:r.width*.42};
+}
+function toLimbNorm(p){const f=limbFrame();return {x:(p.x-f.cx)/f.W,y:(p.y-f.cy)/f.W};}
+function drawLimbEditor(){
+  const r=drawCv.getBoundingClientRect();
+  dctx.clearRect(0,0,r.width,r.height);
+  const f=limbFrame();
+  const P=q=>({x:f.cx+q.x*f.W,y:f.cy+q.y*f.W});
+  // 説明
+  dctx.fillStyle='#8a839d';dctx.font='11px sans-serif';dctx.textAlign='center';
+  dctx.fillText('この根元カーブ(=体の穴と同じ長さ)から下へ、'+(mode==='arm'?'手':'脚')+'の形をひと筆で描く',
+    r.width/2,f.cy-f.W*.28);
+  dctx.fillText('端から端へつながるように描くと自動で接続されます',r.width/2,f.cy-f.W*.28+15);
+  const RA=arcOf(mode).pts;
+  // 根元カーブ(固定・赤)
+  dctx.lineWidth=3.5;dctx.strokeStyle='#c94b60';dctx.lineCap='round';
+  dctx.beginPath();
+  RA.forEach((q,i)=>{const p=P(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+  dctx.stroke();
+  // 端点マーカー
+  [RA[0],RA[RA.length-1]].forEach(q=>{
+    const p=P(q);
+    dctx.fillStyle='#c94b60';
+    dctx.beginPath();dctx.arc(p.x,p.y,5,0,7);dctx.fill();
+  });
+  // 現在のシルエット
+  const shape=curLimb||limbShape(mode);
+  if(shape&&shape.length>=2){
+    dctx.lineWidth=3;dctx.strokeStyle='#2b2440';
+    dctx.beginPath();
+    shape.forEach((q,i)=>{const p=P(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+    dctx.stroke();
+    if(!curLimb){ // 確定形は薄く塗る
+      dctx.beginPath();
+      RA.forEach((q,i)=>{const p=P(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+      for(let i=0;i<shape.length;i++){const p=P(shape[i]);dctx.lineTo(p.x,p.y);}
+      dctx.closePath();
+      dctx.fillStyle=mode==='arm'?'#f3d9b855':'#cfe3cd55';
+      dctx.fill();
+    }
+  }
+  dctx.fillStyle='#8a839d';dctx.font='10px sans-serif';
+  dctx.fillText('やり直したいときは、そのまま描き直せば置き換わります',r.width/2,r.height-14);
+}
+function acceptLimbStroke(){
+  if(!curLimb||curLimb.length<6){curLimb=null;drawLimbEditor();return;}
+  let st=curLimb.slice();
+  const RA=arcOf(mode).pts;
+  const A=RA[RA.length-1],B=RA[0]; // 右端A・左端B
+  // 右端から始まるよう向きを揃える
+  const d0=Math.hypot(st[0].x-A.x,st[0].y-A.y),d1=Math.hypot(st[st.length-1].x-A.x,st[st.length-1].y-A.y);
+  if(d1<d0)st.reverse();
+  // 端点を根元カーブの端へスナップ(最初と最後の数点をブレンド)
+  const blend=(i,target,n)=>{
+    const w=1-i/n;
+    st[i]={x:st[i].x*(1-w)+target.x*w, y:st[i].y*(1-w)+target.y*w};
+  };
+  const nB=Math.min(5,Math.floor(st.length/3));
+  for(let i=0;i<=nB;i++)blend(i,A,nB+1);
+  for(let i=0;i<=nB;i++){
+    const j=st.length-1-i,w=1-i/(nB+1);
+    st[j]={x:st[j].x*(1-w)+B.x*w, y:st[j].y*(1-w)+B.y*w};
+  }
+  limbShapesRaw[mode]=st;
+  curLimb=null;
+  drawLimbEditor();
+  if(panels){refreshBody3d();drawFlatScreen();updateReport();}
+  status.textContent=(mode==='arm'?'手':'脚')+'の形を更新しました';status.className='badge ok';
+}
+
+function fitCanvas(cv){
+  const r=cv.parentElement.getBoundingClientRect();
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=r.width*dpr;cv.height=r.height*dpr;
+  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+}
+function pos(e){const r=drawCv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;
+  return {x:t.clientX-r.left,y:t.clientY-r.top};}
+function toNorm(p){return {x:(p.x-norm.cx)*norm.sc,y:-(p.y-norm.cy)*norm.sc};}
+function toPx(q){return {x:q.x/norm.sc+norm.cx,y:-q.y/norm.sc+norm.cy};}
+// 体ONのとき全身が収まる表示スケール(正規化空間内の相似変換)
+function viewTf(){
+  if(!poly||!bodyChk.checked||!neck)return {k:1,fx:0,fy:0};
+  const hd=headDims(),bp=bodyParams();
+  const yLo=bp.topY-bp.bh,yHi=hd.yMax;
+  const h=yHi-yLo,w=Math.max(hd.w,bp.rMax*2);
+  const k=Math.min(1,1.72/h,1.72/w);
+  return {k,fx:(hd.xc+bp.cx)/2,fy:(yHi+yLo)/2};
+}
+function V(q){const t=viewTf();return {x:(q.x-t.fx)*t.k,y:(q.y-t.fy)*t.k};}
+function Vi(q){const t=viewTf();return {x:q.x/t.k+t.fx,y:q.y/t.k+t.fy};}
+const flipC=()=>axisX!==null?axisX:0;
+const sideFlip=q=>((mode==='face'||mode==='hair')&&drawSide==='back')?{x:2*flipC()-q.x,y:q.y}:q;
+const VP=q=>toPx(V(sideFlip(q)));
+const VN=p=>sideFlip(Vi(toNorm(p)));
+// 前髪の根元弧:頭外周のうち上側±ang[rad](左→右の順)
+function hairRootArc(ang){
+  const hd=headDims(),c={x:hd.xc,y:(hd.yMin+hd.yMax)/2};
+  const pts=poly.map(p=>({p,a:Math.atan2(p.x-c.x,p.y-c.y)}))
+    .filter(o=>Math.abs(o.a)<=ang)
+    .sort((u,v)=>u.a-v.a)
+    .map(o=>o.p);
+  return pts.length>=4?pts:null;
+}
+// 体の正面シルエット内か(t:縦位置0..1と半径で判定)
+function inBodyFront(q){
+  if(!bodyChk.checked||!neck)return false;
+  const bp=bodyParams();
+  const t=(bp.topY-q.y)/bp.bh;
+  if(t<0||t>1)return false;
+  const S=40,prof=teardropProfile(bp.rN,bp.rMax,S);
+  const r=prof[Math.min(S,Math.max(0,Math.round(t*S)))];
+  return Math.abs(q.x-bp.cx)<r*.985;
+}
+function redraw2d(){
+  if(mode==='arm'||mode==='leg'){drawLimbEditor();return;}
+  const r=drawCv.getBoundingClientRect();
+  dctx.clearRect(0,0,r.width,r.height);
+  if(!poly&&pts.length>=2){
+    dctx.lineWidth=3;dctx.lineJoin='round';dctx.lineCap='round';dctx.strokeStyle='#e8657a';
+    dctx.beginPath();dctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length;i++)dctx.lineTo(pts[i].x,pts[i].y);
+    dctx.stroke();
+  }
+  if(poly&&norm){
+    if((axisChk.checked||symSel.value!=='none')&&axisX!==null){
+      const p1=VP({x:axisX,y:1.15}),p2=VP({x:axisX,y:bodyChk.checked&&neck?neck.y-bodyParams().bh-0.1:-1.15});
+      dctx.setLineDash([6,5]);dctx.strokeStyle='#8a839d';dctx.lineWidth=1.5;
+      dctx.beginPath();dctx.moveTo(p1.x,p1.y);dctx.lineTo(p2.x,p2.y);dctx.stroke();
+      dctx.setLineDash([]);
+      dctx.fillStyle='#8a839d';dctx.font='10px sans-serif';dctx.textAlign='left';
+      dctx.fillText('基準線',p1.x+4,p1.y+12);
+    }
+    if(+smoothEl.value>0||symSel.value!=='none'){
+      dctx.strokeStyle='#e8657a44';dctx.lineWidth=2;
+      dctx.beginPath();
+      rawNorm.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+      dctx.closePath();dctx.stroke();
+    }
+    dctx.lineWidth=3;dctx.lineJoin='round';dctx.strokeStyle='#2b2440';
+    dctx.beginPath();
+    poly.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+    dctx.closePath();dctx.stroke();
+    if(bodyChk.checked&&neck){
+      const a=VP({x:neck.xa,y:neck.y}),b=VP({x:neck.xb,y:neck.y});
+      dctx.setLineDash([4,4]);dctx.strokeStyle='#c94b60';dctx.lineWidth=1.5;
+      dctx.beginPath();dctx.moveTo(a.x,a.y);dctx.lineTo(b.x,b.y);dctx.stroke();
+      dctx.setLineDash([]);
+      // 体の正面シルエット(お絵描き範囲)
+      const bp=bodyParams(),S2=40,prof=teardropProfile(bp.rN,bp.rMax,S2);
+      dctx.setLineDash([5,4]);dctx.strokeStyle='#b7ad98';dctx.lineWidth=1.5;
+      dctx.beginPath();
+      for(let s=0;s<=S2;s++){
+        const p=VP({x:bp.cx+prof[s],y:bp.topY-bp.bh*s/S2});
+        s?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);
+      }
+      for(let s=S2;s>=0;s--){
+        const p=VP({x:bp.cx-prof[s],y:bp.topY-bp.bh*s/S2});
+        dctx.lineTo(p.x,p.y);
+      }
+      dctx.closePath();dctx.stroke();dctx.setLineDash([]);
+    }
+    // 髪:見ている面のシルエットを塗りで表示
+    {
+      const curView=(mode==='face'||mode==='hair')?drawSide:'front';
+      const hp=hair&&hair[curView];
+      if(hp&&curView==='front'&&sideHair!=='none'&&hair.front){
+        [-1,1].forEach(sgn=>{
+          const so=sideLockOutline(sgn);
+          if(!so)return;
+          dctx.beginPath();
+          so.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+          dctx.closePath();
+          dctx.fillStyle=hair.front.color+'cc';dctx.fill();
+          dctx.strokeStyle=hair.front.color;dctx.lineWidth=2;dctx.stroke();
+        });
+      }
+      if(hp){
+        const root=hairRootArc(hair.ang);
+        if(root){
+          dctx.beginPath();
+          root.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+          hp.shape.slice().reverse().forEach(q=>{const p=VP(q);dctx.lineTo(p.x,p.y);});
+          dctx.closePath();
+          dctx.fillStyle=hp.color+'cc';dctx.fill();
+          dctx.strokeStyle=hp.color;dctx.lineWidth=2;dctx.stroke();
+        }
+      }
+    }
+    if(mode==='hair'){ // 生え際(根元)を赤で強調
+      const root=hairRootArc(1.5);
+      if(root){
+        dctx.lineWidth=3.5;dctx.strokeStyle='#c94b60';
+        dctx.beginPath();
+        root.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+        dctx.stroke();
+        [root[0],root[root.length-1]].forEach(q=>{
+          const p=VP(q);dctx.fillStyle='#c94b60';
+          dctx.beginPath();dctx.arc(p.x,p.y,5,0,7);dctx.fill();
+        });
+      }
+      if(curHair&&curHair.length>=2){
+        dctx.lineWidth=3;dctx.strokeStyle=curColor;
+        dctx.beginPath();
+        curHair.forEach((q,i)=>{const p=VP(q);i?dctx.lineTo(p.x,p.y):dctx.moveTo(p.x,p.y);});
+        dctx.stroke();
+      }
+    }
+    dctx.lineCap='round';dctx.lineJoin='round';
+    const paint=(st,alpha)=>{
+      if(st.pts.length<2)return;
+      dctx.globalAlpha=alpha||1;
+      dctx.lineWidth=st.w||2.5;
+      dctx.strokeStyle=st.color;
+      dctx.beginPath();
+      const p0=VP(st.pts[0]);dctx.moveTo(p0.x,p0.y);
+      for(let i=1;i<st.pts.length;i++){const p=VP(st.pts[i]);dctx.lineTo(p.x,p.y);}
+      dctx.stroke();
+      dctx.globalAlpha=1;
+    };
+    faceStrokes.filter(st=>(st.side||'front')===(mode==='face'?drawSide:'front')||mode!=='face').forEach(st=>paint(st));
+    if(curFace){
+      paint(curFace);
+      if(faceSymEl.checked&&axisX!==null){
+        const mc=(curFace.pts.length&&inBodyFront(curFace.pts[0]))?bodyParams().cx:axisX;
+        paint({pts:curFace.pts.map(q=>({x:2*mc-q.x,y:q.y})),color:curFace.color,w:curFace.w},.4);
+      }
+    }
+  }
+}
+function acceptOutline(px140){
+  const outline=resampleClosed(px140,140);
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  outline.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);
+    minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+  const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+  const sc=2/Math.max(maxX-minX,maxY-minY)*0.85;
+  norm={cx,cy,sc};
+  rawNorm=outline.map(p=>({x:(p.x-cx)*sc,y:-(p.y-cy)*sc}));
+  axisX=rawNorm.reduce((s,q)=>s+q.x,0)/rawNorm.length;
+  symSel.disabled=false;smoothEl.disabled=false;mFace.disabled=false;axisChk.disabled=false;
+  $('eyeSel').disabled=false;$('mouthSel').disabled=false;$('cheekSel').disabled=false;
+  $('earSel').disabled=false;$('sideSel').disabled=false;$('clothesSel').disabled=false;
+  setMode('face');
+  rebuildAll();
+}
+drawCv.addEventListener('pointerdown',e=>{
+  e.preventDefault();drawing=true;drawHint.style.display='none';
+  if(mode==='outline'){rawNorm=null;poly=null;norm=null;axisX=null;faceStrokes=[];pts=[pos(e)];}
+  else if(mode==='face')curFace={pts:[VN(pos(e))],color:curColor,w:curPenW,side:drawSide};
+  else if(mode==='hair')curHair=[VN(pos(e))];
+  else curLimb=[toLimbNorm(pos(e))];
+});
+drawCv.addEventListener('pointermove',e=>{
+  if(!drawing)return;e.preventDefault();
+  if(mode==='outline')pts.push(pos(e));
+  else if(mode==='face')curFace.pts.push(VN(pos(e)));
+  else if(mode==='hair')curHair.push(VN(pos(e)));
+  else curLimb.push(toLimbNorm(pos(e)));
+  redraw2d();
+});
+window.addEventListener('pointerup',()=>{
+  if(!drawing)return;drawing=false;
+  if(mode==='outline'){
+    if(pts.length<8){pts=[];redraw2d();return;}
+    acceptOutline(pts);
+  }else if(mode==='face'&&curFace){
+    // 頭の中→顔ストローク、体シルエットの中→体ストローク(自動判定)
+    const nHead=curFace.pts.filter(q=>pointInPoly(q.x,q.y,poly)).length;
+    const nBody=curFace.pts.filter(inBodyFront).length;
+    const region=nBody>nHead?'body':'face';
+    const inR=region==='body'?inBodyFront:(q=>pointInPoly(q.x,q.y,poly));
+    const mirC=region==='body'?bodyParams().cx:axisX;
+    const kept=curFace.pts.filter(inR);
+    if(kept.length>=2){
+      faceStrokes.push({pts:kept,color:curFace.color,w:curFace.w,region,side:curFace.side});
+      if(faceSymEl.checked&&mirC!==null){
+        const mir=curFace.pts.map(q=>({x:2*mirC-q.x,y:q.y})).filter(inR);
+        if(mir.length>=2)faceStrokes.push({pts:mir,color:curFace.color,w:curFace.w,mirror:true,region,side:curFace.side});
+      }
+    }
+    curFace=null;
+    redraw2d();refreshFaceOverlays();
+  }else if(mode==='hair'&&curHair){
+    if(curHair.length>=6){
+      const root=hairRootArc(1.5);
+      if(root){
+        let st=curHair.slice();
+        const A=root[root.length-1],B=root[0];
+        const d0=Math.hypot(st[0].x-A.x,st[0].y-A.y),d1=Math.hypot(st[st.length-1].x-A.x,st[st.length-1].y-A.y);
+        if(d1<d0)st.reverse();
+        const nB=Math.min(5,Math.floor(st.length/3));
+        for(let i=0;i<=nB;i++){const w=1-i/(nB+1);
+          st[i]={x:st[i].x*(1-w)+A.x*w,y:st[i].y*(1-w)+A.y*w};}
+        for(let i=0;i<=nB;i++){const j=st.length-1-i,w=1-i/(nB+1);
+          st[j]={x:st[j].x*(1-w)+B.x*w,y:st[j].y*(1-w)+B.y*w};}
+        if(!hair)hair={ang:1.5,front:null,back:null};
+        hair[drawSide==='back'?'back':'front']={shape:st,color:curColor};
+        hairClearBtn.disabled=false;
+        refreshHair3d();drawFlatScreen();updateReport();
+        status.textContent=(drawSide==='back'?'後ろ髪':'前髪')+'を更新しました(色=選択中の糸色)';
+        status.className='badge ok';
+      }
+    }
+    curHair=null;redraw2d();
+  }else if(mode==='arm'||mode==='leg'){
+    acceptLimbStroke();
+  }
+});
+function setMode(m){
+  if((m==='arm'||m==='leg')&&!bodyChk.checked){
+    status.textContent='手・脚を描くには「体+手足」をONにしてください';
+    status.className='badge';
+    return;
+  }
+  mode=m;
+  mOutline.classList.toggle('on',m==='outline');
+  mFace.classList.toggle('on',m==='face');
+  mArm.classList.toggle('on',m==='arm');
+  mLeg.classList.toggle('on',m==='leg');
+  mHair.classList.toggle('on',m==='hair');
+  palEl.classList.toggle('show',m==='face'||m==='hair');faceToolsEl.classList.toggle('show',m==='face'||m==='hair');
+  modeHint.textContent={outline:'ひと筆書き・離すと自動で閉じる',
+    face:'前/後ろを切り替えて顔・体・後頭部・背中に描ける',
+    arm:'根元カーブから手の形を描く',
+    leg:'根元カーブから脚の形を描く',
+    hair:'前/後ろを切替えて、赤い生え際の端から端へ毛先を描く(色=選択中の糸色)'}[m];
+  redraw2d();
+}
+document.querySelectorAll('.sideBtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    drawSide=b.dataset.side;
+    document.querySelectorAll('.sideBtn').forEach(e=>{e.style.background='';e.style.color='';});
+    b.style.background='var(--ink)';b.style.color='#fff';
+    redraw2d();
+  });
+});
+document.querySelectorAll('.penW').forEach(b=>{
+  b.addEventListener('click',()=>{
+    curPenW=+b.dataset.w;
+    document.querySelectorAll('.penW').forEach(e=>{e.style.background='';e.style.color='';});
+    b.style.background='var(--ink)';b.style.color='#fff';
+  });
+});
+faceUndoBtn.addEventListener('click',()=>{
+  if(!faceStrokes.length)return;
+  const last=faceStrokes[faceStrokes.length-1];
+  faceStrokes.pop();
+  // 対称で追加されたミラー分は元の線とペアで消す
+  if(last.mirror&&faceStrokes.length)faceStrokes.pop();
+  redraw2d();refreshFaceOverlays();
+});
+faceClearBtn2.addEventListener('click',()=>{faceStrokes=[];redraw2d();refreshFaceOverlays();});
+// ---- 顔パーツプリセット(丸目・にっこり) ----
+function applyFaceParts(){
+  if(!poly)return;
+  // 既存のプリセット目・口を除去して選択に合わせて再注入
+  faceStrokes=faceStrokes.filter(st=>!st.preset||st.preset==='muzzle');
+  const BK=THREADS[23][1];
+  const hd=headDims();
+  const push=(pts,w,tag,col)=>{
+    const kept=pts.filter(q=>pointInPoly(q.x,q.y,poly));
+    if(kept.length>=2)faceStrokes.push({pts:kept,color:col||BK,w,region:'face',side:'front',preset:tag});
+  };
+  const eyeKind=$('eyeSel').value;
+  if(eyeKind!=='none'){
+    // 目の基準:下から40%・間隔=頭幅42%(冊子2章の初期値)
+    const ey=hd.yMin+hd.h*.36, dx=hd.w*.20, r=hd.w*.072; // でか目・やや寄り目
+    const CARMINE='#dd3d6d',GOLD='#e3a422';
+    const W1=6.4,W2=4.0; // 太め設定
+    const loop=(cx,cy,rr,n,fx2,fy2,rot)=>{ // 楕円ループ(回転付き)
+      const c=[];
+      for(let i=0;i<=n;i++){const t=2*Math.PI*i/n;
+        const ex=rr*(fx2||1)*Math.cos(t),ey2=rr*(fy2||1)*Math.sin(t);
+        const ro=rot||0;
+        c.push({x:cx+ex*Math.cos(ro)-ey2*Math.sin(ro),y:cy+ex*Math.sin(ro)+ey2*Math.cos(ro)});}
+      return c;
+    };
+    [-1,1].forEach(sgn=>{
+      const cx=hd.xc+sgn*dx,cy=ey;
+      switch(eyeKind){
+        case 'maru':
+          [1,.75,.5,.25].forEach(f=>push(loop(cx,cy,r*f,28),W1,'eyes'));break;
+        case 'tare': // 外側が下がる楕円
+          [1,.66,.33].forEach(f=>push(loop(cx,cy,r*f,28,1,.8,-sgn*.35),W1,'eyes'));break;
+        case 'tsuri': // 外側が上がる楕円
+          [1,.66,.33].forEach(f=>push(loop(cx,cy,r*f,28,1,.8,sgn*.35),W1,'eyes'));break;
+        case 'jito':{ // 半目:太い横線+下まぶたの弧
+          const l=[];for(let i=0;i<=10;i++)l.push({x:cx-r+2*r*i/10,y:cy+r*.25});
+          push(l,W1,'eyes');
+          const a2=[];for(let i=0;i<=12;i++){const t=-1+2*i/12;
+            a2.push({x:cx+r*.9*t,y:cy-r*.3+r*.35*t*t});}
+          push(a2,W2,'eyes');break;}
+        case 'niko':{ // ＾＾:上に凸の弧
+          const a2=[];for(let i=0;i<=14;i++){const t=-1+2*i/14;
+            a2.push({x:cx+r*1.1*t,y:cy+r*.9*(1-t*t)-r*.3});}
+          push(a2,W1,'eyes');break;}
+        case 'guru':{ // 渦巻き
+          const sp=[];const T=3.2*Math.PI;
+          for(let i=0;i<=60;i++){const t=T*i/60;
+            sp.push({x:cx+r*(t/T)*Math.cos(t),y:cy+r*(t/T)*Math.sin(t)});}
+          push(sp,W2,'eyes');break;}
+        case 'hoshi':{ // 星(5角)
+          const st=[];
+          for(let i=0;i<=10;i++){const t=Math.PI/2+2*Math.PI*i/10;
+            const rr=i%2?r*.45:r*1.1;
+            st.push({x:cx+rr*Math.cos(t),y:cy+rr*Math.sin(t)});}
+          push(st,W1,'eyes',GOLD);break;}
+        case 'heart':{ // ハート
+          const hpts=[];
+          for(let i=0;i<=32;i++){const t=2*Math.PI*i/32;
+            hpts.push({x:cx+r*.07*(16*Math.sin(t)**3),
+              y:cy+r*.07*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))});}
+          push(hpts,W1,'eyes',CARMINE);break;}
+        case 'kira':{ // きらきら:黒目+左上ハイライト
+          [1,.75,.5,.25].forEach(f=>push(loop(cx,cy,r*f,28),W1,'eyes'));
+          push(loop(cx-r*.35,cy+r*.35,r*.24,14),W2,'eyes');break;}
+        case 'button':{ // ボタン目:輪+バッテンの糸
+          push(loop(cx,cy,r,28),W2,'eyes');
+          push([{x:cx-r*.4,y:cy-r*.4},{x:cx+r*.4,y:cy+r*.4}],W2,'eyes');
+          push([{x:cx-r*.4,y:cy+r*.4},{x:cx+r*.4,y:cy-r*.4}],W2,'eyes');break;}
+      }
+    });
+  }
+  if($('cheekSel').value==='hon'){
+    // ほっぺ:目より外・少し下にピンクの丸(085 Pink)
+    const cy2=hd.yMin+hd.h*.29, dx2=hd.w*.30, r2=hd.w*.05;
+    [-1,1].forEach(sgn=>{
+      [1,.6].forEach(f=>{
+        const c=[];
+        for(let i=0;i<=22;i++){const t=2*Math.PI*i/22;
+          c.push({x:hd.xc+sgn*dx2+r2*f*Math.cos(t),y:cy2+r2*f*Math.sin(t)});}
+        const kept=c.filter(q=>pointInPoly(q.x,q.y,poly));
+        if(kept.length>=2)faceStrokes.push({pts:kept,color:'#f3aec7',w:6.4,region:'face',side:'front',preset:'cheeks'});
+      });
+    });
+  }
+  if($('mouthSel').value==='niko'){
+    // にっこり:目の下、幅=頭幅22%の上向きアーチ
+    const my=hd.yMin+hd.h*.26, hw=hd.w*.095, dep=hd.h*.03; // 口は小さく目に寄せる
+    const m=[];
+    for(let i=0;i<=24;i++){const t=-1+2*i/24;
+      m.push({x:hd.xc+hw*t,y:my+dep*t*t});}
+    push(m,3.6,'mouth');
+  }
+  redraw2d();refreshFaceOverlays();
+}
+$('eyeSel').addEventListener('change',applyFaceParts);
+$('mouthSel').addEventListener('change',applyFaceParts);
+$('cheekSel').addEventListener('change',applyFaceParts);
+$('clothesSel').addEventListener('change',e=>{
+  clothesKind=e.target.value;
+  $('collarSel').disabled=clothesKind==='none';
+  if(clothesKind==='none'){collarKind='none';$('collarSel').value='none';}
+  if(clothesKind!=='none'&&!bodyChk.checked)bodyChk.checked=true;
+  rebuildAll();
+});
+$('collarSel').addEventListener('change',e=>{collarKind=e.target.value;rebuildAll();});
+
+// ---- 体型プリセット ----
+function presetOutlinePx(kind){
+  const r=drawCv.getBoundingClientRect();
+  const cx=r.width/2,cy=r.height/2,R=Math.min(r.width,r.height)*.30;
+  const pts=[];
+  if(kind==='plain'){
+    for(let i=0;i<120;i++){const t=2*Math.PI*i/120;
+      pts.push({x:cx+R*1.02*Math.sin(t),y:cy-R*.94*Math.cos(t)});}
+  }else if(kind==='human'){
+    // 推しぬい風:全周を三角関数で合成(角なし)。下寄りの頬・すぼまるあご
+    // おまんじゅう頭:上半分=幅広で平らな冠(スーパー楕円n=2.6)、
+    // 下半分=浅くて平らなあご(n=2.3)+下側面のぷに頬
+    const A=R*1.14, BU=R*.96, BL=R*.80;
+    for(let i=0;i<160;i++){
+      const th=-Math.PI+2*Math.PI*i/160; // 0=頭頂
+      const s=Math.sin(th),c=Math.cos(th);
+      const n=(c>=0)?2.6:2.3;
+      const sx=Math.sign(s)*Math.pow(Math.abs(s),2/n);
+      const cyv=Math.sign(c)*Math.pow(Math.abs(c),2/n);
+      let x=A*sx, y=-(c>=0?BU:BL)*cyv; // y下向き=px系
+      const yn=y/R; // 頬ぷに:下側面(yn≈+0.35)で幅+6%
+      x*=1+.06*Math.exp(-((yn-.35)**2)/(2*.18**2));
+      pts.push({x:cx+x,y:cy+y});
+    }
+  }else if(kind==='panda'){
+    for(let i=0;i<140;i++){const t=2*Math.PI*i/140;
+      pts.push({x:cx+R*1.10*Math.sin(t),y:cy-R*.84*Math.cos(t)});}
+  }else if(kind==='teddy'){
+    for(let i=0;i<140;i++){const t=2*Math.PI*i/140;
+      pts.push({x:cx+R*1.05*Math.sin(t),y:cy-R*.92*Math.cos(t)});}
+  }
+  return pts;
+}
+function applyPreset(kind){
+  if(kind==='none')return;
+  faceStrokes=[];ears=null;hair=null;hairClearBtn.disabled=true;
+  applyTheme(kind==='panda'?{skin:0xfbfaf4,skinBL:0xf3f2ea,skinBR:0xf6f5ed,limb:0x2a2724,
+    limbNote:' Cut in BLACK fabric.'}:
+    kind==='teddy'?{skin:0xcf9d63,skinBL:0xc79659,skinBR:0xcb9a5e,limb:0xcf9d63,
+    limbNote:' Cut in honey-brown boa fabric.'}:{});
+  bodyTune=kind==='teddy'?{wide:1.30,limbR:1.55,limbLen:1.35}:{wide:1,limbR:1,limbLen:1};
+  MUZ={on:false};
+  // デフォルトの服(あとから「なし」も選べる)
+  const defCl={plain:['tshirt','rib'],human:['dress','round'],panda:['tshirt','none'],teddy:['none','none']}[kind];
+  clothesKind=defCl[0];collarKind=defCl[1];
+  $('clothesSel').value=clothesKind;$('collarSel').value=collarKind;
+  $('collarSel').disabled=(clothesKind==='none');
+  bodyChk.checked=true;
+  symSel.value='none';smoothEl.value=0;smOut.textContent='0%';
+  acceptOutline(presetOutlinePx(kind));
+  if(kind==='human'){
+    // デフォルト前髪:M字ぱっつん(こげ茶 058 Brown)
+    const hd0=headDims();
+    const tipY=hd0.yMin+hd0.h*.47, notchY=hd0.yMin+hd0.h*.61; // 前髪は目の上ぎりぎりまで
+    const root=hairRootArc(1.5);
+    if(root){
+      const A=root[root.length-1],B=root[0];
+      const xs=[],n=7;
+      for(let i=0;i<n;i++)xs.push(B.x+(A.x-B.x)*(i+1)/(n+1));
+      const shape=[{x:A.x,y:A.y}];
+      shape.push({x:A.x*.96+hd0.xc*.04,y:tipY+hd0.h*.03});
+      for(let i=n-1;i>=0;i--)shape.push({x:xs[i],y:i%2?notchY:tipY});
+      shape.push({x:B.x*.96+hd0.xc*.04,y:tipY+hd0.h*.03});
+      shape.push({x:B.x,y:B.y});
+      // 後ろ髪:あご下まで垂れるボブ
+      const bobY=hd0.yMin-hd0.h*.10;
+      const back=[{x:A.x,y:A.y},{x:A.x*1.02,y:hd0.yMin+hd0.h*.25},
+        {x:A.x*.85,y:bobY},{x:hd0.xc,y:bobY-hd0.h*.02},
+        {x:B.x*.85,y:bobY},{x:B.x*1.02,y:hd0.yMin+hd0.h*.25},{x:B.x,y:B.y}];
+      hair={ang:1.5,front:{shape,color:'#6a4527'},back:{shape:back,color:'#6a4527'}};
+      hairClearBtn.disabled=false;
+      refreshHair3d();redraw2d();drawFlatScreen();
+    }
+    $('eyeSel').value='maru';$('mouthSel').value='niko';$('cheekSel').value='hon';
+    sideHair='short';$('sideSel').value='short';
+    applyFaceParts();
+  }
+  if(kind==='teddy'){
+    // 耳+体長め
+    const hd0=headDims();
+    ears={kind:'kuma',r:hd0.h*.17,ang:.60,color:null};
+    $('earSel').value='kuma';
+    bodyLenEl.value='1.00';blOut.textContent='1.00×';
+    armTEl.value='26';atOut.textContent='26%';
+    // マズル:前面に尖った鼻先の膨らみ(展開すると鼻ダーツが自動で立つ)
+    kfEl.value='0.72';kbEl.value='0.98';
+    if(typeof kfOut!=='undefined'){kfOut.textContent='0.72';kbOut.textContent='0.98';}
+    MUZ={on:true,cx:hd0.xc,cy:hd0.yMin+hd0.h*.36,r:hd0.w*.21,h:hd0.h*.17};
+    rebuildAll();
+    // マズル(鼻まわりの明るいアップリケ)+三角鼻+Y字口+ボタン目
+    const hd=headDims();
+    const MZ='#f3e3cd',NB='#3a2b20';
+    const addLoop=(cx2,cy2,rx,ry,col,w,tag)=>{
+      const c=[];
+      for(let i=0;i<=32;i++){const t=2*Math.PI*i/32;
+        c.push({x:cx2+rx*Math.cos(t),y:cy2+ry*Math.sin(t)});}
+      const kept=c.filter(q=>pointInPoly(q.x,q.y,poly));
+      if(kept.length>=2)faceStrokes.push({pts:kept,color:col,w,region:'face',side:'front',preset:tag});
+    };
+    const mzY=hd.yMin+hd.h*.335;
+    [1,.78,.56,.34,.14].forEach(f=>addLoop(hd.xc,mzY,hd.w*.165*f,hd.h*.125*f,MZ,7.5,'muzzle'));
+    // 三角鼻(同心3重)
+    const nsY=mzY+hd.h*.075;
+    [1,.6,.25].forEach(f=>{
+      const tr=[{x:hd.xc-hd.w*.045*f,y:nsY+hd.h*.02*f},
+        {x:hd.xc+hd.w*.045*f,y:nsY+hd.h*.02*f},
+        {x:hd.xc,y:nsY-hd.h*.028*f},{x:hd.xc-hd.w*.045*f,y:nsY+hd.h*.02*f}];
+      faceStrokes.push({pts:tr,color:NB,w:6.4,region:'face',side:'front',preset:'muzzle'});
+    });
+    // Y字口
+    faceStrokes.push({pts:[{x:hd.xc,y:nsY-hd.h*.02},{x:hd.xc,y:mzY-hd.h*.05}],
+      color:NB,w:3.4,region:'face',side:'front',preset:'muzzle'});
+    [-1,1].forEach(sgn=>{
+      const arc=[];
+      for(let i=0;i<=10;i++){const t=i/10;
+        arc.push({x:hd.xc+sgn*hd.w*.05*t,y:mzY-hd.h*.05-hd.h*.02*Math.sin(Math.PI*t*.5)});}
+      faceStrokes.push({pts:arc,color:NB,w:3.4,region:'face',side:'front',preset:'muzzle'});
+    });
+    // ボタン目(マズルの上・左右)
+    [-1,1].forEach(sgn=>{
+      [1,.55,.22].forEach(f=>addLoop(hd.xc+sgn*hd.w*.155,hd.yMin+hd.h*.475,
+        hd.w*.038*f,hd.w*.038*f,NB,5.5,'muzzle'));
+    });
+    refreshFaceOverlays();redraw2d();drawFlatScreen();
+  }
+  if(kind==='panda'){
+    // 耳=別体パーツ(頭の外周はぎ線に挟む)
+    const hd0=headDims();
+    ears={kind:'kuma',r:hd0.h*.16,ang:.62,color:'#221f22'};
+    $('earSel').value='kuma';
+    rebuildAll();
+    // 目のまわりの黒模様+鼻(Brother 900 Black)
+    const BK=THREADS[23][1];
+    const hd=headDims();
+    const R2=hd.h/2;
+    const patch=(sx)=>{
+      const cxp=hd.xc+sx*R2*.42,cyp=(hd.yMin+hd.yMax)/2+R2*.02,rot=-sx*.5;
+      const p=[];
+      for(let i=0;i<=40;i++){
+        const t=2*Math.PI*i/40;
+        const ex=R2*.17*Math.cos(t),ey=R2*.24*Math.sin(t);
+        p.push({x:cxp+ex*Math.cos(rot)-ey*Math.sin(rot),
+                y:cyp+ex*Math.sin(rot)+ey*Math.cos(rot)});
+      }
+      return {pts:p.filter(q=>pointInPoly(q.x,q.y,poly)),color:BK,w:4.2,region:'face',side:'front'};
+    };
+    const nose=(()=>{
+      const cyn=(hd.yMin+hd.yMax)/2-R2*.30,p=[];
+      for(let i=0;i<=24;i++){const t=2*Math.PI*i/24;
+        p.push({x:hd.xc+R2*.10*Math.cos(t),y:cyn+R2*.07*Math.sin(t)});}
+      return {pts:p,color:BK,w:4.2,region:'face',side:'front'};
+    })();
+    faceStrokes.push(patch(-1),patch(1),nose);
+    refreshFaceOverlays();redraw2d();
+  }
+  status.textContent='プリセットを読み込みました——あとはお絵描きするだけ';
+  status.className='badge ok';
+}
+$('presetSel').addEventListener('change',e=>applyPreset(e.target.value));
+// ---- 肌の色 ----
+const SKINS={cream:{},milk:{skin:0xfbfaf4,skinBL:0xf3f2ea,skinBR:0xf6f5ed,limb:0xfbfaf4},
+  momo:{skin:0xf9dcd4,skinBL:0xf4d3cc,skinBR:0xf6d7ce,limb:0xf9dcd4},
+  komugi:{skin:0xe9c39c,skinBL:0xe2ba93,skinBR:0xe5bf97,limb:0xe9c39c},
+  choco:{skin:0xa9764f,skinBL:0xa06f4a,skinBR:0xa4734d,limb:0xa9764f}};
+$('earSel').addEventListener('change',e=>{
+  const k=e.target.value;
+  if(k==='none')ears=null;
+  else{
+    const hd0=headDims();
+    const ang={kuma:.62,neko:.55,usagi:.34}[k];
+    const r={kuma:hd0.h*.15,neko:hd0.h*.13,usagi:hd0.h*.11}[k];
+    ears={kind:k,r,ang,color:null}; // color null=髪色/肌色に自動追従
+  }
+  rebuildAll();
+});
+$('sideSel').addEventListener('change',e=>{sideHair=e.target.value;rebuildAll();});
+$('hairPuff').addEventListener('input',e=>{
+  $('hpOut').textContent=e.target.value+'%';
+  refreshHair3d();
+});
+$('skinSel').addEventListener('change',e=>{
+  applyTheme(SKINS[e.target.value]||{});
+  if(poly)rebuildAll();
+});
+// ---- ステップナビ ----
+function setStep(n){
+  document.querySelectorAll('.stepBtn').forEach(b=>b.classList.toggle('on',+b.dataset.step===n));
+  const hints={
+    1:'ベースをえらぶ(またはひと筆で輪郭を描く)。肌の色・まるみもここで',
+    2:'目・口・頬をえらぶか、パレットの色で自由にお絵描き(前/後ろ切替OK)',
+    3:'髪モードで生え際から毛先を描く。前髪と後ろ髪は別々に',
+    4:'体の長さ・手足の位置・服と襟をえらぶ。手/脚モードで形も描ける',
+    5:'展開図をたしかめて、型紙PDFをつくる(組み立て手順つき)',
+  };
+  status.textContent='STEP '+n+':'+hints[n];status.className='badge';
+  if(n===1){if(poly)setMode('outline');}
+  else if(n===2&&poly)setMode('face');
+  else if(n===3&&poly)setMode('hair');
+  else if(n===4&&poly){if(!bodyChk.checked){bodyChk.checked=true;rebuildAll();}setMode('arm');}
+  else if(n===5&&poly){document.querySelector('#flat')?.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+document.querySelectorAll('.stepBtn').forEach(b=>{
+  b.addEventListener('click',()=>setStep(+b.dataset.step));
+});
+// ---- スタート画面 ----
+$('startOshi').addEventListener('click',()=>{
+  $('startOverlay').style.display='none';
+  $('presetSel').value='human';
+  applyPreset('human');
+  setStep(2);
+});
+$('startTeddy').addEventListener('click',()=>{
+  $('startOverlay').style.display='none';
+  $('presetSel').value='teddy';
+  applyPreset('teddy');
+  setStep(4);
+});
+$('startFree').addEventListener('click',()=>{
+  $('startOverlay').style.display='none';
+  setStep(1);
+});
+mOutline.addEventListener('click',()=>setMode('outline'));
+mFace.addEventListener('click',()=>setMode('face'));
+mArm.addEventListener('click',()=>setMode('arm'));
+mLeg.addEventListener('click',()=>setMode('leg'));
+mHair.addEventListener('click',()=>setMode('hair'));
+hairClearBtn.addEventListener('click',()=>{hair=null;hairClearBtn.disabled=true;refreshHair3d();redraw2d();drawFlatScreen();updateReport();});
+faceClearBtn.addEventListener('click',()=>{faceStrokes=[];redraw2d();refreshFaceOverlays();});
+symSel.addEventListener('change',rebuildAll);
+axisChk.addEventListener('change',redraw2d);
+smoothEl.addEventListener('input',()=>{smOut.textContent=smoothEl.value+'%';rebuildAll();});
+
+
+// ============ 3D ============
+const wrap3d=$('view3dWrap'),viewHint=$('viewHint');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+wrap3d.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,.1,100);
+camera.position.set(0,0,4.4);
+scene.add(new THREE.AmbientLight(0xfff3e8,.58));
+const key=new THREE.DirectionalLight(0xfff8f0,.5);key.position.set(2,3,4);scene.add(key);
+const fill=new THREE.DirectionalLight(0xffe9f0,.18);fill.position.set(-1.5,-.5,3);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xe8657a,.08);rim.position.set(-3,-1,-2);scene.add(rim);
+const group=new THREE.Group();scene.add(group);
+let headMesh=null,seamGroup=null,faceGroup=null,bodyGroup=null;
+let rotX=.12,rotY=.5,tRX=.12,tRY=.5,dragging=false,lX=0,lY=0,autoSpin=true;
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;autoSpin=false;lX=e.clientX;lY=e.clientY;});
+window.addEventListener('pointermove',e=>{if(!dragging)return;
+  tRY+=(e.clientX-lX)*.01;tRX+=(e.clientY-lY)*.01;tRX=Math.max(-1.3,Math.min(1.3,tRX));
+  lX=e.clientX;lY=e.clientY;});
+window.addEventListener('pointerup',()=>dragging=false);
+function resize3d(){const r=wrap3d.getBoundingClientRect();
+  renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
+let theme={skin:0xf7e4d4,skinBL:0xf2dcce,skinBR:0xf4e0cd,limb:0xf7e4d4,limbNote:''};
+const THEME_DEFAULT={...theme};
+let COL_F=new THREE.Color(theme.skin),COL_L=new THREE.Color(theme.skinBL),COL_R=new THREE.Color(theme.skinBR);
+function applyTheme(t){
+  theme={...THEME_DEFAULT,...t};
+  COL_F=new THREE.Color(theme.skin);COL_L=new THREE.Color(theme.skinBL);COL_R=new THREE.Color(theme.skinBR);
+}
+function dashedLine(p3,color){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(p3,3));
+  const l=new THREE.Line(g,new THREE.LineDashedMaterial({color,dashSize:.05,gapSize:.035}));
+  l.computeLineDistances();return l;
+}
+function solidLine(p3,color){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(p3,3));
+  return new THREE.Line(g,new THREE.LineBasicMaterial({color}));
+}
+
+function computeNeck(){
+  const hd=headDims();
+  const S=100;
+  let minX=Infinity,maxX=-Infinity;
+  poly.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);});
+  // その高さでいちばん広い区間を返す
+  const widestAt=yN=>{
+    let bestLen=0,ca=null,xa=null,xb=null;
+    for(let i=0;i<S;i++){
+      const x=minX+(maxX-minX)*i/(S-1);
+      const inp=pointInPoly(x,yN,poly);
+      if(inp&&ca===null)ca=x;
+      if((!inp||i===S-1)&&ca!==null){
+        const cb=x;
+        if(cb-ca>bestLen){bestLen=cb-ca;xa=ca;xb=cb;}
+        ca=null;
+      }
+    }
+    return xa===null?null:{xa,xb,w:bestLen};
+  };
+  // 適応式:首幅=頭幅の52%に達する高さを下(2%)から上(38%)へ探索
+  // →どの輪郭でも太い首=広い接合面になり、頭が重くても自立しやすい(専門店の「首なし直付け」原則)
+  const target=hd.w*.52;
+  let yN=null,xa=null,xb=null;
+  for(let k=2;k<=38;k++){
+    const y=hd.yMin+hd.h*k/100;
+    const seg=widestAt(y);
+    if(seg&&seg.w>=target){yN=y;xa=seg.xa;xb=seg.xb;break;}
+  }
+  if(yN===null){ // フォールバック:従来の6%
+    yN=hd.yMin+hd.h*.06;
+    const seg=widestAt(yN);
+    if(!seg)return null;
+    xa=seg.xa;xb=seg.xb;
+  }
+  const kf=+kfEl.value,kb=+kbEl.value,M=60;
+  let per=0;
+  for(const [k,sign] of [[kf,1],[kb,-1]]){
+    let px=xa,pz=0;
+    for(let s=1;s<=M;s++){
+      const x=xa+(xb-xa)*s/M;
+      const z=sign*surfH(x,yN,k);
+      per+=Math.hypot(x-px,z-pz);px=x;pz=z;
+    }
+  }
+  return {y:yN,xa,xb,perim:per};
+}
+const buttBulge=t=>{ // 後ろ側だけの追加ふくらみ率(お腹から下)
+  const u=(t-.45)/.55;
+  if(u<=0||u>=1)return 0;
+  return .45*Math.pow(Math.sin(Math.PI*u),1.3);
+};
+function teardropProfile(rN,rMax,S){
+  // 推しぬい標準体型:肩(首→最大径へ短いカーブ)→ほぼストレートの胴→丸いおしり
+  const sh=.22, hip=.80, pts=[]; // 肩の終わり22%・おしり開始80%
+  for(let s=0;s<=S;s++){
+    const t=s/S;let r;
+    if(t<sh)r=rN+(rMax-rN)*Math.sin(Math.PI/2*t/sh);            // なで肩カーブ
+    else if(t<hip)r=rMax*(1-.04*(t-sh)/(hip-sh));               // 胴:ごく緩い直線テーパー
+    else r=rMax*.96*Math.sqrt(Math.max(0,1-((t-hip)/(1-hip))**2)); // 丸いおしり
+    pts.push(Math.max(r,.002));
+  }
+  return pts;
+}
+function bodyParams(){
+  const hd=headDims();
+  const bh=hd.h*(+bodyLenEl.value);
+  const zScale=.66,avgS=(1+zScale)/2; // 前後は薄め(推しぬいの平たい体)
+  let rN=neck?neck.perim/(2*Math.PI*avgS):hd.w*.15;
+  let rMax=Math.max(hd.w*.34*bodyTune.wide,rN*1.08); // 頭でか比率(テディ等は太め係数)
+  return {bh,rN,rMax,zScale,avgS,cx:(neck.xa+neck.xb)/2,topY:neck.y};
+}
+function limbParams(){
+  const bp=bodyParams();
+  const lf=(+bodyLenEl.value)/0.80;
+  const armR=bp.rMax*.18*lf*bodyTune.limbR, legR=bp.rMax*.22*lf*bodyTune.limbR;
+  // ---- 襟ぐり式の取り付け穴(腕・脚とも同構造)----
+  // 体側面のはぎ線に半楕円スクープ×前後=1つの穴。穴周長の半分=板1枚の根元カーブ長
+  function hole(R,t,vk,dk){
+    const V=R*vk, D=R*dk;
+    const half=ellipsePerim(V/2,D)/2; // 片パネルのスクープ長=板1枚の根元カーブ長
+    return {V,D,P:half*2,rootLen:half,W:V,t}; // 弦=V(スクープの型取りなので厳密一致)
+  }
+  return {armLen:bp.bh*.38*bodyTune.limbLen,armR,legLen:bp.bh*.34*bodyTune.limbLen,legR,bp,
+    armT:(+armTEl.value)/100,legT:(+legTEl.value)/100,
+    armHole:hole(armR,(+armTEl.value)/100,2.3,1.0),
+    legHole:hole(legR,(+legTEl.value)/100,1.9,.7)};
+}
+
+function addEars(){
+  // 耳(別体):外周はぎ線(z=0面)に挟まる半円板
+  if(ears){
+    const hd2=headDims();
+    const c2={x:hd2.xc,y:(hd2.yMin+hd2.yMax)/2};
+    const earMat=new THREE.MeshStandardMaterial({color:new THREE.Color(earColor()),
+      roughness:.95,metalness:0,side:THREE.DoubleSide});
+    [-1,1].forEach(sgn=>{
+      // 頭頂から±ears.ang[rad]の外周点を探す
+      let best=1e9,bi=0;
+      poly.forEach((p,i)=>{
+        const a=Math.atan2(p.x-c2.x,p.y-c2.y); // 0=上
+        const d=Math.abs(a-sgn*ears.ang);
+        if(d<best){best=d;bi=i;}
+      });
+      const p0=poly[bi],pn=poly[(bi+2)%poly.length],pp=poly[(bi-2+poly.length)%poly.length];
+      let tx=pn.x-pp.x,ty=pn.y-pp.y;
+      const tl=Math.hypot(tx,ty)||1;tx/=tl;ty/=tl;
+      let nx2=ty,ny2=-tx; // 外向き法線
+      if((p0.x-c2.x)*nx2+(p0.y-c2.y)*ny2<0){nx2=-nx2;ny2=-ny2;}
+      const re=ears.r,sh=new THREE.Shape();
+      earShapePts(ears.kind||'kuma',re).forEach((q,i)=>{
+        i?sh.lineTo(q.x,q.y):sh.moveTo(q.x,q.y);});
+      sh.closePath();
+      const g3=new THREE.ExtrudeGeometry(sh,{depth:re*.28,bevelEnabled:true,
+        bevelThickness:re*.12,bevelSize:re*.12,bevelSegments:2,curveSegments:10});
+      g3.translate(0,0,-re*.14);
+      const em=new THREE.Mesh(g3,earMat);
+      const ex=new THREE.Vector3(tx,ty,0),ey=new THREE.Vector3(nx2,ny2,0),
+        ez=new THREE.Vector3(0,0,1);
+      em.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(ex,ey,ez));
+      em.position.set(p0.x,p0.y,0);
+      seamGroup.add(em);
+    });
+  }
+}
+
+function buildTeddyHead3d(){
+  if(headMesh){group.remove(headMesh);headMesh.geometry.dispose();}
+  if(seamGroup)group.remove(seamGroup);
+  seamGroup=new THREE.Group();
+  const g=teddyHeadGeom(),s=teddyNeckScale(g);
+  const positions=[],colors=[],indices=[];
+  const C=COL_F;
+  const P=q=>({x:g.cx0+q.x*s,y:g.cy0+(q.y-g.cy0)*s,z:q.z*s});
+  const grid=[];
+  for(let u=0;u<g.U;u++){
+    const row=[[],[]];
+    [0,1].forEach(sd=>{
+      g.rings[u].ring.forEach(q=>{
+        const p=P(sd?{x:-q.x,y:q.y,z:q.z}:q);
+        positions.push(p.x,p.y,p.z);colors.push(C.r,C.g,C.b);
+        row[sd].push(positions.length/3-1);
+      });
+    });
+    grid.push(row);
+  }
+  const quad=(a,b,c,d,flip)=>{flip?indices.push(a,c,b,a,d,c):indices.push(a,b,c,a,c,d);};
+  for(let u=0;u<g.U-1;u++){
+    for(let k2=0;k2<g.K;k2++){
+      quad(grid[u][0][k2],grid[u+1][0][k2],grid[u+1][0][k2+1],grid[u][0][k2+1],false);
+      quad(grid[u][1][k2],grid[u+1][1][k2],grid[u+1][1][k2+1],grid[u][1][k2+1],true);
+    }
+    quad(grid[u][0][0],grid[u+1][0][0],grid[u+1][1][0],grid[u][1][0],true); // マチ帯
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  geo.setIndex(indices);geo.computeVertexNormals();
+  headMesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+    vertexColors:true,roughness:.95,metalness:0,side:THREE.DoubleSide}));
+  group.add(headMesh);
+  [0,1].forEach(sd=>{ // マチの縫い目(左右)
+    const seam=[];
+    for(let u=0;u<g.U;u++){
+      const i2=grid[u][sd][0];
+      seam.push(positions[3*i2],positions[3*i2+1],positions[3*i2+2]);
+    }
+    seamGroup.add(dashedLine(seam,0xc94b60));
+  });
+  const chin=[]; // あご下シーム
+  for(let u=0;u<g.U;u++){
+    const i2=grid[u][0][g.K];
+    chin.push(positions[3*i2],positions[3*i2+1],positions[3*i2+2]);
+  }
+  seamGroup.add(dashedLine(chin,0xc94b60));
+  addEars();
+  group.add(seamGroup);
+}
+
+function buildHead3d(){
+  if(MUZ.on){buildTeddyHead3d();viewHint.style.display='none';return;}
+  const N=64,kf=+kfEl.value,kb=+kbEl.value;
+  const bodyOn=bodyChk.checked;
+  const yCut=bodyOn?neck.y:-Infinity;
+  const clipPoly=bodyOn?clipDir(poly,neck.y,'y',true):poly;
+  const gx0=-1.05,gy0=-1.05,gs=2.1/(N-1);
+  const inside=new Array(N*N),dist=new Float32Array(N*N);
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){
+    const x=gx0+i*gs,y=gy0+j*gs,id=j*N+i;
+    inside[id]=y>=yCut&&pointInPoly(x,y,poly);
+    if(inside[id])dist[id]=nearestOnPoly(x,y,poly);
+  }
+  const H=(d,k)=>k*Math.sqrt(Math.max(0,d*(2*dmax-d)));
+  const positions=[],colors=[],indices=[];
+  const vidF=new Int32Array(N*N).fill(-1),vidB=new Int32Array(N*N).fill(-1);
+  const vmeta=[];
+  const addV=(x,y,z,c,mx,my,msign)=>{positions.push(x,y,z);colors.push(c.r,c.g,c.b);
+    vmeta.push({x:mx!==undefined?mx:x,y:my!==undefined?my:y,sign:msign!==undefined?msign:(z>=0?1:-1)});
+    return positions.length/3-1;};
+  const backCol=x=>x<polyCx?COL_L:COL_R;
+  const skirt=(i,j,sign,col)=>{
+    const x=gx0+i*gs,y=gy0+j*gs;
+    const np=nearestPtOnPoly(x,y,clipPoly);
+    const d=nearestOnPoly(np.x,np.y,poly);
+    return addV(np.x,np.y,sign*H(d,sign>0?kf:kb),col,np.x,np.y,sign);
+  };
+  const gF=(i,j)=>{const id=j*N+i;
+    if(inside[id]){if(vidF[id]<0){const x=gx0+i*gs,y=gy0+j*gs;vidF[id]=addV(x,y,H(dist[id],kf)+muzzleBump(x,y),COL_F,x,y,1);}return vidF[id];}
+    return skirt(i,j,1,COL_F);};
+  const gB=(i,j)=>{const id=j*N+i;
+    if(inside[id]){if(vidB[id]<0){const x=gx0+i*gs,y=gy0+j*gs;vidB[id]=addV(x,y,-H(dist[id],kb),backCol(x),x,y,-1);}return vidB[id];}
+    const x=gx0+i*gs;return skirt(i,j,-1,backCol(x));};
+  for(let j=0;j<N-1;j++)for(let i=0;i<N-1;i++){
+    const c=[inside[j*N+i],inside[j*N+i+1],inside[(j+1)*N+i+1],inside[(j+1)*N+i]];
+    if(!c.some(Boolean))continue;
+    const a=gF(i,j),b=gF(i+1,j),c2=gF(i+1,j+1),d2=gF(i,j+1);
+    indices.push(a,b,c2,a,c2,d2);
+    const a2=gB(i,j),b2=gB(i+1,j),c3=gB(i+1,j+1),d3=gB(i,j+1);
+    indices.push(a2,c3,b2,a2,d3,c3);
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  geo.setIndex(indices);geo.computeVertexNormals();
+  if(headMesh){group.remove(headMesh);headMesh.geometry.dispose();}
+  headMesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+    vertexColors:true,roughness:.95,metalness:0,side:THREE.DoubleSide}));
+  group.add(headMesh);
+
+  if(seamGroup)group.remove(seamGroup);
+  seamGroup=new THREE.Group();
+  const opts=[];clipPoly.forEach(p=>opts.push(p.x,p.y,.004));
+  opts.push(clipPoly[0].x,clipPoly[0].y,.004);
+  seamGroup.add(dashedLine(opts,0xc94b60));
+  const hd=headDims(),cs=[];
+  for(let s=0;s<=60;s++){
+    const y=Math.max(hd.yMin,yCut)+(hd.yMax-Math.max(hd.yMin,yCut))*s/60;
+    if(pointInPoly(polyCx,y,poly)){
+      const d=nearestOnPoly(polyCx,y,poly);
+      cs.push(polyCx,y,-H(d,kb)-.004);
+    }
+  }
+  if(cs.length>=6)seamGroup.add(dashedLine(cs,0xc94b60));
+  if(bodyOn){
+    const nk=[],M=60;
+    for(let s=0;s<=M;s++){const x=neck.xa+(neck.xb-neck.xa)*s/M;nk.push(x,neck.y,surfH(x,neck.y,kf)+.004);}
+    for(let s=M;s>=0;s--){const x=neck.xa+(neck.xb-neck.xa)*s/M;nk.push(x,neck.y,-surfH(x,neck.y,kb)-.004);}
+    seamGroup.add(dashedLine(nk,0xc94b60));
+  }
+  addEars();
+  group.add(seamGroup);
+  viewHint.style.display='none';
+}
+
+function refreshFaceOverlays(){
+  if(!poly)return;
+  if(faceGroup){group.remove(faceGroup);faceGroup=null;}
+  if(faceStrokes.length){
+    faceGroup=new THREE.Group();
+    const kf=+kfEl.value;
+    const yCut=bodyChk.checked?neck.y:-Infinity;
+    const bp2=bodyChk.checked&&neck?bodyParams():null;
+    const S2=40,prof2=bp2?teardropProfile(bp2.rN,bp2.rMax,S2):null;
+    faceStrokes.forEach(st=>{
+      const p3=[];
+      const back=st.side==='back';
+      if(st.region==='body'&&bp2){
+        st.pts.forEach(q=>{
+          if(!inBodyFront(q))return;
+          const t=(bp2.topY-q.y)/bp2.bh;
+          const r=prof2[Math.min(S2,Math.max(0,Math.round(t*S2)))];
+          const u=q.x-bp2.cx;
+          const z=Math.sqrt(Math.max(0,r*r-u*u))*bp2.zScale;
+          p3.push(q.x,q.y,back?-(z+.012):z+.012);
+        });
+      }else{
+        const kk=back?+kbEl.value:kf;
+        st.pts.forEach(q=>{if(q.y>=yCut&&pointInPoly(q.x,q.y,poly))
+          p3.push(q.x,q.y,back?-(surfH(q.x,q.y,kk)+.012):surfH(q.x,q.y,kk)+.012);});
+      }
+      if(p3.length>=6){
+        // 太さのある刺繍糸表現:TubeGeometry(1pxラインだと痩せて可愛くないため)
+        const pts3=[];
+        for(let i=0;i<p3.length;i+=3)pts3.push(new THREE.Vector3(p3[i],p3[i+1],p3[i+2]));
+        try{
+          const curve=new THREE.CatmullRomCurve3(pts3);
+          const tube=new THREE.TubeGeometry(curve,Math.max(8,pts3.length*2),
+            .0042*(st.w||2.5),6,false);
+          faceGroup.add(new THREE.Mesh(tube,new THREE.MeshStandardMaterial({
+            color:new THREE.Color(st.color),roughness:.75,metalness:0})));
+        }catch(err){faceGroup.add(solidLine(p3,new THREE.Color(st.color)));}
+      }
+    });
+    group.add(faceGroup);
+  }
+  faceClearBtn.disabled=faceStrokes.length===0;
+  if(panels)drawFlatScreen();
+}
+
+let hairMeshes=[];
+function hairDrapeMesh(shapePts,color,k,sign){
+  const root=hairRootArc(hair.ang);
+  if(!root)return null;
+  return hairDrapeMeshCore(root.concat(shapePts.slice().reverse()),color,k,sign);
+}
+function hairDrapeMeshCore(outline2,color,k,sign){
+  // 髪領域を格子サンプリングして曲面(surfH)に沿わせる——内部頂点を持つので顔のカーブに追従する
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  outline2.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+    y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+  const N=44,gsx=(x1-x0)/(N-1),gsy=(y1-y0)/(N-1);
+  const inside=new Array(N*N);
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++)
+    inside[j*N+i]=pointInPoly(x0+i*gsx,y0+j*gsy,outline2);
+  const positions=[],indices=[];
+  const vid=new Int32Array(N*N).fill(-1);
+  // 体の断面(髪が首から下へ垂れたとき体表面に沿わせる)
+  const bodyOn=bodyChk.checked&&neck;
+  const bp3=bodyOn?bodyParams():null;
+  const S3=40,prof3=bodyOn?teardropProfile(bp3.rN,bp3.rMax,S3):null;
+  // 髪のボリューム:輪郭距離による小さなTeddy膨張(2枚合わせでふっくらの表現)
+  let dmH=0;
+  const puffK=(+$('hairPuff').value/100)*.16;
+  const distH=(x,y)=>{
+    const np=nearestPtOnPoly(x,y,outline2);
+    return Math.hypot(x-np.x,y-np.y);
+  };
+  if(puffK>0){
+    for(let j=0;j<N;j+=3)for(let i=0;i<N;i+=3){
+      if(inside[j*N+i])dmH=Math.max(dmH,distH(x0+i*gsx,y0+j*gsy));
+    }
+  }
+  const zAt=(x,y)=>{
+    let h=0;
+    const onHead=pointInPoly(x,y,poly)&&(!bodyOn||y>=neck.y);
+    if(onHead)h=surfH(x,y,k);
+    else if(bodyOn&&y<bp3.topY&&y>bp3.topY-bp3.bh){
+      const t=(bp3.topY-y)/bp3.bh;
+      const r=prof3[Math.min(S3,Math.max(0,Math.round(t*S3)))];
+      const u=x-bp3.cx;
+      if(Math.abs(u)<r){
+        h=Math.sqrt(r*r-u*u)*bp3.zScale;
+        if(sign<0)h*=1+buttBulge(t);
+      }
+    }
+    let puff=0;
+    if(puffK>0&&dmH>1e-4&&pointInPoly(x,y,outline2)){
+      const d=distH(x,y);
+      puff=puffK*Math.sqrt(Math.max(0,d*(2*dmH-d)));
+    }
+    return sign*(h+.028+puff);
+  };
+  const gV=(i,j)=>{
+    const id=j*N+i;
+    if(inside[id]){
+      if(vid[id]<0){const x=x0+i*gsx,y=y0+j*gsy;
+        positions.push(x,y,zAt(x,y));vid[id]=positions.length/3-1;}
+      return vid[id];
+    }
+    // 境界セルの外側角:髪輪郭上に射影
+    const x=x0+i*gsx,y=y0+j*gsy;
+    const np=nearestPtOnPoly(x,y,outline2);
+    positions.push(np.x,np.y,zAt(np.x,np.y));
+    return positions.length/3-1;
+  };
+  for(let j=0;j<N-1;j++)for(let i=0;i<N-1;i++){
+    const c=[inside[j*N+i],inside[j*N+i+1],inside[(j+1)*N+i+1],inside[(j+1)*N+i]];
+    if(!c.some(Boolean))continue;
+    const a=gV(i,j),b=gV(i+1,j),c2=gV(i+1,j+1),d2=gV(i,j+1);
+    if(sign>0)indices.push(a,b,c2,a,c2,d2);
+    else indices.push(a,c2,b,a,d2,c2);
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setIndex(indices);geo.computeVertexNormals();
+  return new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+    color:new THREE.Color(color),roughness:.9,metalness:0,side:THREE.DoubleSide}));
+}
+function sideLockOutline(sgn){ // 生え際の端から頬に沿って垂れる横毛(モデル座標)
+  const root=hairRootArc(hair?hair.ang:1.5);
+  if(!root)return null;
+  const P0=sgn>0?root[root.length-1]:root[0];
+  const hd=headDims();
+  const w0=hd.w*.085;
+  const tipY=sideHair==='long'?hd.yMin-hd.h*.06:hd.yMin+hd.h*.20;
+  const inX=P0.x-sgn*w0, outX=P0.x+sgn*w0*.45;
+  const o=[];
+  // 上辺(ミニ根元):内→外
+  o.push({x:inX,y:P0.y});
+  o.push({x:P0.x,y:P0.y+hd.h*.012});
+  o.push({x:outX,y:P0.y-hd.h*.01});
+  // 外側の縁を下へ→先端→内側の縁を上へ
+  o.push({x:outX-sgn*w0*.05,y:(P0.y+tipY)/2});
+  o.push({x:P0.x-sgn*w0*.25,y:tipY+hd.h*.02});
+  o.push({x:P0.x-sgn*w0*.55,y:tipY});      // 先端(内寄り)
+  o.push({x:inX-sgn*w0*.1,y:(P0.y+tipY)/2+hd.h*.03});
+  return o;
+}
+function refreshHair3d(){
+  hairMeshes.forEach(m=>{group.remove(m);m.geometry.dispose();});
+  hairMeshes=[];
+  if(!hair||!poly)return;
+  if(hair.front){
+    const m=hairDrapeMesh(hair.front.shape,hair.front.color,+kfEl.value,+1);
+    if(m){group.add(m);hairMeshes.push(m);}
+  }
+  if(hair.back){
+    const m=hairDrapeMesh(hair.back.shape,hair.back.color,+kbEl.value,-1);
+    if(m){group.add(m);hairMeshes.push(m);}
+  }
+  // 横毛(前面ドレープ・左右)
+  if(sideHair!=='none'&&hair.front){
+    [-1,1].forEach(sgn=>{
+      const so=sideLockOutline(sgn);
+      if(!so)return;
+      // 上辺3点をミニ根元として hairDrapeMesh を流用
+      const mini={pts:[so[0],so[1],so[2]]};
+      const shape=so.slice(3);
+      const m=hairDrapeMeshRaw(mini.pts,shape,hair.front.color,+kfEl.value,+1);
+      if(m){group.add(m);hairMeshes.push(m);}
+    });
+  }
+}
+// 任意の根元列+シルエット列でドレープ(横毛用の汎用版)
+function hairDrapeMeshRaw(rootPts,shapePts,color,k,sign){
+  const outline2=rootPts.concat(shapePts);
+  const saveA=hair.ang;
+  // hairDrapeMeshの中身と同等:outline2を直接使う簡易版
+  return hairDrapeMeshCore(outline2,color,k,sign);
+}
+function refreshBody3d(){
+  if(bodyGroup){group.remove(bodyGroup);bodyGroup=null;}
+  if(!bodyChk.checked||!poly){fitCamera();return;}
+  const bp=bodyParams(),lp=limbParams();
+  const S=40,prof=teardropProfile(bp.rN,bp.rMax,S);
+  const pts2=[new THREE.Vector2(.002,0)];
+  for(let s=0;s<=S;s++)pts2.push(new THREE.Vector2(prof[s],-bp.bh*s/S));
+  const geo=new THREE.LatheGeometry(pts2,48);
+  const posA=geo.attributes.position;
+  const colArr=new Float32Array(posA.count*3);
+  const FH=.4*Math.PI;
+  for(let i=0;i<posA.count;i++){
+    const x=posA.getX(i),z=posA.getZ(i);
+    const lam=Math.atan2(x,z);
+    const c=Math.abs(lam)<=FH?COL_F:(lam<0?COL_L:COL_R);
+    colArr[i*3]=c.r;colArr[i*3+1]=c.g;colArr[i*3+2]=c.b;
+  }
+  // おしり:背面(z<0)だけお腹から下を膨らませる
+  {
+    const pa2=geo.attributes.position;
+    for(let i=0;i<pa2.count;i++){
+      const z=pa2.getZ(i),y=pa2.array[i*3+1];
+      if(z<0){
+        const t=Math.min(1,Math.max(0,-y/bp.bh));
+        pa2.array[i*3+2]=z*(1+buttBulge(t));
+      }
+    }
+    geo.computeVertexNormals();
+  }
+  geo.setAttribute('color',new THREE.BufferAttribute(colArr,3));
+  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+    vertexColors:true,roughness:.95,metalness:0,side:THREE.DoubleSide}));
+  m.scale.set(1,1,bp.zScale);
+  m.position.set(bp.cx,bp.topY,0);
+  bodyGroup=new THREE.Group();bodyGroup.add(m);
+  [FH,-FH,Math.PI].forEach(lam=>{
+    const p3=[];
+    for(let s=0;s<=S;s++){
+      const r=prof[s]*1.004,y=-bp.bh*s/S,t=s/S;
+      const zb=Math.cos(lam)<0?(1+buttBulge(t)):1;
+      p3.push(bp.cx+r*Math.sin(lam),bp.topY+y,r*Math.cos(lam)*bp.zScale*zb);
+    }
+    bodyGroup.add(dashedLine(p3,0xc94b60));
+  });
+  const rim3=[];
+  for(let s=0;s<=48;s++){
+    const a=2*Math.PI*s/48;
+    rim3.push(bp.cx+bp.rN*Math.sin(a),bp.topY,bp.rN*Math.cos(a)*bp.zScale);
+  }
+  bodyGroup.add(dashedLine(rim3,0xc94b60));
+  // 服レイヤー:体プロファイル×ゆとり(+フレア)を裾で切った回転体
+  if(clothesKind!=='none'){
+    const cl=CLOTHES[clothesKind];
+    const hemS=Math.round(cl.hemT*S);
+    const cp=[new THREE.Vector2(bp.rN*1.04,0)];
+    for(let s=0;s<=hemS;s++){
+      const t=s/S,m2=cl.ease+cl.flare*t;
+      cp.push(new THREE.Vector2(prof[s]*m2,-bp.bh*t));
+    }
+    // 裾を少しだけ内へ折る(布端の表現)
+    const tH=hemS/S,mH=cl.ease+cl.flare*tH;
+    cp.push(new THREE.Vector2(prof[hemS]*mH*.97,-bp.bh*tH-bp.bh*.01));
+    const cg=new THREE.LatheGeometry(cp,48);
+    {
+      const pa2=cg.attributes.position;
+      for(let i=0;i<pa2.count;i++){
+        const z=pa2.array[i*3+2],y=pa2.array[i*3+1];
+        if(z<0){
+          const t=Math.min(1,Math.max(0,-y/bp.bh));
+          pa2.array[i*3+2]=z*(1+buttBulge(t));
+        }
+      }
+      cg.computeVertexNormals();
+    }
+    const cm2=new THREE.Mesh(cg,new THREE.MeshStandardMaterial({
+      color:cl.color,roughness:.92,metalness:0,side:THREE.DoubleSide}));
+    cm2.scale.set(1,1,bp.zScale);
+    cm2.position.set(bp.cx,bp.topY,0);
+    bodyGroup.add(cm2);
+    // ---- 襟 ----
+    if(collarKind==='round'){
+      // 丸襟:服の肩曲面に沿ってドレープ(半径→服表面の高さを逆引き)
+      const ri=bp.rN*cl.ease*1.02, ro=ri*1.6;
+      const surfYof=rr=>{ // 服レイヤーが半径rrになる高さ(なければ首の高さ)
+        for(let s=0;s<=hemS;s++){
+          const t=s/S,r2=prof[s]*(cl.ease+cl.flare*t);
+          if(r2>=rr)return bp.topY-bp.bh*t;
+        }
+        return bp.topY-bp.bh*hemS/S;
+      };
+      const ROWS=4,NS=56,positions=[],indices=[];
+      // 前中心(a=0)に開き:±gap を空け、端はテーパーで丸い先端に
+      const gap=.21, sweep=2*Math.PI-2*gap, taper=.5;
+      for(let w2=0;w2<=ROWS;w2++){
+        const f=w2/ROWS;
+        for(let s2=0;s2<=NS;s2++){
+          const u=s2/NS, a=gap+sweep*u;
+          const edge=Math.min(u,1-u)*sweep;            // 端からの角距離
+          const wf=Math.pow(Math.min(1,edge/taper),.65); // 先端で幅→0(丸く閉じる)
+          const rr=ri+(ro-ri)*f*wf;
+          const y=(f===0?bp.topY+.012:surfYof(rr)+.022);
+          positions.push(bp.cx+rr*1.01*Math.sin(a),y,rr*1.01*Math.cos(a)*bp.zScale);
+        }
+      }
+      for(let w2=0;w2<ROWS;w2++)for(let s2=0;s2<NS;s2++){
+        const a=w2*(NS+1)+s2,b=a+1,c2=a+NS+1,d2=c2+1;
+        indices.push(a,c2,b,b,c2,d2);
+      }
+      const cg2=new THREE.BufferGeometry();
+      cg2.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+      cg2.setIndex(indices);cg2.computeVertexNormals();
+      bodyGroup.add(new THREE.Mesh(cg2,new THREE.MeshStandardMaterial({
+        color:0xfdfdf8,roughness:.9,metalness:0,side:THREE.DoubleSide})));
+    }else if(collarKind==='rib'){
+      // リブ襟:首まわりの短い帯
+      const rr=bp.rN*cl.ease*1.03,hh=bp.bh*.045;
+      const rp=[new THREE.Vector2(rr,hh),new THREE.Vector2(rr*1.05,hh*.4),
+        new THREE.Vector2(rr*1.05,-hh*.2),new THREE.Vector2(rr,-hh*.5)];
+      const rg=new THREE.LatheGeometry(rp,40);
+      const rm2=new THREE.Mesh(rg,new THREE.MeshStandardMaterial({
+        color:0xe4e4da,roughness:.95,metalness:0,side:THREE.DoubleSide}));
+      rm2.scale.set(1,1,bp.zScale);
+      rm2.position.set(bp.cx,bp.topY,0);
+      bodyGroup.add(rm2);
+    }
+  }
+
+  const limbMat=new THREE.MeshStandardMaterial({color:theme.limb,roughness:.95,metalness:0,side:THREE.DoubleSide});
+  // ---- 手足:根元カーブ+ユーザーシルエットの2枚板を押し出して表示 ----
+  function limbMesh(shape,W,depth,RA){
+    // 頭と同じスケッチ膨張:輪郭までの距離場で z=k√(d(2dmax−d))(縫って詰めたぷっくり形)
+    const P=RA.concat(shape.slice().reverse()).map(q=>({x:q.x*W,y:q.y*W}));
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    P.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+      y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    const N=26,gx=(x1-x0)/(N-1),gy=(y1-y0)/(N-1);
+    const inside=new Array(N*N),dist=new Float32Array(N*N);
+    let dm=0;
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++){
+      const x=x0+i*gx,y=y0+j*gy,id=j*N+i;
+      inside[id]=pointInPoly(x,y,P);
+      if(inside[id]){
+        const np=nearestPtOnPoly(x,y,P);
+        dist[id]=Math.hypot(x-np.x,y-np.y);
+        dm=Math.max(dm,dist[id]);
+      }
+    }
+    const k=.8,H2=d=>k*Math.sqrt(Math.max(0,d*(2*dm-d)));
+    const positions=[],indices=[];
+    [1,-1].forEach(zs=>{
+      const vid=new Int32Array(N*N).fill(-1);
+      const base={};
+      const gV=(i,j)=>{
+        const id=j*N+i;
+        if(inside[id]){
+          if(vid[id]<0){const x=x0+i*gx,y=y0+j*gy;
+            positions.push(x,-y,zs*H2(dist[id]));vid[id]=positions.length/3-1;}
+          return vid[id];
+        }
+        const key=i+'_'+j;
+        if(base[key]===undefined){
+          const x=x0+i*gx,y=y0+j*gy;
+          const np=nearestPtOnPoly(x,y,P);
+          positions.push(np.x,-np.y,0);
+          base[key]=positions.length/3-1;
+        }
+        return base[key];
+      };
+      for(let j=0;j<N-1;j++)for(let i=0;i<N-1;i++){
+        const c=[inside[j*N+i],inside[j*N+i+1],inside[(j+1)*N+i+1],inside[(j+1)*N+i]];
+        if(!c.some(Boolean))continue;
+        const a=gV(i,j),b=gV(i+1,j),c2=gV(i+1,j+1),d2=gV(i,j+1);
+        if(zs>0)indices.push(a,b,c2,a,c2,d2);
+        else indices.push(a,c2,b,a,d2,c2);
+      }
+    });
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    g.setIndex(indices);g.computeVertexNormals();
+    return new THREE.Mesh(g,limbMat);
+  }
+  function holeSeam(hole,tC,lam,sgn){ // 体表面の取り付け穴(縫い目)
+    const yC=bp.topY-bp.bh*tC;
+    const ah=[];
+    for(let s2=0;s2<=36;s2++){
+      const ph=2*Math.PI*s2/36;
+      const yy=yC+(hole.V/2)*Math.cos(ph);
+      const t2=Math.min(1,Math.max(0,(bp.topY-yy)/bp.bh));
+      const r2=prof[Math.min(S,Math.max(0,Math.round(t2*S)))];
+      const dl2=(hole.D*Math.abs(Math.sin(ph)))/Math.max(r2,1e-4);
+      const lam2=lam - sgn*dl2*.9;
+      ah.push(bp.cx+r2*Math.sin(lam2)*1.005, yy, r2*Math.cos(lam2)*bp.zScale*1.005);
+    }
+    bodyGroup.add(dashedLine(ah,0xc94b60));
+  }
+  [-1,1].forEach(sgn=>{
+    const lam=sgn*FH;
+    // 縫い目(経線)上の点と接線・外向き法線を計算
+    const seamPt=t=>{
+      const r=prof[Math.min(S,Math.max(0,Math.round(t*S)))];
+      return new THREE.Vector3(bp.cx+r*Math.sin(lam), bp.topY-bp.bh*t, r*Math.cos(lam)*bp.zScale);
+    };
+    const seamFrame=t=>{
+      const e=.02;
+      const T=seamPt(Math.min(1,t+e)).clone().sub(seamPt(Math.max(0,t-e))).normalize(); // 下向き接線
+      const C=new THREE.Vector3(Math.cos(lam),0,-Math.sin(lam)*bp.zScale).normalize();   // 周方向
+      let N=new THREE.Vector3().crossVectors(C,T).normalize();                            // 表面法線
+      const out=new THREE.Vector3(Math.sin(lam),0,Math.cos(lam));
+      if(N.dot(out)<0)N.negate();                                                         // 外向きに
+      return {T,N};
+    };
+    function attachLimb(which,holeP,t){
+      const p0=seamPt(t),{T,N}=seamFrame(t);
+      const mm=limbMesh(limbShape(which),holeP.W,holeP.W*.26,ROOT_ARCS[which].pts);
+      let ex,ey;
+      if(which==='leg'){
+        // 脚:前に投げ出す「おすわり」ポーズ。伸び=前下方向、足先=上前を向く
+        const E=new THREE.Vector3(Math.sin(lam)*.20,-.50,.85).normalize();
+        ey=E.clone().negate();
+        ex=new THREE.Vector3(0,.85,.35); // 足先ローカル+x→上前
+      }else{
+        // 腕:外+前+やや下へ(抱きつけそうな前下がり)
+        const Nn=N.clone();
+        const E=new THREE.Vector3(Nn.x*.62,-.42,.66).normalize();
+        ey=E.clone().negate();
+        ex=T.clone();
+      }
+      const ez=new THREE.Vector3().crossVectors(ex,ey).normalize();
+      const ex2=new THREE.Vector3().crossVectors(ey,ez).normalize();
+      const M4=new THREE.Matrix4().makeBasis(ex2,ey,ez);
+      mm.quaternion.setFromRotationMatrix(M4);
+      mm.position.copy(p0);
+      bodyGroup.add(mm);
+      holeSeam(holeP,t,lam,sgn);
+    }
+    attachLimb('arm',lp.armHole,lp.armT);
+    attachLimb('leg',lp.legHole,lp.legT);
+  });
+  bodyGroup.position.y=bp.bh*.03; // 頭が体にむぎゅっと乗る(首の隙間を消す)
+  group.add(bodyGroup);
+  fitCamera();
+}
+function fitCamera(){
+  if(!poly){camera.position.z=4.4;return;}
+  const hd=headDims();
+  let yLo=hd.yMin,yHi=hd.yMax;
+  if(bodyChk.checked&&neck){const bp=bodyParams();yLo=Math.min(yLo,bp.topY-bp.bh-bp.bh*.25);}
+  const H=yHi-yLo,W=Math.max(hd.w,2);
+  group.position.y=-(yHi+yLo)/2;
+  camera.position.z=Math.max(4.2,2.4*Math.max(H,W)/1.7+2.2);
+}
+bodyChk.addEventListener('change',rebuildAll);
+bodyLenEl.addEventListener('input',()=>{
+  blOut.textContent=(+bodyLenEl.value).toFixed(2)+'×';
+  if(bodyChk.checked)rebuildAll();
+});
+armTEl.addEventListener('input',()=>{
+  atOut.textContent=armTEl.value+'%';
+  if(bodyChk.checked){refreshBody3d();drawFlatScreen();updateReport();}
+});
+legTEl.addEventListener('input',()=>{
+  ltOut.textContent=legTEl.value+'%';
+  if(bodyChk.checked){refreshBody3d();drawFlatScreen();updateReport();}
+});
+
+// ============ 展開+ダーツ ============
+function flattenPanel(panelPoly,k,zsign,name,opts){
+  // opts: {avoid, neckY, symAxis, mirrorFrom:{general:[{x,y,width}],neck:[{x,y}]}}
+  opts=opts||{};
+  const {avoid,neckY,symAxis,mirrorFrom}=opts;
+  const B=110;
+  const bnd=resampleClosed(panelPoly,B);
+  let ax=0,ay=0,best=-1;
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  panelPoly.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);
+    minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+  for(let j=0;j<=24;j++)for(let i=0;i<=24;i++){
+    const x=minX+(maxX-minX)*i/24,y=minY+(maxY-minY)*j/24;
+    if(!pointInPoly(x,y,panelPoly))continue;
+    const h=surfH(x,y,k);
+    if(h>best){best=h;ax=x;ay=y;}
+  }
+  const M=26;
+  function mapPoint(px,py){
+    let arc=0,qx=ax,qy=ay,qz=zsign*surfH(ax,ay,k);
+    for(let s=1;s<=M;s++){
+      const t=s/M,x=ax+(px-ax)*t,y=ay+(py-ay)*t;
+      const z=zsign*surfH(x,y,k);
+      arc+=Math.sqrt((x-qx)**2+(y-qy)**2+(z-qz)**2);
+      qx=x;qy=y;qz=z;
+    }
+    const th=Math.atan2(py-ay,px-ax);
+    return {x:arc*Math.cos(th),y:arc*Math.sin(th),r:arc,th};
+  }
+  const flat=[],b3=[];
+  for(let i=0;i<B;i++){
+    const b=bnd[i];
+    flat.push(mapPoint(b.x,b.y));
+    b3.push({x:b.x,y:b.y,z:zsign*surfH(b.x,b.y,k)});
+  }
+  // 首縁の特定
+  const isNeck=new Array(B).fill(false);
+  if(neckY!=null)for(let i=0;i<B;i++)if(Math.abs(bnd[i].y-neckY)<1e-3)isNeck[i]=true;
+  const excess=new Float32Array(B);let E=0,neckExcess=0,neckFlat=0,neck3=0;
+  for(let i=0;i<B;i++){
+    const j=(i+1)%B;
+    const Lf=Math.hypot(flat[j].x-flat[i].x,flat[j].y-flat[i].y);
+    const L3=Math.sqrt((b3[j].x-b3[i].x)**2+(b3[j].y-b3[i].y)**2+(b3[j].z-b3[i].z)**2);
+    excess[i]=Lf-L3;E+=excess[i];
+    if(isNeck[i]&&isNeck[j]){neckExcess+=excess[i];neckFlat+=Lf;neck3+=L3;}
+  }
+  E=Math.max(0,E);neckExcess=Math.max(0,neckExcess);
+  const sm=new Float32Array(B);
+  for(let i=0;i<B;i++){let s=0;for(let w=-5;w<=5;w++)s+=excess[(i+w+B)%B];sm[i]=s;}
+  const meanR=flat.reduce((s,p)=>s+p.r,0)/B;
+  // ---- ダーツ構築ヘルパ ----
+  const darts=[],anchors={general:[],neck:[]};
+  function buildDart(idx,wD,lenFac,neckFlag){
+    const p=flat[idx];
+    const nx2=flat[(idx+1)%B],pv=flat[(idx-1+B)%B];
+    let tx=nx2.x-pv.x,ty=nx2.y-pv.y;
+    const tl=Math.hypot(tx,ty)||1;tx/=tl;ty/=tl;
+    const ix=-Math.cos(p.th),iy=-Math.sin(p.th);
+    const len=Math.min(p.r*lenFac,meanR*.55);
+    darts.push({legA:{x:p.x-tx*wD/2,y:p.y-ty*wD/2},
+      legB:{x:p.x+tx*wD/2,y:p.y+ty*wD/2},
+      tip:{x:p.x+ix*len,y:p.y+iy*len},width:wD,neck:neckFlag});
+    (neckFlag?anchors.neck:anchors.general).push({x:bnd[idx].x,y:bnd[idx].y,width:wD});
+  }
+  const nearestIdx=(pt,filter)=>{
+    let bi=-1,bd=Infinity;
+    for(let i=0;i<B;i++){
+      if(filter&&!filter(i))continue;
+      const d=(bnd[i].x-pt.x)**2+(bnd[i].y-pt.y)**2;
+      if(d<bd){bd=d;bi=i;}
+    }
+    return bi;
+  };
+  // ---- 首ダーツ:左右対称(CF基準)or 鏡映継承 ----
+  if(neckExcess>1e-4&&neckFlat>0){
+    if(mirrorFrom&&mirrorFrom.neck&&mirrorFrom.neck.length){
+      const wEach=neckExcess/mirrorFrom.neck.length;
+      mirrorFrom.neck.forEach(a=>{
+        const idx=nearestIdx(a,i=>isNeck[i]);
+        if(idx>=0)buildDart(idx,wEach,.35,true);
+      });
+    }else{
+      const nIdx=[...Array(B).keys()].filter(i=>isNeck[i]);
+      const xs=nIdx.map(i=>bnd[i].x);
+      const cxN=symAxis!=null?symAxis:(Math.min(...xs)+Math.max(...xs))/2;
+      const span=(Math.max(...xs)-Math.min(...xs));
+      const nN=neckExcess/neckFlat>.10?2:1;
+      if(nN===1){
+        const idx=nearestIdx({x:cxN,y:neckY},i=>isNeck[i]); // CF(前中心)に1本
+        if(idx>=0)buildDart(idx,neckExcess,.35,true);
+      }else{ // CFを挟んで対称に2本
+        [-1,1].forEach(sgn=>{
+          const idx=nearestIdx({x:cxN+sgn*span*.25,y:neckY},i=>isNeck[i]);
+          if(idx>=0)buildDart(idx,neckExcess/2,.35,true);
+        });
+      }
+    }
+    E=Math.max(0,E-neckExcess);
+  }
+  // ---- 一般ダーツ:左右対称配置(一般的なぬい型紙の定石)----
+  const deltaDeg=meanR>0?(E/meanR)*180/Math.PI:0;
+  let nD=deltaDeg<8?0:Math.min(4,Math.ceil(deltaDeg/35));
+  if(nD>0&&E>1e-4){
+    const ok=i=>!isNeck[i]&&!(avoid&&avoid(flat[i]));
+    if(mirrorFrom&&mirrorFrom.general){
+      // 鏡映継承(後ろ右=後ろ左のミラー)
+      mirrorFrom.general.forEach(a=>{
+        const idx=nearestIdx(a,ok);
+        if(idx>=0)buildDart(idx,a.width,.5,false);
+      });
+    }else if(symAxis!=null){
+      const wEach=E/nD;
+      const pairs=Math.floor(nD/2),axisDart=nD%2;
+      const order=[...Array(B).keys()].sort((a,b)=>sm[b]-sm[a]);
+      const chosen=[];
+      for(const idx of order){ // 右半分から選び、左へ鏡映
+        if(!ok(idx)||bnd[idx].x<symAxis)continue;
+        if(chosen.every(c=>{const d=Math.abs(c-idx);return Math.min(d,B-d)>B/(nD+2);}))chosen.push(idx);
+        if(chosen.length>=pairs)break;
+      }
+      chosen.forEach(idx=>{
+        buildDart(idx,wEach,.5,false);
+        const mi=nearestIdx({x:2*symAxis-bnd[idx].x,y:bnd[idx].y},ok);
+        if(mi>=0)buildDart(mi,wEach,.5,false);
+      });
+      if(axisDart){ // 奇数分は対称軸上(頭頂or あご)の余り最大点へ
+        let bi=-1,bs=-Infinity;
+        for(let i=0;i<B;i++){
+          if(!ok(i)||Math.abs(bnd[i].x-symAxis)>meanR*.12)continue;
+          if(sm[i]>bs){bs=sm[i];bi=i;}
+        }
+        if(bi>=0)buildDart(bi,wEach,.5,false);
+      }
+    }else{
+      const wEach=E/nD;
+      const order=[...Array(B).keys()].sort((a,b)=>sm[b]-sm[a]);
+      const chosen=[];
+      for(const idx of order){
+        if(!ok(idx))continue;
+        if(chosen.every(c=>{const d=Math.abs(c-idx);return Math.min(d,B-d)>B/(nD+2);}))chosen.push(idx);
+        if(chosen.length>=nD)break;
+      }
+      chosen.forEach(idx=>buildDart(idx,wEach,.5,false));
+    }
+  }
+  return {name,flat,darts,deltaDeg,mapPoint,panelPoly,anchors,
+    neckInfo:neckY!=null?{excess:neckExcess,flat:neckFlat,three:neck3,
+      nDarts:darts.filter(d=>d.neck).length}:null};
+}
+
+// ============ 体・手足の型紙 ============
+function capsulePts(len,wid){
+  const r=wid/2,S=14,o=[];
+  for(let s=0;s<=S;s++){const a=Math.PI+Math.PI*s/S;o.push({x:r*Math.cos(a),y:r+r*Math.sin(a)});}
+  for(let s=0;s<=S;s++){const a=Math.PI*s/S;o.push({x:-r*Math.cos(a),y:(len-r)+r*Math.sin(a)});}
+  return o;
+}
+function legSidePts(W,Ht){ // 裾W(=足底周長/2)・高さHt、上端は丸
+  const Wt=W*.86,r=Wt/2,S=14,o=[];
+  o.push({x:-W/2,y:0});o.push({x:W/2,y:0});
+  o.push({x:Wt/2,y:Ht-r});
+  for(let s=0;s<=S;s++){const a=Math.PI*s/S;o.push({x:r*Math.cos(a),y:(Ht-r)+r*Math.sin(a)});}
+  o.push({x:-Wt/2,y:Ht-r});
+  return o;
+}
+function ellipsePts(a,b){
+  const o=[];
+  for(let s=0;s<48;s++){const t=2*Math.PI*s/48;o.push({x:a*Math.cos(t),y:b+b*Math.sin(t)});}
+  return o;
+}
+function bodyPieces(){
+  const cpu=cmPerUnit(),fx=+fabricEl.value;
+  const bp=bodyParams(),lp=limbParams();
+  const S=40,prof=teardropProfile(bp.rN,bp.rMax,S);
+  const arc=[0];
+  for(let s=1;s<=S;s++){
+    const dr=prof[s]-prof[s-1],dy=bp.bh/S;
+    arc.push(arc[s-1]+Math.hypot(dr,dy));
+  }
+  const totalArc=arc[S];
+  // ---- 取り付け穴(腕・脚とも襟ぐり式)を弧長座標cmで ----
+  const arcAt=t=>{const i=Math.min(S,Math.max(0,t*S));const i0=Math.floor(i),f=i-i0;
+    return arc[i0]+(arc[Math.min(S,i0+1)]-arc[i0])*f;};
+  const holes=[ // ゴアの側端に彫るスクープ
+    {h:lp.armHole,yc:arcAt(lp.armT)*cpu,label:'ARM'},
+    {h:lp.legHole,yc:arcAt(lp.legT)*cpu,label:'LEG'},
+  ];
+  function gore(frac,name,copies,scoopSides,backSide){ // backSide:'R'|'L'|null
+    const isFront=scoopSides.length===2;
+    // 断面スケール:前ゴア=通常楕円、後ろゴア=おしりバルジ込みの深い楕円
+    const avgAt=s=>{
+      const t=s/S;
+      const zs=isFront?bp.zScale:bp.zScale*(1+buttBulge(t));
+      return (1+zs)/2;
+    };
+    const edgeR=s=>frac*Math.PI*prof[s]*avgAt(s)*fx*cpu;
+    const scoop=y=>{ // その弧長位置で削る深さ(腕穴+脚穴の合成)
+      let d=0;
+      holes.forEach(({h,yc})=>{
+        const Vcm=h.V*cpu,Dcm=h.D*cpu*fx;
+        const dy=y-yc;
+        if(Math.abs(dy)<Vcm/2)d=Math.max(d,Dcm*Math.sqrt(Math.max(0,1-(dy/(Vcm/2))**2)));
+      });
+      return d;
+    };
+    const pts=[];
+    for(let s=0;s<=S;s++){
+      const y=arc[s]*cpu;let x=edgeR(s);
+      if(scoopSides.includes(1))x=Math.max(x*.12,x-scoop(y));
+      pts.push({x,y});
+    }
+    for(let s=S;s>=0;s--){
+      const y=arc[s]*cpu;let x=edgeR(s);
+      if(scoopSides.includes(-1))x=Math.max(x*.12,x-scoop(y));
+      pts.push({x:-x,y});
+    }
+    const marks=[];
+    if(isFront)marks.push({a:{x:0,y:0},b:{x:0,y:0.5},label:'CF'});
+    scoopSides.forEach(sgn=>{
+      holes.forEach(({h,yc,label})=>{
+        marks.push({a:{x:sgn*Math.max(.5,edgeR(Math.round((yc/cpu)/totalArc*S))-h.D*cpu*fx-.9),y:yc},
+          b:null,label});
+      });
+    });
+    // 体アートの転写:前ゴア=前面/右後ろゴア=背面右/左後ろゴア=背面左
+    const guides=[];
+    faceStrokes.filter(st=>st.region==='body'&&((st.side==='back')!==isFront)).forEach(st=>{
+      const g=[];
+      st.pts.forEach(q=>{
+        if(!inBodyFront(q))return;
+        const t=Math.min(1,Math.max(0,(bp.topY-q.y)/bp.bh));
+        const r=prof[Math.min(S,Math.max(0,Math.round(t*S)))];
+        const u=Math.max(-1,Math.min(1,(q.x-bp.cx)/Math.max(r,1e-4)));
+        let lx;
+        if(isFront){
+          const lam2=Math.asin(u);
+          if(Math.abs(lam2)>frac*Math.PI)return;
+          lx=lam2*r*bp.avgS*fx*cpu;
+        }else{
+          let lam2=Math.PI-Math.asin(u);
+          if(lam2>Math.PI)lam2-=2*Math.PI;       // (−π,π]
+          if(backSide==='R'){
+            if(lam2<Math.PI*.4||lam2>Math.PI)return;
+            lx=(Math.PI*.7-lam2)*r*bp.avgS*fx*cpu; // 前寄せ縫い目を+x側に
+          }else{
+            if(lam2>-Math.PI*.4||lam2<-Math.PI)return;
+            lx=(lam2+Math.PI*.7)*r*bp.avgS*fx*cpu;
+          }
+        }
+        g.push({x:lx, y:arcAt(t)*cpu});
+      });
+      if(g.length>=2)guides.push({pts:g,color:st.color,w:st.w||2.5});
+    });
+    return {name,pts,darts:[],guides,marks,copies,
+      noteEn:'Top edge = NECK. Side scoops = ARM & LEG holes (root curves match).'+(guides.length?' Colored lines = embroidery guide.':'')};
+  }
+  // ---- 手足ピース:固定の根元カーブ+ユーザーが描いたシルエット ----
+  function limbPiece(shape,hole,len,name,copies,RA){
+    const W=hole.W*cpu; // 根元の弦幅(実寸)
+    const pts=[];
+    RA.forEach(q=>pts.push({x:q.x*W*fx,y:q.y*W}));           // 根元カーブ(固定)
+    shape.forEach(q=>pts.push({x:q.x*W*fx,y:q.y*W}));        // ユーザーシルエット
+    return {name,pts,darts:[],guides:[],marks:[],copies,
+      noteEn:`Red-side root curve = ${(hole.rootLen*cpu).toFixed(1)}cm = half of body hole (${(hole.P*cpu).toFixed(1)}cm). Sew 2 boards together leaving root open, then set root into body hole.${theme.limbNote}`};
+  }
+  // ---- 服ピース(体ゴアの相似拡大+裾カット。腕穴は体と同位置)----
+  const clothesPieces=[];
+  if(clothesKind!=='none'){
+    const cl=CLOTHES[clothesKind];
+    const hemS=Math.round(cl.hemT*S);
+    const clGore=(frac,name,copies,scoopSides)=>{
+      const pts=[];
+      const isF=scoopSides.length===2;
+      const edge=s=>{
+        const t=s/S;
+        const zs=isF?bp.zScale:bp.zScale*(1+buttBulge(t));
+        return frac*Math.PI*prof[s]*(cl.ease+cl.flare*t)*((1+zs)/2)*fx*cpu;
+      };
+      const scoop=y=>{ // 腕穴のみ(服は脚穴なし)
+        const h=lp.armHole,yc=arcAt(lp.armT)*cpu;
+        const Vcm=h.V*cpu*cl.ease,Dcm=h.D*cpu*fx*cl.ease;
+        const dy=y-yc;
+        return Math.abs(dy)<Vcm/2?Dcm*Math.sqrt(Math.max(0,1-(dy/(Vcm/2))**2)):0;
+      };
+      for(let s=0;s<=hemS;s++){
+        const y=arc[s]*cpu;let x=edge(s);
+        if(scoopSides.includes(1))x=Math.max(x*.12,x-scoop(y));
+        pts.push({x,y});
+      }
+      for(let s=hemS;s>=0;s--){
+        const y=arc[s]*cpu;let x=edge(s);
+        if(scoopSides.includes(-1))x=Math.max(x*.12,x-scoop(y));
+        pts.push({x:-x,y});
+      }
+      return {name,pts,darts:[],guides:[],marks:[],copies,
+        noteEn:`${cl.name}: sew like the body (side seams + neck). Armhole scoops align with body ARM holes. Hem: fold 5mm or leave raw (fleece).`};
+    };
+    clothesPieces.push(
+      clGore(.40,`CLOTHES-${cl.name}-FRONT x1`,1,[1,-1]),
+      clGore(.30,`CLOTHES-${cl.name}-BACK x2 (cut 2)`,2,[1]));
+    // ---- 襟ピース:内周=服の首まわり(体の首開口×ゆとり)に厳密一致 ----
+    const neckC=neck.perim*cl.ease*cpu; // 服の首まわり実寸
+    if(collarKind==='round'){
+      // 丸襟:半円環×左右=内周がちょうど首まわり。ri*π=C/2 → ri=C/(2π)
+      const ri=neckC/(2*Math.PI), ro=ri*1.6, pts=[];
+      const taperA=.38;
+      for(let s=0;s<=28;s++){const a=Math.PI*s/28;pts.push({x:ri*Math.cos(a),y:ri*Math.sin(a)});}
+      for(let s=28;s>=0;s--){
+        const a=Math.PI*s/28;
+        const edge=Math.min(a,Math.PI-a);
+        const wf=Math.pow(Math.min(1,edge/taperA),.65); // 先端を丸く閉じる
+        const rr=ri+(ro-ri)*wf;
+        pts.push({x:rr*Math.cos(a),y:rr*Math.sin(a)});
+      }
+      clothesPieces.push({name:'COLLAR-ROUND (cut 4 = 2 per side)',pts,darts:[],guides:[],marks:[],copies:4,
+        noteEn:`Peter-Pan collar half (rounded tips). Inner curve ${(neckC/2).toFixed(1)}cm x2 = neckline ${neckC.toFixed(1)}cm (exact). Sew pairs along OUTER curve, turn. Set halves into neckline: rounded tips meet at CF (small gap) and CB.`});
+    }else if(collarKind==='rib'){
+      // リブ襟:帯(リブは首まわりの85%長で伸ばして付ける)
+      const L=neckC*.85,W=2.4,pts=[{x:-L/2,y:0},{x:L/2,y:0},{x:L/2,y:W},{x:-L/2,y:W}];
+      clothesPieces.push({name:'COLLAR-RIB (cut 1, rib knit)',pts,darts:[],guides:[],marks:[],copies:1,
+        noteEn:`Rib neckband ${L.toFixed(1)}x${W}cm = 85% of neckline ${neckC.toFixed(1)}cm. Fold lengthwise, join ends into a ring, STRETCH evenly to fit neckline while sewing.`});
+    }
+  }
+  return [
+    ...clothesPieces,
+    gore(.40,'BODY-FRONT x1',1,[1,-1],null),
+    gore(.30,'BODY-BACK-R x1',1,[1],'R'),
+    gore(.30,'BODY-BACK-L x1',1,[-1],'L'),
+    limbPiece(limbShape('arm'),lp.armHole,lp.armLen,'ARM board (cut 4 = 2 per arm)',4,ROOT_ARCS.arm.pts),
+    limbPiece(limbShape('leg'),lp.legHole,lp.legLen,'LEG board (cut 4 = 2 per leg)',4,ROOT_ARCS.leg.pts),
+  ];
+}
+
+// ============ 統合ピース ============
+function teddyHeadPieces(){
+  const cpu=cmPerUnit(),fx=+fabricEl.value;
+  const g=teddyHeadGeom(),s=teddyNeckScale(g)*cpu;
+  const hd=g.hd;
+  // --- マチ縁(3D)の区分長:|dG|=√(dz²+dy²+(d(w/2))²) ---
+  const segG=[];
+  for(let u=0;u<g.U-1;u++){
+    const a=g.rings[u],b=g.rings[u+1];
+    segG.push(Math.hypot(b.T.z-a.T.z,b.T.y-a.T.y,(b.w2-a.w2)));
+  }
+  // --- SIDE:側面シルエット。上縁は各区分をマチ縁長に伸縮(方向は保持) ---
+  const side=[];
+  let px=g.rings[0].T.z*s*fx,py=-g.rings[0].T.y*0; // 原点=鼻先(yは後で正規化)
+  let cur={x:g.rings[0].T.z,y:g.rings[0].T.y};
+  side.push({x:cur.x,y:cur.y});
+  for(let u=0;u<g.U-1;u++){
+    const dz=g.rings[u+1].T.z-g.rings[u].T.z,dy=g.rings[u+1].T.y-g.rings[u].T.y;
+    const l2=Math.hypot(dz,dy)||1e-9,l3=segG[u];
+    cur={x:cur.x+dz*l3/l2,y:cur.y+dy*l3/l2};
+    side.push({...cur});
+  }
+  // 首縁(後ろ)→あご下シーム(逆順)→鼻先へ戻る
+  const bot=g.botR.slice().reverse(); // 首前→鼻先の順に戻す
+  const neckB={x:cur.x,y:bot[0].y}; // 後ろ首から前首へ直線(首開口)
+  side.push(neckB);
+  bot.forEach(q=>side.push({x:q.z,y:q.y}));
+  const sidePts=side.map(q=>({x:q.x*s*fx,y:-q.y*s}));
+  let ym=Infinity;sidePts.forEach(q=>ym=Math.min(ym,q.y));
+  // --- GUSSET:縁長=|dG|を厳密再現する可変幅ストリップ(折り対称) ---
+  const gus=[];let sx=0;
+  gus.push({x:0,y:g.rings[0].w2*s});
+  const tops=[{x:0,w:g.rings[0].w2}];
+  for(let u=0;u<g.U-1;u++){
+    const dw=(g.rings[u+1].w2-g.rings[u].w2);
+    const ds=Math.sqrt(Math.max(1e-9,segG[u]**2-dw**2)); // 縁の区分長を厳密一致
+    sx+=ds;
+    tops.push({x:sx,w:g.rings[u+1].w2});
+  }
+  tops.forEach(t=>gus.push({x:t.x*s*fx,y:t.w*s}));
+  gus.shift();
+  const gusPts=[...tops.map(t=>({x:t.x*s*fx,y:t.w*s})),
+    ...tops.slice().reverse().map(t=>({x:t.x*s*fx,y:-t.w*s}))];
+  const edgeLen=segG.reduce((a,b)=>a+b,0)*s;
+  return [
+    {name:'HEAD-SIDE (cut 2, mirror)',pts:sidePts.map(q=>({x:q.x,y:q.y-ym})),
+      darts:[],guides:[],marks:[{a:{x:sidePts[0].x,y:sidePts[0].y-ym},b:null,label:'NOSE'}],copies:2,
+      noteEn:`Teddy side head. TOP curve ${edgeLen.toFixed(1)}cm = gusset edge (exact by construction). Sew chins together nose-to-neck first, then each side to gusset from NOSE over crown to back neck.`},
+    {name:'HEAD-GUSSET (cut 1, fold-symmetric)',pts:gusPts,
+      darts:[],guides:[],marks:[{a:{x:0,y:0},b:null,label:'NOSE'}],copies:1,
+      noteEn:`Center gusset. Each edge = ${edgeLen.toFixed(1)}cm = side top curve (exact). Cut on fold for perfect symmetry. Nose end is the narrow tip.`},
+  ];
+}
+function buildPieces(){
+  const cpu=cmPerUnit(),fx=+fabricEl.value;
+  if(MUZ.on){
+    const pieces=teddyHeadPieces();
+    if(ears){
+      const re=ears.r*cpu;
+      const ep=earShapePts(ears.kind||'kuma',re);
+      pieces.push({name:'EAR-BEAR (cut 4 = 2 per ear)',pts:ep,darts:[],guides:[],marks:[],copies:4,
+        noteEn:'Sew pairs, turn, ladder-stitch onto the gusset-side seams at the crown (pin first to balance L/R).'});
+    }
+    if(bodyChk.checked)pieces.push(...bodyPieces());
+    return pieces;
+  }
+  const names=['HEAD-FRONT x1','HEAD-BACK-L x1','HEAD-BACK-R x1'];
+  const pieces=panels.map((p,i)=>{
+    const pts=p.flat.map(q=>({x:q.x*fx*cpu,y:q.y*cpu}));
+    const darts=p.darts.map(d=>({
+      legA:{x:d.legA.x*fx*cpu,y:d.legA.y*cpu},
+      legB:{x:d.legB.x*fx*cpu,y:d.legB.y*cpu},
+      tip:{x:d.tip.x*fx*cpu,y:d.tip.y*cpu}}));
+    const guides=[];
+    {
+      const wantBack=i>0;
+      faceStrokes.filter(st=>st.region!=='body'&&((st.side==='back')===wantBack)).forEach(st=>{
+        const g=[];
+        st.pts.forEach(q=>{
+          if(pointInPoly(q.x,q.y,p.panelPoly)){
+            const m=p.mapPoint(q.x,q.y);
+            g.push({x:m.x*fx*cpu,y:m.y*cpu});
+          }
+        });
+        if(g.length>=2)guides.push({pts:g,color:st.color,w:st.w||2.5});
+      });
+    }
+    let note=guides.length?'Colored lines = embroidery guide. Finalize EYES after stuffing. ':'';
+    const marks=[];
+    if(bodyChk.checked){
+      note+='Bottom edge = NECK opening (CF notch = center front).';
+      if(i===0){
+        const m=p.mapPoint((neck.xa+neck.xb)/2,neck.y);
+        marks.push({a:{x:m.x*fx*cpu,y:m.y*cpu},b:{x:m.x*fx*cpu,y:m.y*cpu-0.5},label:'CF'});
+      }
+    }
+    if(hair&&i===0){
+      const root=hairRootArc(hair.ang);
+      if(root){
+        [root[0],root[root.length-1]].forEach(q=>{
+          const m=p.mapPoint(q.x,q.y);
+          marks.push({a:{x:m.x*fx*cpu,y:m.y*cpu},b:null,label:'HAIR'});
+        });
+      }
+    }
+    if(hair&&i>0)note+=' Cut this panel in HAIR-COLOR fabric.';
+    if(ears&&i===0){
+      const hd2=headDims(),c2={x:hd2.xc,y:(hd2.yMin+hd2.yMax)/2};
+      [-1,1].forEach(sgn=>{
+        let best=1e9,bp2=null;
+        p.panelPoly.forEach(q=>{
+          const a=Math.atan2(q.x-c2.x,q.y-c2.y);
+          const d=Math.abs(a-sgn*ears.ang);
+          if(d<best){best=d;bp2=q;}
+        });
+        if(bp2){
+          const m=p.mapPoint(bp2.x,bp2.y);
+          marks.push({a:{x:m.x*fx*cpu,y:m.y*cpu},b:null,label:'EAR'});
+        }
+      });
+      note+=' Sandwich EAR pieces into outline seam at EAR marks.';
+    }
+    return {name:names[i],pts,darts,guides,marks,copies:1,noteEn:note};
+  });
+  if(hair&&(hair.front||hair.back)){
+    const root=hairRootArc(hair.ang);
+    if(root){
+      let rl=0;for(let i=1;i<root.length;i++)rl+=Math.hypot(root[i].x-root[i-1].x,root[i].y-root[i-1].y);
+      const mk=(hp,name,extra)=>{
+        const o=[];
+        root.forEach(q=>o.push({x:q.x*fx*cpu,y:-q.y*cpu}));
+        hp.shape.slice().reverse().forEach(q=>o.push({x:q.x*fx*cpu,y:-q.y*cpu}));
+        let yMin2=Infinity;o.forEach(q=>yMin2=Math.min(yMin2,q.y));
+        pieces.push({name,pts:o.map(q=>({x:q.x,y:q.y-yMin2})),darts:[],guides:[],marks:[],copies:2,
+          noteEn:`Sew 2 layers right-sides together along the TIP edge, turn. Hairline edge = ${(rl*cpu).toFixed(1)}cm, sandwich into head outline seam between HAIR marks${extra}`});
+      };
+      if(hair.front)mk(hair.front,'HAIR-FRONT bangs (cut 2)',' (front side of seam).');
+      if(sideHair!=='none'&&hair.front){
+        const so=sideLockOutline(1);
+        if(so){
+          const sp=so.map(q=>({x:q.x*fx*cpu,y:-q.y*cpu}));
+          let ym=Infinity;sp.forEach(q=>ym=Math.min(ym,q.y));
+          const rootLen3=Math.hypot(so[2].x-so[0].x,so[2].y-so[0].y)*cpu;
+          pieces.push({name:'HAIR-SIDE lock (cut 4 = 2 per side)',
+            pts:sp.map(q=>({x:q.x,y:q.y-ym})),darts:[],guides:[],marks:[],copies:4,rootN:3,
+            noteEn:`Side lock. Sew 2 layers along the tip edge, turn. RED top edge (${rootLen3.toFixed(1)}cm) sandwiches into the outline seam just below the HAIR mark. Mirror for other side.`});
+        }
+      }
+      if(hair.back)mk(hair.back,'HAIR-BACK (cut 2)',' (back side of seam, together with bangs). Cut HEAD-BACK panels in hair-color fabric.');
+    }
+  }
+  if(ears){
+    const re=ears.r*cpu;
+    const ep=earShapePts(ears.kind||'kuma',re);
+    const nm={kuma:'BEAR',neko:'CAT',usagi:'RABBIT'}[ears.kind||'kuma'];
+    pieces.push({name:`EAR-${nm} (cut 4 = 2 per ear)`,pts:ep,darts:[],guides:[],marks:[],copies:4,
+      noteEn:`${nm} ear. Sew 2 pieces along the curve, leave base chord open, turn. Sandwich into head outline seam at EAR marks (chord ${(re*2).toFixed(1)}cm). Fabric = hair color (or black for panda).`});
+  }
+  if(bodyChk.checked)pieces.push(...bodyPieces());
+  return pieces;
+}
+
+// ============ 全再構築 ============
+function rebuildAll(){
+  if(!rawNorm)return;
+  const t0=performance.now();
+  processOutline();
+  dmax=0;
+  for(let j=0;j<40;j++)for(let i=0;i<40;i++){
+    const x=-1+2*i/39,y=-1+2*j/39;
+    if(pointInPoly(x,y,poly)){const d=nearestOnPoly(x,y,poly);if(d>dmax)dmax=d;}
+  }
+  if(dmax<=0){status.textContent='輪郭が小さすぎます';return;}
+  let lo=-1,hi=1;const totalA=polyArea(poly);
+  for(let it=0;it<24;it++){
+    const mid=(lo+hi)/2;
+    if(polyArea(clipDir(poly,mid,'x',false))<totalA/2)lo=mid;else hi=mid;
+  }
+  polyCx=(lo+hi)/2;
+  neck=computeNeck();
+  if(bodyChk.checked&&!neck)bodyChk.checked=false;
+  buildHead3d();
+  refreshBody3d();
+  const kf=+kfEl.value,kb=+kbEl.value;
+  const basePoly=bodyChk.checked?clipDir(poly,neck.y,'y',true):poly;
+  // 前パネルは2パス:1回目で顔ガイドの展開座標を得て、その領域を避けてダーツを再配置
+  const nY=bodyChk.checked?neck.y:null;
+  let front=flattenPanel(basePoly,kf,+1,'front',{neckY:nY,symAxis:axisX});
+  const faceFront=faceStrokes.filter(st=>st.region!=='body'&&st.side!=='back');
+  if(!MUZ.on&&faceFront.length&&front.darts.length){ // テディは鼻まわりダーツを伝統どおり許可
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity,has=false;
+    faceFront.forEach(st=>st.pts.forEach(q=>{
+      if(!pointInPoly(q.x,q.y,basePoly))return;
+      const m=front.mapPoint(q.x,q.y);has=true;
+      x0=Math.min(x0,m.x);x1=Math.max(x1,m.x);y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);
+    }));
+    if(has){
+      const mx=(x1-x0)*.25+.05,my=(y1-y0)*.25+.05;
+      const avoid=p=>p.x>x0-mx&&p.x<x1+mx&&p.y>y0-my&&p.y<y1+my;
+      front=flattenPanel(basePoly,kf,+1,'front',{avoid,neckY:nY,symAxis:axisX});
+    }
+  }
+  panels=[
+    front,
+    flattenPanel(clipDir(basePoly,polyCx,'x',false),kb,-1,'backL',{neckY:nY}),
+    null, // backR は backL の鏡映で後段生成
+  ];
+  const backL=panels[1];
+  const mirA=a=>({x:2*polyCx-a.x,y:a.y,width:a.width});
+  panels[2]=flattenPanel(clipDir(basePoly,polyCx,'x',true),kb,-1,'backR',{neckY:nY,
+    mirrorFrom:{general:backL.anchors.general.map(mirA),
+                neck:backL.anchors.neck.map(mirA)}});
+  refreshFaceOverlays();
+  refreshHair3d();
+  redraw2d();
+  drawFlatScreen();
+  updateReport();
+  pdfBtn.disabled=false;pngBtn.disabled=false;
+  mArm.disabled=!bodyChk.checked;mLeg.disabled=!bodyChk.checked;mHair.disabled=false;
+  if((mode==='arm'||mode==='leg')&&!bodyChk.checked)setMode('face');
+  status.textContent=`生成完了 ${(performance.now()-t0).toFixed(0)}ms`;
+  status.className='badge ok';
+}
+function friendlySize(){
+  const cpu=cmPerUnit(),hd=headDims();
+  let total=hd.h*cpu;
+  if(bodyChk.checked&&neck){const bp=bodyParams();total=(hd.yMax-(bp.topY-bp.bh))*cpu;}
+  return total;
+}
+function updateReport(){
+  const cpu=cmPerUnit();
+  const nm=['前','後ろ左','後ろ右'];
+  const rep=panels.map((p,i)=>{
+    const n=p.darts.length;
+    return `${nm[i]}:過剰${p.deltaDeg.toFixed(0)}°→ダーツ${n}本`;
+  }).join(' / ');
+  let extra='';
+  if(bodyChk.checked&&neck){
+    const bp=bodyParams(),lp=limbParams();
+    const nd=panels.reduce((s,p)=>s+(p.neckInfo?p.neckInfo.nDarts:0),0);
+    const nex=panels.reduce((s,p)=>s+(p.neckInfo?p.neckInfo.excess:0),0);
+    if(MUZ.on)extra+=`<span class='dartnote'>テディ:マズルの膨らみ→前パネルに鼻ダーツが自動配置(縫うと鼻先が尖る)</span>。`;
+    extra+=` <span class="dartnote">首まわり${(neck.perim*cpu).toFixed(1)}cm一致</span>`+
+      (nd?`(展開で首縁が+${(nex*cpu*10).toFixed(0)}mm伸びる分を<span class="dartnote">首ダーツ${nd}本</span>で吸収し、縫い縁を体開口と厳密一致)`:'')+'。'+
+      `手:穴${(lp.armHole.P*cpu).toFixed(1)}cm=<span class="dartnote">根元カーブ${(lp.armHole.rootLen*cpu).toFixed(1)}cm×2枚で一致</span>。`+
+      `脚:穴${(lp.legHole.P*cpu).toFixed(1)}cm=<span class="dartnote">根元カーブ${(lp.legHole.rootLen*cpu).toFixed(1)}cm×2枚で一致</span>。`+
+      `「手」「脚」モードで自分のシルエットを描けます。`;
+  }
+  const nuiNm2=($('nuiName').value||'').trim();
+  dartReport.innerHTML=`<b style='font-size:13px;'>🧸 ${nuiNm2||'ぬい'}:完成サイズ 約${friendlySize().toFixed(0)}cm</b><br>`+`<span class="dartnote">ダーツ:</span>${rep}。${extra}`;
+}
+
+// ============ 展開図描画 ============
+const flatCv=$('flat'),flatHint=$('flatHint');
+const SA_CM=.7;
+function offsetPoly(fp,off){
+  const n=fp.length,out=[];
+  for(let i=0;i<n;i++){
+    const p=fp[i],a=fp[(i-1+n)%n],b=fp[(i+1)%n];
+    const e1x=p.x-a.x,e1y=p.y-a.y,e2x=b.x-p.x,e2y=b.y-p.y;
+    const l1=Math.hypot(e1x,e1y)||1,l2=Math.hypot(e2x,e2y)||1;
+    let nx=(e1y/l1+e2y/l2),ny=-(e1x/l1+e2x/l2);
+    const nl=Math.hypot(nx,ny)||1;nx/=nl;ny/=nl;
+    out.push({x:p.x+nx*off,y:p.y+ny*off});
+  }
+  const cx=fp.reduce((s,p)=>s+p.x,0)/n,cy=fp.reduce((s,p)=>s+p.y,0)/n;
+  const d0=Math.hypot(fp[0].x-cx,fp[0].y-cy),d1=Math.hypot(out[0].x-cx,out[0].y-cy);
+  if(d1<d0)return fp.map((p,i)=>({x:2*p.x-out[i].x,y:2*p.y-out[i].y}));
+  return out;
+}
+function renderFlat(ctx,W,H,opaque){
+  const pieces=buildPieces();
+  ctx.clearRect(0,0,W,H);
+  if(opaque){ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,W,H);}
+  const withSA=pieces.map(p=>({piece:p,sa:offsetPoly(p.pts,SA_CM)}));
+  const boxes=withSA.map(({sa})=>{
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    sa.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+      y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    return {x0,x1,y0,y1,w:x1-x0,h:y1-y0};
+  });
+  const pad=20,gap=20,n=pieces.length;
+  const nRows=n>8?3:(n>5?2:1);
+  const perRow=Math.ceil(n/nRows);
+  const rows=[];
+  for(let r=0;r<nRows;r++)rows.push([...Array(n).keys()].slice(r*perRow,(r+1)*perRow));
+  let s=Infinity;
+  rows.forEach(row=>{
+    const tw=row.reduce((a,i)=>a+boxes[i].w,0);
+    const mh=Math.max(...row.map(i=>boxes[i].h));
+    s=Math.min(s,(W-pad*2-gap*(row.length-1))/tw,((H-pad*2-20*nRows)/nRows-14)/mh);
+  });
+  const cols=['#f3d9b866','#c9dce866','#cfe3cd66','#f3d9b866','#c9dce866','#cfe3cd66','#dcd2ec66','#f5c9a866','#c9e8d266'];
+  const rowH=(H-pad*2)/nRows;
+  withSA.forEach(({piece:p,sa},pi)=>{
+    const b=boxes[pi];
+    const ri=rows.findIndex(row=>row.includes(pi));
+    const row=rows[ri];
+    const tw=row.reduce((a,i)=>a+boxes[i].w*s+gap,0)-gap;
+    let ox=(W-tw)/2;
+    for(const i of row){if(i===pi)break;ox+=boxes[i].w*s+gap;}
+    const oy=pad+ri*rowH+(rowH-b.h*s)/2-8;
+    const TX=q=>ox+(q.x-b.x0)*s,TY=q=>oy+(q.y-b.y0)*s;
+    ctx.setLineDash([5,4]);ctx.strokeStyle='#8a839d';ctx.lineWidth=1.2;
+    ctx.beginPath();
+    sa.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+    ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();
+    p.pts.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+    ctx.closePath();
+    ctx.fillStyle=cols[pi%cols.length];ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle='#2b2440';ctx.stroke();
+    if(p.rootN){ // 根元カーブ(開けておく辺)を赤で
+      ctx.strokeStyle='#c94b60';ctx.lineWidth=3;
+      ctx.beginPath();
+      for(let i2=0;i2<p.rootN;i2++){
+        const q=p.pts[i2];
+        i2?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));
+      }
+      ctx.stroke();
+    }
+    ctx.strokeStyle='#c94b60';ctx.fillStyle='#c94b6022';ctx.lineWidth=1.5;
+    p.darts.forEach(d=>{
+      ctx.beginPath();
+      ctx.moveTo(TX(d.legA),TY(d.legA));
+      ctx.lineTo(TX(d.tip),TY(d.tip));
+      ctx.lineTo(TX(d.legB),TY(d.legB));
+      ctx.closePath();ctx.fill();ctx.stroke();
+    });
+    // 合印(ARM/LEG)
+    ctx.strokeStyle='#c94b60';ctx.fillStyle='#c94b60';ctx.lineWidth=2;
+    (p.marks||[]).forEach(mk=>{
+      if(mk.b){
+        ctx.beginPath();ctx.moveTo(TX(mk.a),TY(mk.a));ctx.lineTo(TX(mk.b),TY(mk.b));ctx.stroke();
+      }
+      if(mk.label){
+        ctx.font='800 9px sans-serif';ctx.textAlign='center';
+        ctx.fillText(mk.label,TX(mk.a),TY(mk.a));
+      }
+    });
+    p.guides.forEach(g=>{
+      ctx.lineWidth=(g.w||2.5)*.64;
+      ctx.strokeStyle=g.color;
+      ctx.beginPath();
+      g.pts.forEach((q,i)=>{i?ctx.lineTo(TX(q),TY(q)):ctx.moveTo(TX(q),TY(q));});
+      ctx.stroke();
+    });
+    ctx.fillStyle='#2b2440';ctx.font='700 10px sans-serif';ctx.textAlign='center';
+    const label=b.w*s>70?p.name:p.name.split(' ')[0]; // 幅が狭ければ短縮名
+    ctx.fillText(label,ox+b.w*s/2,oy+b.h*s+15);
+  });
+}
+function drawFlatScreen(){
+  if(!panels)return;
+  flatHint.style.display='none';
+  const r=flatCv.getBoundingClientRect();
+  renderFlat(flatCv.getContext('2d'),r.width,r.height,false);
+}
+pngBtn.addEventListener('click',()=>{
+  if(!panels)return;
+  const W=2600,Hh=1560;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=Hh;
+  renderFlat(cv.getContext('2d'),W,Hh,true);
+  const url=cv.toDataURL('image/png');
+  showExport('展開図 PNG (2600px)','img',url,
+    '画像を長押し(スマホ)または右クリック(PC)で「画像を保存」できます。この環境では自動ダウンロードがブロックされるため、ページ内表示にしています。');
+  status.textContent='展開図PNGを表示しました';status.className='badge ok';
+});
+
+// ============ PDF ============
+const exModal=$('exportModal');
+$('exportClose').addEventListener('click',()=>{exModal.style.display='none';
+  $('exportFrame').src='about:blank';});
+function showExport(title,kind,url,hint){
+  $('exportTitle').textContent=title;
+  $('exportHint').textContent=hint;
+  $('exportLink').href=url;
+  const img=$('exportImg'),fr=$('exportFrame');
+  img.style.display=kind==='img'?'block':'none';
+  fr.style.display=kind==='pdf'?'block':'none';
+  if(kind==='img')img.src=url;else fr.src=url;
+  exModal.style.display='flex';
+}
+function hexRgb(h){const v=parseInt(h.slice(1),16);return [v>>16&255,v>>8&255,v&255];}
+pdfBtn.addEventListener('click',()=>{
+  if(!panels)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'cm',format:'a4'});
+  const pageW=21,pageH=29.7,margin=1.2;
+  const pieces=buildPieces();
+  // ---- 表紙(組み立てガイド:jsPDF標準フォントのため英語表記)----
+  {
+    const cpu=cmPerUnit(),lp=bodyChk.checked&&neck?limbParams():null;
+    let y=margin+1.0;
+    doc.setFont('helvetica','bold');doc.setFontSize(22);
+    const nuiNm=($('nuiName').value||'').trim();
+    doc.text(nuiNm?nuiNm.toUpperCase()+' - NUI PATTERN':'NUI PATTERN',margin,y);y+=0.8;
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text('Generated plush sewing pattern - all mating edges length-matched by construction',margin,y);y+=1.0;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('SPEC',margin,y);y+=.55;
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    const spec=[`Head height: ${(+hcmEl.value).toFixed(1)} cm  /  Seam allowance: 7 mm  /  Fabric stretch factor: x${(+fabricEl.value)}`];
+    if(lp){
+      spec.push(`Body length: ${(lp.bp.bh*cpu).toFixed(1)} cm  /  Neck: ${(neck.perim*cpu).toFixed(1)} cm (head opening = body top, exact)`);
+      spec.push(`Arm hole: ${(lp.armHole.P*cpu).toFixed(1)} cm = root curve ${(lp.armHole.rootLen*cpu).toFixed(1)} cm x 2 boards (exact)`);
+      spec.push(`Leg hole: ${(lp.legHole.P*cpu).toFixed(1)} cm = root curve ${(lp.legHole.rootLen*cpu).toFixed(1)} cm x 2 boards (exact)`);
+    }
+    let colX=margin;
+    const emit=(t,dy)=>{
+      if(y>pageH-margin-1.2){colX=pageW/2;y=margin+2.2;} // 右カラムへ折返し
+      doc.text(t,colX,y);y+=dy;
+    };
+    spec.forEach(t=>emit(t,.5));
+    y+=.5;
+    // 使用糸レジェンド
+    const used=[...new Set(faceStrokes.map(st=>st.color))];
+    if(used.length){
+      doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('THREAD COLORS (Brother ref.)',margin,y);y+=.6;
+      used.forEach(hex=>{
+        const th=THREADS.find(t=>t[1]===hex);
+        const [rr,gg,bb]=hexRgb(hex);
+        doc.setFillColor(rr,gg,bb);doc.rect(colX,y-.32,.42,.42,'F');
+        doc.setDrawColor(60);doc.rect(colX,y-.32,.42,.42,'S');
+        doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+        doc.text(th?th[0]:hex,colX+.65,y);y+=.6;
+        if(y>pageH-margin-1.2){colX=pageW/2;y=margin+2.2;}
+      });
+      y+=.4;
+    }
+    // 組み立て手順
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('ASSEMBLY ORDER',margin,y);y+=.6;
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    const steps=[
+      '1. Embroider all colored guide lines BEFORE sewing (except eyes - see step 8).',
+      MUZ.on?'2. HEAD (teddy 3-piece): sew the two SIDE chins together from under-chin to NOSE tip. Then sew each SIDE to the GUSSET from nose tip over the crown to the back neck (edges match exactly - pin at NOSE marks).':'2. Sew darts on head panels (fold, stitch to tip, no backstitch at tip).',
+      MUZ.on?'3. Clip seam-allowance curves, turn through neck, stuff the nose FIRST and firmly.':'3. Head: sew BACK-L to BACK-R along center back (leave 4-5 cm turning gap), then sew FRONT to backs all around'+(bodyChk.checked?' except neck.':'.'),
+    ];
+    if(bodyChk.checked){
+      steps.push('4. Limbs: sew each pair of boards together leaving the red root curve open. Turn.');
+      steps.push('5. Body: sew FRONT to BACK-R and BACK-L along side seams, INSERTING limb root curves into the scoops as you go (lengths match - pin, no easing). Sew center back, leave turning gap.');
+      steps.push('6. Neck: sew head opening to body top opening (lengths match).');
+      steps.push('7. Turn right-side out, stuff firmly (head first), ladder-stitch gaps.');
+    }else{
+      steps.push('4. Turn right-side out, stuff firmly, ladder-stitch the gap.');
+    }
+    steps.push(`${steps.length+1}. EYES: pin test at 4 angles (esp. from above) on the stuffed head, then attach.`);
+    steps.forEach(t=>{
+      const lines=doc.splitTextToSize(t,pageW/2-margin-.5);
+      if(y+.48*lines.length>pageH-margin-1.2){colX=pageW/2;y=margin+2.2;}
+      doc.text(lines,colX,y);y+=.48*lines.length+.12;
+    });
+    doc.setFontSize(8);doc.setTextColor(130);
+    doc.text('Pieces follow on the next pages. Print at 100% and verify the 5 cm bar on each page.',margin,pageH-margin);
+    doc.setTextColor(0);
+  }
+  pieces.forEach((p,pi)=>{
+    doc.addPage();
+    const fp=p.pts,op=offsetPoly(fp,SA_CM);
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    op.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);
+      y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    const w=x1-x0,h=y1-y0;
+    const fitW=pageW-margin*2,fitH=pageH-margin*2-3.2;
+    const s=Math.min(1,fitW/w,fitH/h);
+    const ox=margin+(fitW-w*s)/2-x0*s;
+    const oy=margin+2.6+(fitH-h*s)/2-y0*s;
+    const T=q=>[ox+q.x*s,oy+q.y*s];
+    doc.setFont('helvetica','bold');doc.setFontSize(13);
+    doc.text(`PIECE ${pi+1}/${pieces.length}   ${p.name}`,margin,margin+.4);
+    doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+    doc.text(`head height ${(+hcmEl.value).toFixed(1)}cm / seam 7mm / fabric x${(+fabricEl.value)}`,margin,margin+1.0);
+    doc.text(s<1?`!! printed at ${(s*100).toFixed(0)}% - enlarge to 100%, verify 5cm bar`:'print at 100%, verify 5cm bar',margin,margin+1.45);
+    if(p.noteEn){
+      const lines=doc.splitTextToSize(p.noteEn,pageW-margin*2);
+      doc.text(lines,margin,margin+1.9);
+    }
+    doc.setDrawColor(120);doc.setLineDashPattern([.15,.12],0);doc.setLineWidth(.02);
+    op.forEach((q,i)=>{const a=T(q),b=T(op[(i+1)%op.length]);doc.line(a[0],a[1],b[0],b[1]);});
+    doc.setDrawColor(30);doc.setLineDashPattern([],0);doc.setLineWidth(.035);
+    fp.forEach((q,i)=>{const a=T(q),b=T(fp[(i+1)%fp.length]);doc.line(a[0],a[1],b[0],b[1]);});
+    if(p.rootN){ // 根元カーブ=開けておく辺を赤で明示
+      doc.setDrawColor(201,75,96);doc.setLineWidth(.06);
+      for(let i2=0;i2<p.rootN-1;i2++){
+        const a=T(fp[i2]),b=T(fp[i2+1]);
+        doc.line(a[0],a[1],b[0],b[1]);
+      }
+      doc.setDrawColor(30);doc.setLineWidth(.035);
+    }
+    doc.setLineWidth(.03);
+    for(let m=0;m<4;m++){
+      const idx=Math.floor(fp.length*m/4);
+      const a=T(fp[idx]),b=T(op[idx]);
+      doc.line(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);
+    }
+    doc.setDrawColor(200,60,80);doc.setLineWidth(.03);
+    p.darts.forEach(d=>{
+      const A=T(d.legA),B=T(d.legB),C=T(d.tip);
+      doc.line(A[0],A[1],C[0],C[1]);doc.line(B[0],B[1],C[0],C[1]);
+      doc.setFontSize(7);doc.text('DART',(A[0]+B[0])/2-.3,(A[1]+B[1])/2-.15);
+    });
+    // ARM/LEGマーク
+    doc.setDrawColor(200,60,80);doc.setLineWidth(.045);
+    (p.marks||[]).forEach(mk=>{
+      if(mk.b){const a=T(mk.a),b=T(mk.b);doc.line(a[0],a[1],b[0],b[1]);}
+      if(mk.label){
+        doc.setFontSize(8);doc.setTextColor(200,60,80);
+        const a=T(mk.a);doc.text(mk.label,a[0],a[1],{align:'center'});
+        doc.setTextColor(0,0,0);
+      }
+    });
+    p.guides.forEach(g=>{
+      const [rr,gg,bb]=hexRgb(g.color);
+      doc.setDrawColor(rr,gg,bb);doc.setLineWidth(.012*(g.w||2.5));
+      for(let i=0;i<g.pts.length-1;i++){
+        const a=T(g.pts[i]),b=T(g.pts[i+1]);doc.line(a[0],a[1],b[0],b[1]);
+      }
+    });
+    doc.setDrawColor(30);doc.setLineWidth(.03);
+    const gx=ox+((x0+x1)/2)*s,gy1=oy+(y0+h*.3)*s,gy2=oy+(y0+h*.7)*s;
+    doc.line(gx,gy1,gx,gy2);
+    doc.line(gx,gy1,gx-.15,gy1+.3);doc.line(gx,gy1,gx+.15,gy1+.3);
+    doc.line(gx,gy2,gx-.15,gy2-.3);doc.line(gx,gy2,gx+.15,gy2-.3);
+    doc.setFontSize(7);doc.text('GRAIN',gx+.2,(gy1+gy2)/2);
+    const bx=margin,by=pageH-margin;
+    doc.setLineWidth(.05);doc.line(bx,by,bx+5,by);
+    doc.line(bx,by-.15,bx,by+.15);doc.line(bx+5,by-.15,bx+5,by+.15);
+    doc.setFontSize(8);
+    doc.text(s<1?`bar = ${(5*s).toFixed(1)}cm here (enlarge until 5cm)`:'this bar must measure exactly 5cm',bx+.2,by-.25);
+  });
+  let url;
+  try{url=URL.createObjectURL(doc.output('blob'));}
+  catch(e){url=doc.output('datauristring');}
+  showExport(`型紙PDF(${pieces.length+1}ページ:表紙+ピース)`,'pdf',url,
+    'ここでスクロール確認できます。保存は右上の「別タブで開く/保存」から。この環境では自動ダウンロードがブロックされるため、ページ内表示にしています。');
+  status.textContent='型紙PDFを表示しました';status.className='badge ok';
+});
+
+// ============ UI・ループ ============
+const kfOut=$('kfOut'),kbOut=$('kbOut');
+kfEl.addEventListener('input',()=>{kfOut.textContent=(+kfEl.value).toFixed(2);rebuildAll();});
+kbEl.addEventListener('input',()=>{kbOut.textContent=(+kbEl.value).toFixed(2);rebuildAll();});
+hcmEl.addEventListener('change',()=>{if(panels){drawFlatScreen();updateReport();}});
+fabricEl.addEventListener('change',()=>{if(panels)drawFlatScreen();});
+$('clearBtn').addEventListener('click',()=>{
+  rawNorm=null;poly=null;norm=null;axisX=null;pts=[];faceStrokes=[];panels=null;neck=null;
+  redraw2d();
+  [headMesh,seamGroup,faceGroup,bodyGroup].forEach(o=>{if(o)group.remove(o);});
+  headMesh=seamGroup=faceGroup=bodyGroup=null;
+  drawHint.style.display='flex';viewHint.style.display='flex';flatHint.style.display='flex';
+  const r=flatCv.getBoundingClientRect();
+  flatCv.getContext('2d').clearRect(0,0,r.width,r.height);
+  pdfBtn.disabled=true;pngBtn.disabled=true;mFace.disabled=true;faceClearBtn.disabled=true;
+  mArm.disabled=true;mLeg.disabled=true;mHair.disabled=true;
+  hair=null;hairClearBtn.disabled=true;hairMeshes.forEach(mm=>group.remove(mm));hairMeshes=[];
+  limbShapesRaw={arm:DEF_ARM.map(p=>({...p})),leg:DEF_LEG.map(p=>({...p}))};
+  symSel.disabled=true;smoothEl.disabled=true;axisChk.disabled=true;axisChk.checked=false;
+  symSel.value='none';smoothEl.value=0;smOut.textContent='0%';
+  $('presetSel').value='none';ears=null;applyTheme({});MUZ={on:false};bodyTune={wide:1,limbR:1,limbLen:1};
+  $('eyeSel').value='none';$('mouthSel').value='none';$('cheekSel').value='none';
+  $('earSel').value='none';$('sideSel').value='none';sideHair='none';
+  $('clothesSel').value='none';clothesKind='none';
+  $('collarSel').value='none';collarKind='none';$('collarSel').disabled=true;
+  $('eyeSel').disabled=true;$('mouthSel').disabled=true;$('cheekSel').disabled=true;
+  $('earSel').disabled=true;$('sideSel').disabled=true;$('clothesSel').disabled=true;
+  setMode('outline');
+  status.textContent='待機中';status.className='badge';
+});
+
+
+function tick(){
+  requestAnimationFrame(tick);
+  if(autoSpin)tRY+=.004;
+  rotX+=(tRX-rotX)*.12;rotY+=(tRY-rotY)*.12;
+  group.rotation.x=rotX;group.rotation.y=rotY;
+  renderer.render(scene,camera);
+}
+function layout(){fitCanvas(drawCv);redraw2d();resize3d();fitCanvas(flatCv);if(panels)drawFlatScreen();}
+window.addEventListener('resize',layout);
+layout();tick();
+})();
+</script>
+</body>
+</html>
