@@ -16,7 +16,10 @@ stories/storyNN.md    短編の原稿（Markdown）
 stories/storyNN.html  読書ページ（build.py が生成）
 tools/build.py        原稿から読書ページを生成するスクリプト
 docs/                 企画資料（王道プロット50 など）
+games/                CryptoNinja ゲーム集（自己完結型のHTMLゲーム）
 ```
+
+ゲームを追加するときは `games/` にHTMLを置き、`games/index.html` にカードを1枚足すだけです。
 
 ## 作品の追加・更新のしかた
 

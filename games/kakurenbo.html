@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>夜の境内でかくれんぼ — ささがね vs クオン</title>
+<style>
+  :root{
+    --night:#171522; --ground:#221F30; --ground2:#2A2740; --line:#3A3658;
+    --text:#F2EEE6; --sub:#9A96B4;
+    --oni:#D84A4A; --gold:#E4B04F;
+    --sasagane:#8A5ECB; --quon:#4A90D8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--night); color:var(--text);
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    overflow:hidden; touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+
+  #field{position:fixed; inset:0; overflow:hidden;}
+  #sky{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 80% 12%, rgba(244,238,220,.95) 0 32px, rgba(244,238,220,.14) 38px, transparent 86px),
+      radial-gradient(ellipse at 50% 0%, #26233C 0%, var(--night) 62%);
+  }
+  .star{position:absolute; width:3px; height:3px; border-radius:50%; background:#EDE7D2; opacity:.7;}
+  #groundPlane{
+    position:absolute; left:0; right:0; bottom:0; height:62%;
+    background:radial-gradient(ellipse at 50% 0%, var(--ground2) 0%, var(--ground) 55%), var(--ground);
+    border-top:3px solid #3E3A5E;
+  }
+  #groundPlane::before{
+    content:""; position:absolute; inset:0; opacity:.16;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 44px, #14121e 44px 46px),
+      repeating-linear-gradient(90deg, transparent 0 84px, #14121e 84px 86px);
+  }
+
+  /* かくれ場所 */
+  .spot{
+    position:absolute; transform:translate(-50%,-88%);
+    line-height:1; pointer-events:none;
+    filter:drop-shadow(0 8px 8px rgba(0,0,0,.5));
+    transition:filter .15s;
+  }
+  .spot .base{
+    position:absolute; left:50%; bottom:-6px; width:90%; height:20px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse, rgba(0,0,0,.45), transparent 70%);
+  }
+  .spot .mark{
+    position:absolute; left:50%; top:-26px; transform:translateX(-50%) scale(0);
+    font-size:26px; transition:transform .2s cubic-bezier(.2,1.6,.4,1);
+  }
+  .spot.checked{opacity:.45;}
+  .spot.checked .mark{transform:translateX(-50%) scale(1);}
+  body.seeking .spot.pickable{pointer-events:auto; cursor:pointer;}
+  body.seeking .spot.pickable:hover{filter:drop-shadow(0 0 14px rgba(228,176,79,.8));}
+  .spot.shake{animation:rustle .5s ease;}
+  @keyframes rustle{
+    0%,100%{transform:translate(-50%,-88%) rotate(0);}
+    20%{transform:translate(-50%,-88%) rotate(-4deg);}
+    40%{transform:translate(-50%,-88%) rotate(4deg);}
+    60%{transform:translate(-50%,-88%) rotate(-3deg);}
+    80%{transform:translate(-50%,-88%) rotate(2deg);}
+  }
+
+  .actor{
+    position:absolute; left:0; top:0; width:168px; height:216px;
+    transform-origin:50% 100%; will-change:transform; pointer-events:none;
+  }
+  .actor svg{position:absolute; inset:0; width:100%; height:100%;}
+  .actor .shadow{
+    position:absolute; left:50%; bottom:2px; width:96px; height:18px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse, rgba(0,0,0,.4), transparent 70%);
+  }
+  .actor .plate{
+    position:absolute; left:50%; top:-4px; transform:translateX(-50%);
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; letter-spacing:.1em; white-space:nowrap;
+    background:rgba(20,18,30,.72); border:1px solid var(--line);
+    padding:3px 10px; border-radius:12px;
+  }
+  .actor .plate .dot{width:8px; height:8px; border-radius:50%;}
+  .actor .bubble{
+    position:absolute; left:50%; top:-46px; transform:translateX(-50%) scale(0);
+    background:#F7F1EA; color:#2a2a36; font-size:14px; letter-spacing:.06em;
+    padding:8px 14px; border-radius:16px; white-space:nowrap;
+    box-shadow:0 5px 12px rgba(0,0,0,.4);
+    transition:transform .2s cubic-bezier(.2,1.5,.4,1);
+  }
+  .actor .bubble.show{transform:translateX(-50%) scale(1);}
+  .actor.hiddenChar{visibility:hidden;}
+
+  #hud{
+    position:absolute; top:10px; left:0; right:0; z-index:500;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    pointer-events:none;
+  }
+  #rounds{display:flex; gap:8px;}
+  .rpip{
+    width:16px; height:16px; border-radius:50%;
+    border:2px solid var(--line); background:transparent;
+    transition:all .25s; font-size:10px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rpip.cur{border-color:var(--gold);}
+  .rpip.pwin{background:var(--gold); border-color:var(--gold);}
+  .rpip.cwin{background:var(--oni); border-color:var(--oni);}
+  #status{
+    font-size:14px; letter-spacing:.08em; text-align:center;
+    background:rgba(20,18,30,.6); padding:6px 16px; border-radius:14px;
+    border:1px solid var(--line);
+  }
+  #status b{color:var(--gold);}
+  #status .oniC{color:var(--oni);}
+  #seekInfo{font-size:13px; letter-spacing:.1em; color:var(--sub); display:none;}
+  #seekInfo b{color:var(--text); font-size:15px;}
+  #seekInfo .warn{color:var(--oni);}
+
+  #fx{
+    position:absolute; left:50%; top:30%;
+    transform:translateX(-50%) scale(.4) rotate(-6deg);
+    font-size:min(10vw,58px); font-weight:bold; letter-spacing:.12em;
+    color:var(--gold); -webkit-text-stroke:2px #2a2012;
+    text-shadow:0 5px 0 rgba(0,0,0,.4);
+    opacity:0; pointer-events:none; white-space:nowrap; z-index:600;
+  }
+  #fx.red{color:var(--oni); -webkit-text-stroke:2px #2a1218;}
+  #fx.pop{animation:stamp .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+  @keyframes stamp{
+    0%{opacity:0; transform:translateX(-50%) scale(.4) rotate(-6deg);}
+    60%{opacity:1; transform:translateX(-50%) scale(1.15) rotate(2deg);}
+    100%{opacity:1; transform:translateX(-50%) scale(1) rotate(0);}
+  }
+
+  /* 目かくし中の暗転 */
+  #blind{
+    position:absolute; inset:0; z-index:800;
+    background:rgba(10,9,18,.96);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    opacity:0; pointer-events:none; transition:opacity .35s;
+  }
+  #blind.show{opacity:1; pointer-events:auto;}
+  #blind .big{font-size:clamp(24px,6vw,40px); font-weight:bold; letter-spacing:.18em;}
+  #blind .cnt{font-size:60px; font-weight:bold; color:var(--gold); font-variant-numeric:tabular-nums;}
+
+  #overlay{
+    position:absolute; inset:0; z-index:900;
+    background:rgba(17,15,28,.86); backdrop-filter:blur(3px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; padding:20px; text-align:center;
+  }
+  #overlay.hidden{display:none;}
+  #overlay h1{font-size:clamp(22px,5.4vw,34px); letter-spacing:.16em;}
+  #overlay h1 b{color:var(--gold);}
+  #overlay .rule{font-size:13px; color:var(--sub); line-height:1.9; letter-spacing:.05em;}
+  #overlay .rule b{color:var(--text);}
+  #resultText{font-size:clamp(26px,7vw,44px); font-weight:bold; letter-spacing:.14em;}
+  #resultSub{font-size:14px; color:var(--sub); line-height:1.8;}
+  .pickRow{display:flex; gap:14px; flex-wrap:wrap; justify-content:center;}
+  button.pick{
+    font-family:inherit; color:var(--text); cursor:pointer;
+    background:#211E33; border:2px solid var(--line); border-radius:16px;
+    padding:12px 20px; font-size:15px; letter-spacing:.08em;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition:transform .12s, border-color .12s;
+  }
+  button.pick:hover{transform:translateY(-2px);}
+  button.pick .chip{width:16px; height:16px; border-radius:50%;}
+  button.pick.sel{border-color:var(--gold); background:#2B2740;}
+  button.pick small{font-size:10px; color:var(--sub);}
+  button.go{
+    font-family:inherit; font-size:17px; font-weight:bold; letter-spacing:.16em;
+    color:#241a10; background:var(--gold); border:none; border-radius:14px;
+    padding:14px 42px; cursor:pointer; transition:transform .12s;
+    box-shadow:0 5px 0 #9c7526;
+  }
+  button.go:active{transform:translateY(3px); box-shadow:0 2px 0 #9c7526;}
+  button.go:focus-visible, button.pick:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  #credit{position:absolute; bottom:10px; font-size:10px; color:#5c5878; letter-spacing:.06em;}
+  @media (prefers-reduced-motion:reduce){
+    #fx.pop{animation:none; opacity:1; transform:translateX(-50%);}
+    .spot.shake{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div id="field">
+  <div id="sky"></div>
+  <div id="groundPlane"></div>
+
+  <div class="actor" id="actorA">
+    <div class="shadow"></div>
+    <div class="plate"><span class="dot" style="background:var(--sasagane)"></span>ささがね</div>
+    <div class="bubble" id="bubbleA"></div>
+  </div>
+  <div class="actor" id="actorB">
+    <div class="shadow"></div>
+    <div class="plate"><span class="dot" style="background:var(--quon)"></span>クオン</div>
+    <div class="bubble" id="bubbleB"></div>
+  </div>
+
+  <div id="hud">
+    <div id="rounds"></div>
+    <div id="status">準備中…</div>
+    <div id="seekInfo"></div>
+  </div>
+  <div id="fx"></div>
+
+  <div id="blind">
+    <div class="big" id="blindText">もういいかい…?</div>
+    <div class="cnt" id="blindCnt">10</div>
+  </div>
+
+  <div id="overlay">
+    <h1>夜の境内で<b>かくれんぼ</b></h1>
+    <div id="resultText" style="display:none"></div>
+    <div id="resultSub" style="display:none"></div>
+    <div class="rule" id="ruleText">
+      全5ラウンド。<b>さがす番</b>と<b>かくれる番</b>を交互にやるよ。<br>
+      さがす番は <b>20秒 &amp; 2回まで</b>。かくれたキャラは<b>ときどき顔を出す</b>から見のがすな!<br>
+      かくれる番は、鬼の2回の探索をしのげば勝ち。同じ場所ばかりだと読まれるかも…?
+    </div>
+    <div class="pickRow" id="pickRow">
+      <button class="pick sel" data-me="quon">
+        <span class="chip" style="background:var(--quon)"></span>クオンであそぶ<small>ささがねとかくれんぼ</small>
+      </button>
+      <button class="pick" data-me="sasagane">
+        <span class="chip" style="background:var(--sasagane)"></span>ささがねであそぶ<small>クオンとかくれんぼ</small>
+      </button>
+    </div>
+    <button class="go" id="goBtn">スタート</button>
+    <div id="credit">CryptoNinja 非公式二次創作ファンアート(ガイドライン準拠)</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+window.addEventListener("error", e => {
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:8px;top:8px;right:8px;z-index:9999;background:#5a1f2a;color:#ffd7d7;font-size:12px;padding:8px 10px;border-radius:8px;white-space:pre-wrap;";
+  d.textContent = "⚠ エラー: " + e.message + (e.lineno ? " (line " + e.lineno + ")" : "");
+  document.body.appendChild(d);
+});
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rand = arr => arr[(Math.random()*arr.length)|0];
+const SVGNS = "http://www.w3.org/2000/svg";
+
+/* ================================================================
+   キャラクターSVG(svg-motion-system.html と同じid規約)
+================================================================ */
+const CN_SASAGANE_SVG = `
+  <g id="body">
+    <circle id="pivot_body" cx="340" cy="612" r="0" fill="none"/>
+    <rect x="324" y="322" width="32" height="30" fill="#F4F0F2"/>
+    <ellipse cx="310" cy="618" rx="22" ry="8" fill="#221E24" stroke="#1A161A" stroke-width="5"/>
+    <ellipse cx="370" cy="618" rx="22" ry="8" fill="#221E24" stroke="#1A161A" stroke-width="5"/>
+    <path d="M340 344 C300 344 282 356 274 380 C258 430 250 520 252 592 C252 604 262 610 276 610 L404 610 C418 610 428 604 428 592 C430 520 422 430 406 380 C398 356 380 344 340 344 Z" fill="#221E24" stroke="#1A161A" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M282 530 q10 -8 18 2 q-8 10 -18 -2 Z M382 556 q10 -8 18 2 q-8 10 -18 -2 Z M312 584 q8 -6 14 2 q-6 8 -14 -2 Z" fill="#C43A3A"/>
+    <path d="M312 346 L340 400 L368 346 L354 336 L340 370 L326 336 Z" fill="#F4F0EC" stroke="#1A161A" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M318 348 L340 390 L362 348" fill="none" stroke="#6A48A8" stroke-width="5"/>
+    <path d="M270 424 L410 424 L414 476 L266 476 Z" fill="#D9A93F" stroke="#1A161A" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="284" y="430" width="34" height="40" rx="8" fill="#5A4A98" opacity="0.75"/>
+    <rect x="362" y="432" width="30" height="36" rx="8" fill="#5A4A98" opacity="0.75"/>
+    <circle cx="340" cy="452" r="11" fill="#1E1A1E"/>
+    <circle cx="340" cy="436" r="6" fill="#1E1A1E"/>
+    <path d="M330 444 C316 438 308 430 304 422 M330 450 C314 450 304 446 296 440 M330 456 C316 460 306 460 298 458 M330 462 C318 468 310 472 304 476" fill="none" stroke="#1E1A1E" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M350 444 C364 438 372 430 376 422 M350 450 C366 450 376 446 384 440 M350 456 C364 460 374 460 382 458 M350 462 C362 468 370 472 376 476" fill="none" stroke="#1E1A1E" stroke-width="3.5" stroke-linecap="round"/>
+    <g id="armL" data-front="1">
+      <circle id="pivot_armL" cx="302" cy="368" r="0" fill="none"/>
+      <path d="M300 366 C270 372 250 410 242 462 C238 492 250 506 268 502 C290 496 302 460 306 420 C308 396 310 374 300 366 Z" fill="#221E24" stroke="#1A161A" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M250 470 q8 -6 14 2 q-6 8 -14 -2 Z" fill="#C43A3A"/>
+      <ellipse cx="284" cy="480" rx="15" ry="12" fill="#F4F0F2" stroke="#1A161A" stroke-width="5"/>
+      <path d="M278 474 L234 522" stroke="#8A5A37" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="231" cy="525" r="6" fill="#D9A93F" stroke="#1A161A" stroke-width="3.5"/>
+      <circle cx="276" cy="472" r="4.5" fill="#D9A93F" stroke="#1A161A" stroke-width="3"/>
+    </g>
+    <g id="armR" data-front="1">
+      <circle id="pivot_armR" cx="378" cy="368" r="0" fill="none"/>
+      <path d="M380 366 C410 372 430 410 438 462 C442 492 430 506 412 502 C390 496 378 460 374 420 C372 396 370 374 380 366 Z" fill="#221E24" stroke="#1A161A" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M420 468 q8 -6 14 2 q-6 8 -14 -2 Z" fill="#C43A3A"/>
+      <ellipse cx="396" cy="480" rx="15" ry="12" fill="#F4F0F2" stroke="#1A161A" stroke-width="5"/>
+    </g>
+  </g>
+  <g id="head">
+    <circle id="pivot_head" cx="340" cy="248" r="0" fill="none"/>
+    <circle id="pivot_neck" cx="340" cy="330" r="0" fill="none"/>
+    <g id="hairBack">
+      <path d="M340 78 C250 78 196 150 202 258 C205 296 218 320 248 328 L432 328 C462 320 475 296 478 258 C484 150 430 78 340 78 Z" fill="#1E1A1E" stroke="#1A161A" stroke-width="8" stroke-linejoin="round"/>
+      <ellipse cx="340" cy="82" rx="44" ry="24" fill="#1E1A1E" stroke="#1A161A" stroke-width="7"/>
+      <g id="swing_bunL" data-k="55" data-damp="0.9" data-fz="0.6" data-fx="0.3">
+        <circle id="pivot_swing_bunL" cx="272" cy="128" r="0" fill="none"/>
+        <path d="M266 148 C230 130 228 92 260 82 C288 74 304 102 292 132 C286 148 276 154 266 148 Z" fill="#4A3A68" stroke="#1A161A" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M246 98 C258 90 272 88 284 94 M240 118 C254 108 272 106 286 112" fill="none" stroke="#8E6AC8" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <g id="swing_bunR" data-k="55" data-damp="0.9" data-fz="0.6" data-fx="0.3">
+        <circle id="pivot_swing_bunR" cx="408" cy="128" r="0" fill="none"/>
+        <path d="M414 148 C450 130 452 92 420 82 C392 74 376 102 388 132 C394 148 404 154 414 148 Z" fill="#4A3A68" stroke="#1A161A" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M434 98 C422 90 408 88 396 94 M440 118 C426 108 408 106 394 112" fill="none" stroke="#8E6AC8" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <path d="M302 70 L274 28 M340 60 L340 16 M378 70 L406 28" stroke="#D9A93F" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="296" cy="80" r="7" fill="#C43A3A" stroke="#1A161A" stroke-width="4"/>
+      <circle cx="384" cy="80" r="7" fill="#C43A3A" stroke="#1A161A" stroke-width="4"/>
+    </g>
+    <g id="face">
+      <rect x="258" y="160" width="164" height="172" rx="56" fill="#F4F0F2" stroke="#1A161A" stroke-width="7"/>
+    </g>
+    <g id="features">
+      <path d="M340 190 l8 10 -8 10 -8 -10 Z" fill="#C43A3A"/>
+      <path id="browL" d="M284 248 Q297 243 310 246" fill="none" stroke="#3A3040" stroke-width="4.5" stroke-linecap="round"/>
+      <path id="browR" d="M370 246 Q383 243 396 248" fill="none" stroke="#3A3040" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M278 258 l-9 -2 M402 258 l9 -2" stroke="#8E6AAE" stroke-width="4" stroke-linecap="round"/>
+      <g id="eyeL">
+        <ellipse cx="297" cy="272" rx="15" ry="16" fill="#fff" stroke="#1A161A" stroke-width="4"/>
+        <g id="irisL">
+          <circle cx="297" cy="273" r="10" fill="#C868A0"/>
+          <circle cx="297" cy="274" r="4.5" fill="#4A2038"/>
+          <circle cx="293" cy="268" r="2.4" fill="#fff"/>
+        </g>
+        <path d="M282 261 L312 259 l5 4" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <path id="eyeLClosed" d="M285 272 Q297 279 309 272" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round" opacity="0"/>
+      <g id="eyeR">
+        <ellipse cx="383" cy="272" rx="15" ry="16" fill="#fff" stroke="#1A161A" stroke-width="4"/>
+        <g id="irisR">
+          <circle cx="383" cy="273" r="10" fill="#C868A0"/>
+          <circle cx="383" cy="274" r="4.5" fill="#4A2038"/>
+          <circle cx="379" cy="268" r="2.4" fill="#fff"/>
+        </g>
+        <path d="M368 259 L398 261 m0 0" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round"/>
+        <path d="M368 259 l-5 4" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <path id="eyeRClosed" d="M371 272 Q383 279 395 272" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round" opacity="0"/>
+      <ellipse id="blushL" cx="276" cy="296" rx="12" ry="6" fill="#E8A0B0" opacity="0.35"/>
+      <ellipse id="blushR" cx="404" cy="296" rx="12" ry="6" fill="#E8A0B0" opacity="0.35"/>
+      <path id="mouthClosed" d="M329 302 Q340 309 352 300" fill="none" stroke="#1A161A" stroke-width="5" stroke-linecap="round"/>
+      <path d="M346 303 l5 8 5 -7" fill="#fff" stroke="#1A161A" stroke-width="3" stroke-linejoin="round"/>
+      <path id="mouthOpen" d="M327 299 Q340 305 353 298 Q349 322 340 323 Q331 322 327 299 Z" fill="#A84450" stroke="#1A161A" stroke-width="5" stroke-linejoin="round" opacity="0"/>
+    </g>
+    <g id="hairFront">
+      <path d="M262 244 C254 152 288 110 340 106 C392 110 426 152 418 244 C406 228 396 200 388 172 C376 198 360 212 348 214 L340 190 L332 214 C320 212 304 198 292 172 C284 200 274 228 262 244 Z" fill="#1E1A1E" stroke="#1A161A" stroke-width="7" stroke-linejoin="round"/>
+    </g>
+  </g>`;
+const CN_QUON_SVG = `
+  <g id="body">
+    <circle id="pivot_body" cx="340" cy="612" r="0" fill="none"/>
+    <g id="swing_tail" data-wag="1" data-k="18" data-damp="0.93">
+      <circle id="pivot_swing_tail" cx="432" cy="474" r="0" fill="none"/>
+      <path d="M446 500 C498 496 528 462 524 424 C520 398 498 390 488 404 C500 428 488 456 450 470 C442 476 440 492 446 500 Z" fill="#4A90D8" stroke="#22242C" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M514 432 C522 416 514 400 498 402 C494 412 500 426 510 432 Z" fill="#F8F6F0" stroke="#22242C" stroke-width="5" stroke-linejoin="round"/>
+    </g>
+    <g id="swing_fireL" data-wag="1" data-k="15" data-damp="0.94" data-front="1">
+      <circle id="pivot_swing_fireL" cx="240" cy="262" r="0" fill="none"/>
+      <path d="M152 202 C142 220 146 236 156 244 C142 248 138 266 148 278 C158 290 178 288 184 274 C196 276 202 264 196 254 C202 244 196 230 186 228 C190 214 176 200 162 202 Z" fill="#DCEFF8" stroke="#90C8E8" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M160 226 C154 238 158 252 168 258 C178 262 188 256 188 246 C188 236 178 228 170 228 Z" fill="#fff" opacity="0.85"/>
+    </g>
+    <g id="swing_fireR" data-wag="1" data-k="17" data-damp="0.94" data-front="1">
+      <circle id="pivot_swing_fireR" cx="470" cy="420" r="0" fill="none"/>
+      <path d="M552 372 C544 388 548 402 556 408 C544 412 540 428 550 438 C558 448 576 446 582 434 C592 436 598 424 592 416 C598 406 592 394 582 392 C586 380 574 368 562 370 Z" fill="#DCEFF8" stroke="#90C8E8" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M560 394 C554 404 558 416 566 420 C574 424 582 418 582 410 C582 402 574 394 566 394 Z" fill="#fff" opacity="0.85"/>
+    </g>
+    <rect x="324" y="322" width="32" height="30" fill="#F8F6F0"/>
+    <rect x="298" y="530" width="26" height="80" rx="11" fill="#6E7078" stroke="#22242C" stroke-width="5"/>
+    <rect x="356" y="530" width="26" height="80" rx="11" fill="#6E7078" stroke="#22242C" stroke-width="5"/>
+    <ellipse cx="311" cy="614" rx="20" ry="9" fill="#55575F" stroke="#22242C" stroke-width="5"/>
+    <ellipse cx="369" cy="614" rx="20" ry="9" fill="#55575F" stroke="#22242C" stroke-width="5"/>
+    <path d="M312 350 L368 350 L374 552 L306 552 Z" fill="#4A6EA8" stroke="#22242C" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M340 344 C300 344 280 358 272 384 C258 430 252 500 254 560 L306 560 C302 490 308 410 340 352 C372 410 378 490 374 560 L426 560 C428 500 422 430 408 384 C400 358 380 344 340 344 Z" fill="#2A2C34" stroke="#22242C" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M316 466 L364 466 L366 484 L314 484 Z" fill="#F1EDE2" stroke="#22242C" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M340 474 L322 490 M340 474 L358 490" stroke="#F1EDE2" stroke-width="7" stroke-linecap="round"/>
+    <path d="M296 352 C312 336 368 336 384 352 C392 366 388 382 372 386 C352 392 328 392 308 386 C292 382 288 366 296 352 Z" fill="#D89040" stroke="#B87428" stroke-width="6" stroke-linejoin="round"/>
+    <g id="swing_scarfTail" data-k="28" data-damp="0.9" data-fz="0.7" data-fx="0.4">
+      <circle id="pivot_swing_scarfTail" cx="302" cy="378" r="0" fill="none"/>
+      <path d="M300 372 C264 386 234 416 222 452 C238 462 272 450 296 420 C306 406 306 386 300 372 Z" fill="#D89040" stroke="#B87428" stroke-width="6" stroke-linejoin="round"/>
+    </g>
+    <g id="armL" data-front="1">
+      <circle id="pivot_armL" cx="302" cy="370" r="0" fill="none"/>
+      <path d="M300 368 C272 374 254 410 248 458 C244 486 256 500 274 496 C294 490 304 456 306 416 C308 394 308 376 300 368 Z" fill="#2A2C34" stroke="#22242C" stroke-width="8" stroke-linejoin="round"/>
+      <ellipse cx="268" cy="480" rx="15" ry="13" fill="#F8F6F0" stroke="#22242C" stroke-width="5"/>
+      <path d="M262 474 v8 M270 473 v9" stroke="#D8CCC4" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g id="armR" data-front="1">
+      <circle id="pivot_armR" cx="378" cy="370" r="0" fill="none"/>
+      <path d="M380 368 C408 374 426 410 432 458 C436 486 424 500 406 496 C386 490 376 456 374 416 C372 394 372 376 380 368 Z" fill="#2A2C34" stroke="#22242C" stroke-width="8" stroke-linejoin="round"/>
+      <ellipse cx="412" cy="480" rx="15" ry="13" fill="#F8F6F0" stroke="#22242C" stroke-width="5"/>
+      <path d="M406 474 v8 M414 473 v9" stroke="#D8CCC4" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g id="head">
+    <circle id="pivot_head" cx="340" cy="248" r="0" fill="none"/>
+    <circle id="pivot_neck" cx="340" cy="330" r="0" fill="none"/>
+    <g id="hairBack">
+      <path d="M268 112 L234 48 L306 86 Z" fill="#4A90D8" stroke="#22242C" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M412 112 L446 48 L374 86 Z" fill="#4A90D8" stroke="#22242C" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M266 104 L246 64 L292 88 Z" fill="#E8C8D0" stroke="#22242C" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M414 104 L434 64 L388 88 Z" fill="#E8C8D0" stroke="#22242C" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M340 72 C246 76 190 152 198 266 C201 300 214 324 244 332 C230 314 224 292 236 288 C252 306 280 312 288 296 C302 320 378 320 392 296 C400 312 428 306 444 288 C456 292 450 314 436 332 C466 324 479 300 482 266 C490 152 434 76 340 72 Z" fill="#4A90D8" stroke="#22242C" stroke-width="8" stroke-linejoin="round"/>
+    </g>
+    <g id="face">
+      <rect x="258" y="160" width="164" height="172" rx="56" fill="#F8F6F0" stroke="#22242C" stroke-width="7"/>
+    </g>
+    <g id="features">
+      <path d="M268 298 l16 -4 M268 308 l16 -4 M412 298 l-16 -4 M412 308 l-16 -4" stroke="#B8BCC4" stroke-width="3.5" stroke-linecap="round"/>
+      <path id="browL" d="M284 250 Q297 244 310 248" fill="none" stroke="#3670B8" stroke-width="5" stroke-linecap="round"/>
+      <path id="browR" d="M370 248 Q383 244 396 250" fill="none" stroke="#3670B8" stroke-width="5" stroke-linecap="round"/>
+      <g id="eyeL">
+        <ellipse cx="297" cy="272" rx="15" ry="17" fill="#fff" stroke="#22242C" stroke-width="4"/>
+        <g id="irisL">
+          <circle cx="297" cy="273" r="10" fill="#E0B048"/>
+          <circle cx="297" cy="274" r="4.5" fill="#3A2A10"/>
+          <circle cx="293" cy="268" r="2.4" fill="#fff"/>
+        </g>
+        <path d="M283 260 Q297 252 311 259" fill="none" stroke="#22242C" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <path id="eyeLClosed" d="M285 272 Q297 280 309 272" fill="none" stroke="#22242C" stroke-width="5" stroke-linecap="round" opacity="0"/>
+      <g id="eyeR">
+        <ellipse cx="383" cy="272" rx="15" ry="17" fill="#fff" stroke="#22242C" stroke-width="4"/>
+        <g id="irisR">
+          <circle cx="383" cy="273" r="10" fill="#5888C8"/>
+          <circle cx="383" cy="274" r="4.5" fill="#182A48"/>
+          <circle cx="379" cy="268" r="2.4" fill="#fff"/>
+        </g>
+        <path d="M369 259 Q383 252 397 260" fill="none" stroke="#22242C" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <path id="eyeRClosed" d="M371 272 Q383 280 395 272" fill="none" stroke="#22242C" stroke-width="5" stroke-linecap="round" opacity="0"/>
+      <ellipse id="blushL" cx="276" cy="294" rx="11" ry="6" fill="#F0A8A8" opacity="0.3"/>
+      <ellipse id="blushR" cx="404" cy="294" rx="11" ry="6" fill="#F0A8A8" opacity="0.3"/>
+      <path id="mouthClosed" d="M328 304 Q340 310 352 302" fill="none" stroke="#22242C" stroke-width="5" stroke-linecap="round"/>
+      <path d="M350 304 l5 9 6 -8" fill="#fff" stroke="#22242C" stroke-width="3" stroke-linejoin="round"/>
+      <path id="mouthOpen" d="M326 301 Q340 306 354 300 Q350 322 340 323 Q330 322 326 301 Z" fill="#96404C" stroke="#22242C" stroke-width="5" stroke-linejoin="round" opacity="0"/>
+    </g>
+    <g id="hairFront">
+      <path d="M256 250 C246 150 286 104 340 100 C394 104 434 150 424 250 L398 236 L404 194 L378 232 L360 198 L348 240 L322 200 L314 240 L292 208 L286 244 L262 252 Z" fill="#4A90D8" stroke="#22242C" stroke-width="7" stroke-linejoin="round"/>
+      <g id="swing_ahoge" data-k="50" data-damp="0.86" data-fz="1.5" data-fx="0.5">
+        <circle id="pivot_swing_ahoge" cx="352" cy="102" r="0" fill="none"/>
+        <path d="M346 104 C340 72 358 44 386 40 C366 56 364 82 372 102 Z" fill="#4A90D8" stroke="#22242C" stroke-width="6" stroke-linejoin="round"/>
+      </g>
+    </g>
+  </g>`;
+
+/* ================================================================
+   キャラ描画エンジン(svg-motion-system.html のリグを移植)
+================================================================ */
+const EXPRESSIONS = {
+  normal:{ browY:0, browA:0,  mouthForm:0.4,  mouthOpen:0,   eyeMul:1,   blush:0.35 },
+  happy: { browY:-3,browA:0,  mouthForm:1,    mouthOpen:0.45,eyeMul:0.12,blush:0.55 },
+  angry: { browY:5, browA:-14,mouthForm:-0.8, mouthOpen:0.1, eyeMul:0.85,blush:0.2  },
+  sad:   { browY:4, browA:10, mouthForm:-0.6, mouthOpen:0,   eyeMul:0.6, blush:0.3  },
+  waku:  { browY:-5,browA:0,  mouthForm:1,    mouthOpen:0.5, eyeMul:1.15,blush:0.6  },
+};
+const MOTIONS = {
+  jump:     {dur:0.7,  fn:(t,o)=>{ o.jumpY = -34*Math.sin(t*Math.PI);
+                                   o.angleY = 10*Math.sin(t*Math.PI);
+                                   o.armL = Math.sin(t*Math.PI)*0.9;
+                                   o.armR = Math.sin(t*Math.PI)*0.9; }},
+  surprise: {dur:1.2,  fn:(t,o)=>{ const p = Math.min(t*6,1)*(t<0.8?1:(1-t)*5);
+                                   o.eyeBoost = 0.25*p; o.browY = -6*p;
+                                   o.mouthOpen = 0.9*p; o.angleY = 8*p; o.jumpY = -8*p;
+                                   o.armL = 0.4*p; o.armR = 0.4*p; }},
+  damage:   {dur:0.8,  fn:(t,o)=>{ const d = 1-t;
+                                   o.angleX = 18*Math.sin(t*40)*d;
+                                   o.angleZ = 10*Math.sin(t*33)*d;
+                                   o.eyeScale = 1-0.92*d; o.browY = 5*d;
+                                   o.mouthOpen = 0.55*d;
+                                   o.jumpY = -4*Math.sin(t*Math.PI); }},
+  joy:      {dur:1.4,  fn:(t,o)=>{ const up = Math.min(t*5, 1, (1-t)*5);
+                                   o.jumpY = -22*Math.abs(Math.sin(t*Math.PI*2))*up;
+                                   o.armL = 0.95*up; o.armR = 0.95*up;
+                                   o.armWigL = 8*Math.sin(t*Math.PI*4)*up;
+                                   o.armWigR = -8*Math.sin(t*Math.PI*4)*up;
+                                   o.mouthOpen = 0.6*up; o.browY = -4*up;
+                                   o.angleZ = 6*Math.sin(t*Math.PI*4)*up; }},
+  down:     {dur:1.8,  fn:(t,o)=>{ const per = Math.min(t*2.5, 1) * (t>0.75 ? (1-t)*4 : 1);
+                                   o.angleY = -18*per; o.angleZ = 5*per;
+                                   o.jumpY = 5*per; o.browY = 5*per;
+                                   o.eyeScale = 1-0.45*per; }},
+  victory:  {dur:1.6,  fn:(t,o)=>{ const up = Math.min(t*5, 1, (1-t)*5);
+                                   o.armR = 1.1*up; o.angleZ = 10*up; o.bodyZ = 4*up;
+                                   o.mouthOpen = 0.5*up; o.browY = -4*up;
+                                   o.jumpY = -8*Math.sin(Math.min(t*2,1)*Math.PI)*up; }},
+  tilt:     {dur:1.4,  fn:(t,o)=>{ o.angleZ = 20*Math.sin(t*Math.PI); o.bodyZ = 4*Math.sin(t*Math.PI); }},
+  lookaround:{dur:2.2, fn:(t,o)=>{ const env = t<0.9 ? 1 : (1-t)*10;
+                                   const sw = Math.sin(t*Math.PI*2)*env;
+                                   o.angleX = 26*sw; o.eyeX = sw;
+                                   o.angleZ = 5*sw; }},
+  bow:      {dur:1.6,  fn:(t,o)=>{ const per = t<0.3 ? t/0.3 : t>0.7 ? (1-t)/0.3 : 1;
+                                   o.angleY = -27*per; o.jumpY = 6*per;
+                                   o.browY = 2*per; }},
+};
+const LOOPS = {
+  yura: t => ({
+    angleZ: 7*Math.sin(t*1.6), bodyZ: 4*Math.sin(t*1.6 - 0.4),
+    angleX: 6*Math.sin(t*0.9), angleY: 3*Math.sin(t*1.1),
+    armL: 0.08 + 0.06*Math.sin(t*1.6), armR: 0.08 + 0.06*Math.sin(t*1.6 + Math.PI),
+  }),
+  walk: t => ({
+    jumpY: -3*Math.abs(Math.sin(t*4)), bodyZ: 2*Math.sin(t*4),
+    angleZ: 2*Math.sin(t*2), angleY: 1.5*Math.sin(t*8),
+    armL: 0.15 + 0.12*Math.sin(t*4), armR: 0.15 + 0.12*Math.sin(t*4 + Math.PI),
+  }),
+  run: t => ({
+    jumpY: -8*Math.abs(Math.sin(t*8)), angleY: -4 + 2*Math.sin(t*16),
+    bodyZ: 3*Math.sin(t*8), angleZ: 3*Math.sin(t*4),
+    armL: 0.35 + 0.3*Math.sin(t*8), armR: 0.35 + 0.3*Math.sin(t*8 + Math.PI),
+  }),
+  cheer: t => ({
+    jumpY: -10*Math.abs(Math.sin(t*3)), angleY: 5,
+    armL: 0.7 + 0.4*Math.sin(t*3), armR: 0.7 + 0.4*Math.sin(t*3 + Math.PI),
+    angleZ: 8*Math.sin(t*1.5), mouthMin: 0.25 + 0.2*Math.sin(t*3),
+  }),
+  tremble: t => ({
+    angleX: 2.2*Math.sin(t*40), angleZ: 1.6*Math.sin(t*47),
+    jumpY: -1, browY: 4, eyeScale: 0.75,
+    armL: 0.1, armR: 0.1,
+  }),
+};
+
+function safeBBox(el){
+  try{ const b = el.getBBox(); if(b) return b; }catch(_){}
+  return {x:0, y:0, width:0, height:0};
+}
+function spring(s, target, k, damp, dt){
+  s.v += (target - s.a) * k * dt;
+  s.v *= Math.pow(damp, dt*60);
+  s.a += s.v * dt;
+}
+
+function createChara(hostEl, svgBody, viewBox){
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("viewBox", viewBox);
+  svg.setAttribute("xmlns", SVGNS);
+  svg.innerHTML = svgBody;
+  hostEl.insertBefore(svg, hostEl.querySelector(".plate"));
+
+  const q = id => svg.querySelector("#" + CSS.escape(id));
+  const wrap = elm => {
+    const w = document.createElementNS(SVGNS, "g");
+    elm.parentNode.insertBefore(w, elm);
+    w.appendChild(elm);
+    return w;
+  };
+
+  const pivots = {};
+  svg.querySelectorAll('[id^="pivot_"]').forEach(m => {
+    pivots[m.id.slice(6)] = [ +m.getAttribute("cx") || 0, +m.getAttribute("cy") || 0 ];
+    m.style.display = "none";
+  });
+  const bboxC = w => { const b = safeBBox(w); return [b.x + b.width/2, b.y + b.height/2]; };
+  const r = {swings:[], eyes:[], brows:[], blush:[]};
+
+  svg.querySelectorAll('[id^="swing_"]').forEach(e => {
+    const name = e.id.slice(6);
+    const w = wrap(e);
+    const p = pivots["swing_" + name] || bboxC(w);
+    r.swings.push({
+      w, p, s:{a:0, v:0},
+      k:    +e.dataset.k    || 40,
+      damp: +e.dataset.damp || 0.9,
+      fz:   +e.dataset.fz   || 0.8,
+      fx:   +e.dataset.fx   || 0.3,
+      wag:    !!e.dataset.wag,
+      twitch: !!e.dataset.twitch,
+    });
+  });
+  ["L","R"].forEach(side => {
+    const e = q("eye" + side);
+    if(!e) return;
+    const w = wrap(e);
+    const b = safeBBox(w);
+    const irisEl = q("iris" + side);
+    r.eyes.push({
+      w, cy: b.y + b.height/2,
+      iris: irisEl ? wrap(irisEl) : null,
+      ampX: b.width * 0.17, ampY: b.height * 0.12,
+      closed: q("eye" + side + "Closed"),
+    });
+  });
+  ["L","R"].forEach((side, i) => {
+    const e = q("brow" + side);
+    if(!e) return;
+    const w = wrap(e);
+    const [cx, cy] = bboxC(w);
+    r.brows.push({w, cx, cy, sign: i === 0 ? -1 : 1});
+  });
+  const mo = q("mouthOpen"), mc = q("mouthClosed");
+  if(mo || mc){
+    const w = mo ? wrap(mo) : null;
+    let topY = 0;
+    if(w){ const b = safeBBox(w); topY = b.y; }
+    r.mouth = {open: w, openEl: mo, closed: mc, topY};
+  }
+  ["blushL","blushR"].forEach(id => { const e = q(id); if(e) r.blush.push(e); });
+
+  const layer = id => { const e = q(id); return e ? wrap(e) : null; };
+  r.hairBack  = layer("hairBack");
+  r.face      = layer("face");
+  r.features  = layer("features");
+  r.hairFront = layer("hairFront");
+
+  const headEl = q("head");
+  if(headEl){
+    const w = wrap(headEl);
+    r.head = {w, p: pivots["head"] || bboxC(w)};
+  }
+  const bodyEl = q("body");
+  if(bodyEl){
+    const w = wrap(bodyEl);
+    const b = safeBBox(w);
+    r.body = {w, p: pivots["body"] || [b.x + b.width/2, b.y + b.height]};
+  }
+  ["L","R"].forEach(side => {
+    const e = q("arm" + side);
+    if(!e) return;
+    const w = wrap(e);
+    const b = safeBBox(w);
+    r["arm" + side] = {w, p: pivots["arm" + side] || [b.x + b.width/2, b.y]};
+  });
+
+  const cur = {angleX:0, angleY:0, angleZ:0, eyeOpen:1, eyeX:0, eyeY:0,
+               mouthOpen:0, mouthForm:0.4, bodyZ:0, armL:0, armR:0};
+  const tgt = {...cur};
+  let exp = EXPRESSIONS.normal;
+  let motion = null, loopKey = null, loopT = 0, idleT = Math.random()*10;
+  let blinkT = 0, nextBlink = 1.5 + Math.random()*3;
+  const gaze = {x:0, y:0};
+
+  function blinkValue(dt){
+    nextBlink -= dt;
+    if(nextBlink <= 0 && blinkT <= 0){
+      blinkT = 0.28;
+      nextBlink = Math.random() < 0.22 ? 0.34 : 1.5 + Math.random()*4;
+    }
+    if(blinkT > 0){
+      blinkT -= dt;
+      const p = 1 - Math.max(blinkT,0)/0.28;
+      return p < .5 ? 1 - p*2 : (p-.5)*2;
+    }
+    return null;
+  }
+
+  function update(dt){
+    idleT += dt;
+    tgt.angleX = gaze.x * 28;
+    tgt.angleY = -gaze.y * 24;
+    tgt.eyeX = gaze.x;
+    tgt.eyeY = gaze.y;
+    tgt.bodyZ = gaze.x * 5;
+    tgt.angleZ = Math.sin(idleT*0.7)*3;
+    const breath = (Math.sin(idleT*1.6)+1)/2;
+
+    const off = {};
+    if(motion){
+      motion.t += dt/motion.dur;
+      if(motion.t >= 1) motion = null;
+      else motion.fn(motion.t, off);
+    }
+    let lo = {};
+    if(loopKey){ loopT += dt; lo = LOOPS[loopKey](loopT); }
+
+    const ease = 1 - Math.pow(0.0015, dt);
+    for(const k in cur) cur[k] += (tgt[k] - cur[k]) * ease;
+
+    const v = {...cur};
+    ["angleX","angleY","angleZ","bodyZ","armL","armR","eyeX","eyeY"].forEach(k => {
+      v[k] += (off[k] || 0) + (lo[k] || 0);
+    });
+    v.eyeX = clamp(v.eyeX, -1, 1);
+    v.eyeY = clamp(v.eyeY, -1, 1);
+    v.armL = clamp(v.armL, -0.6, 1.3);
+    v.armR = clamp(v.armR, -0.6, 1.3);
+
+    let eyeOpen = v.eyeOpen * exp.eyeMul + (off.eyeBoost || 0);
+    const blink = blinkValue(dt);
+    if(blink !== null) eyeOpen *= blink;
+    if(off.eyeScale !== undefined) eyeOpen *= off.eyeScale;
+    if(lo.eyeScale  !== undefined) eyeOpen *= lo.eyeScale;
+    eyeOpen = clamp(eyeOpen, 0, 1.25);
+
+    const mouthOpen = clamp(Math.max(
+      v.mouthOpen,
+      exp.mouthOpen*0.6 + v.mouthOpen*0.4,
+      off.mouthOpen || 0,
+      lo.mouthMin || 0
+    ), 0, 1);
+    const browY = exp.browY + (off.browY || 0) + (lo.browY || 0);
+    const browA = exp.browA;
+
+    const jy = (off.jumpY || 0) + (lo.jumpY || 0);
+    const brY = -breath*3;
+    if(r.body){
+      const s = 1 + breath*0.012;
+      const [px, py] = r.body.p;
+      r.body.w.setAttribute("transform",
+        `translate(0,${jy + brY*0.6}) rotate(${v.bodyZ} ${px} ${py}) translate(0,${py*(1-s)}) scale(1,${s})`);
+    }
+    if(r.head){
+      const [px, py] = r.head.p;
+      r.head.w.setAttribute("transform",
+        `translate(${v.angleX*0.9},${-v.angleY*0.7 + jy + brY}) rotate(${v.angleZ} ${px} ${py})`);
+    }
+    if(r.hairBack)  r.hairBack.setAttribute("transform",  `translate(${-v.angleX*0.35},${v.angleY*0.22})`);
+    if(r.face)      r.face.setAttribute("transform",      `translate(${-v.angleX*0.10},${v.angleY*0.06})`);
+    if(r.features)  r.features.setAttribute("transform",  `translate(${v.angleX*0.45},${-v.angleY*0.30})`);
+    if(r.hairFront) r.hairFront.setAttribute("transform", `translate(${v.angleX*0.18},${-v.angleY*0.12})`);
+
+    const closedEye = eyeOpen < 0.15;
+    r.eyes.forEach(eye => {
+      const sy = Math.max(eyeOpen, eye.closed ? 0.02 : 0.06);
+      eye.w.setAttribute("transform", `translate(0,${eye.cy*(1-sy)}) scale(1,${sy})`);
+      if(eye.closed){
+        eye.w.style.opacity = closedEye ? 0 : 1;
+        eye.closed.style.opacity = closedEye ? 1 : 0;
+      }
+      if(eye.iris) eye.iris.setAttribute("transform",
+        `translate(${v.eyeX*eye.ampX},${v.eyeY*eye.ampY})`);
+    });
+    r.brows.forEach(b => {
+      b.w.setAttribute("transform", `translate(0,${browY}) rotate(${b.sign*browA} ${b.cx} ${b.cy})`);
+    });
+    if(r.mouth){
+      const opened = mouthOpen >= 0.06;
+      if(r.mouth.closed) r.mouth.closed.style.opacity = opened ? 0 : 1;
+      if(r.mouth.open){
+        r.mouth.openEl.style.opacity = opened ? 1 : 0;
+        const s = Math.max(mouthOpen, 0.1);
+        r.mouth.open.setAttribute("transform",
+          `translate(0,${r.mouth.topY*(1-s)}) scale(1,${s})`);
+      }
+    }
+    r.blush.forEach(b => b.style.opacity = exp.blush);
+    if(r.armL){
+      const deg = v.armL*150 - ((off.armWigL || 0) + (lo.armWigL || 0));
+      r.armL.w.setAttribute("transform", `rotate(${deg} ${r.armL.p[0]} ${r.armL.p[1]})`);
+    }
+    if(r.armR){
+      const deg = -v.armR*150 + ((off.armWigR || 0) + (lo.armWigR || 0));
+      r.armR.w.setAttribute("transform", `rotate(${deg} ${r.armR.p[0]} ${r.armR.p[1]})`);
+    }
+    r.swings.forEach(p => {
+      let target;
+      if(p.wag){
+        target = -v.bodyZ*2 + Math.sin(idleT*2.2)*12;
+      }else{
+        target = -v.angleZ*p.fz - v.angleX*p.fx;
+        if(p.twitch && Math.random() < dt*0.35) p.s.v += 90*(Math.random()-0.5);
+      }
+      spring(p.s, target, p.k, p.damp, dt);
+      p.w.setAttribute("transform", `rotate(${p.s.a} ${p.p[0]} ${p.p[1]})`);
+    });
+  }
+
+  return {
+    update,
+    motion(name){ if(MOTIONS[name]) motion = {t:0, ...MOTIONS[name]}; },
+    loop(name){ if(loopKey === name) return; loopKey = LOOPS[name] ? name : null; loopT = 0; },
+    expression(name){ if(EXPRESSIONS[name]) exp = EXPRESSIONS[name]; },
+    look(x, y){ gaze.x = clamp(x, -1, 1); gaze.y = clamp(y, -1, 1); },
+    face(dir){ svg.style.transform = dir === "left" ? "scaleX(-1)" : ""; },
+  };
+}
+
+/* ================================================================
+   効果音
+================================================================ */
+let ac = null;
+const tone = (f, dur=0.09, type="square", vol=0.05, when=0) => {
+  if(!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(vol, ac.currentTime + when);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + when + dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(ac.currentTime + when); o.stop(ac.currentTime + when + dur + 0.02);
+};
+const seCount = () => tone(660, 0.08, "square", 0.05);
+const seGo    = () => { tone(520, 0.08); tone(780, 0.14, "square", 0.06, 0.09); };
+const seRustle= () => { for(let i=0;i<4;i++) tone(180+Math.random()*160, 0.05, "sawtooth", 0.035, i*0.05); };
+const seMiss  = () => tone(240, 0.18, "triangle", 0.06);
+const seFound = () => { tone(660, 0.1); tone(880, 0.12, "square", 0.06, 0.1); tone(1100, 0.16, "square", 0.06, 0.22); };
+const seWin   = () => [523,659,784,1046].forEach((f,i)=>tone(f,0.15,"triangle",0.06,i*0.1));
+const seLose  = () => [392,330,262,196].forEach((f,i)=>tone(f,0.18,"triangle",0.06,i*0.12));
+document.addEventListener("pointerdown", () => {
+  if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(_){} }
+}, {once:true});
+
+/* ================================================================
+   ステージ:星・かくれ場所
+================================================================ */
+const field = $("field");
+for(let i = 0; i < 24; i++){
+  const s = document.createElement("div");
+  s.className = "star";
+  s.style.left = Math.random()*100 + "%";
+  s.style.top = Math.random()*30 + "%";
+  s.style.opacity = 0.25 + Math.random()*0.55;
+  $("sky").appendChild(s);
+}
+const SPOTS = [
+  {fx:0.10, fy:0.60, emoji:"🌳", size:150, name:"大きな木"},
+  {fx:0.31, fy:0.24, emoji:"🌲", size:140, name:"松の木"},
+  {fx:0.52, fy:0.74, emoji:"🪨", size:118, name:"岩"},
+  {fx:0.72, fy:0.28, emoji:"🗿", size:118, name:"石像"},
+  {fx:0.90, fy:0.62, emoji:"🎍", size:132, name:"竹かざり"},
+];
+SPOTS.forEach((sp, i) => {
+  const el = document.createElement("div");
+  el.className = "spot";
+  el.style.fontSize = sp.size + "px";
+  el.innerHTML = `<div class="base"></div>${sp.emoji}<div class="mark">❌</div>`;
+  el.addEventListener("click", () => onSpotClick(i));
+  field.appendChild(el);
+  sp.el = el;
+  sp.i = i;
+});
+
+const play = {x0:0, x1:0, y0:0, y1:0, w:0, h:0};
+function layout(){
+  const W = innerWidth, H = innerHeight;
+  play.x0 = 40; play.x1 = W - 40;
+  play.y0 = H*0.44; play.y1 = H - 30;
+  play.w = play.x1 - play.x0; play.h = play.y1 - play.y0;
+  SPOTS.forEach(sp => {
+    sp.x = play.x0 + sp.fx*play.w;
+    sp.y = play.y0 + sp.fy*play.h;
+    sp.el.style.left = sp.x + "px";
+    sp.el.style.top = sp.y + "px";
+    sp.el.style.zIndex = Math.round(sp.y);
+  });
+}
+addEventListener("resize", layout);
+layout();
+
+/* ================================================================
+   アクター
+================================================================ */
+function makeActor(el, svgBody, jaName){
+  return {
+    el, jaName,
+    chara: createChara(el, svgBody, "0 0 680 660"),
+    bubbleEl: el.querySelector(".bubble"),
+    x:0, y:0,
+    target:null,              /* {x,y,speed,res} */
+    hiddenAt:null,            /* SPOT or null */
+    peek:0, peekDir:1,        /* かくれ中の顔出し(0〜1) */
+    curLoop:"__none", curFace:"",
+  };
+}
+const A = makeActor($("actorA"), CN_SASAGANE_SVG, "ささがね");
+const B = makeActor($("actorB"), CN_QUON_SVG, "クオン");
+const ACTORS = [A, B];
+
+function setLoop(a, name){
+  if(a.curLoop === name) return;
+  a.curLoop = name;
+  a.chara.loop(name);
+}
+function setFace(a, dir){
+  if(a.curFace === dir) return;
+  a.curFace = dir;
+  a.chara.face(dir);
+}
+function say(a, text, ms = 1400){
+  a.bubbleEl.textContent = text;
+  a.bubbleEl.classList.add("show");
+  clearTimeout(a.bubbleTimer);
+  a.bubbleTimer = setTimeout(() => a.bubbleEl.classList.remove("show"), ms);
+}
+function render(a){
+  if(a.hiddenAt){
+    const sp = a.hiddenAt;
+    const slide = a.peek * 52 * a.peekDir;      /* 顔出しの横スライド */
+    a.el.style.transform =
+      `translate(${sp.x - 84 + slide}px, ${sp.y - 200}px) scale(0.52)`;
+    a.el.style.zIndex = Math.round(sp.y) - 1;   /* 物かげ(奥) */
+    return;
+  }
+  const t = (a.y - play.y0) / Math.max(play.h, 1);
+  const s = 0.62 + 0.42*clamp(t, 0, 1);
+  a.el.style.transform = `translate(${a.x - 84}px, ${a.y - 216}px) scale(${s})`;
+  a.el.style.zIndex = Math.round(a.y);
+}
+function moveTo(a, x, y, speed = 300){
+  return new Promise(res => {
+    if(a.target) a.target.res();
+    a.target = {x, y, speed, res};
+    setLoop(a, speed > 250 ? "run" : "walk");
+    setFace(a, x < a.x ? "left" : "right");
+  });
+}
+function hideActorAt(a, spot, visible){
+  a.hiddenAt = spot;
+  a.peek = 0;
+  a.peekDir = spot.fx > 0.5 ? -1 : 1;           /* 画面の内側へ顔を出す */
+  a.el.classList.toggle("hiddenChar", !visible);
+  setLoop(a, null);
+  setFace(a, a.peekDir < 0 ? "left" : "right");
+  render(a);
+}
+function unhideActor(a){
+  if(!a.hiddenAt) return;
+  a.x = a.hiddenAt.x;
+  a.y = a.hiddenAt.y + 10;
+  a.hiddenAt = null;
+  a.peek = 0;
+  a.el.classList.remove("hiddenChar");
+  render(a);
+}
+
+/* ================================================================
+   HUD・演出
+================================================================ */
+const N_ROUNDS = 5;
+let roundResults = [];         /* "p" | "c" */
+function drawRounds(cur){
+  $("rounds").innerHTML = "";
+  for(let i = 0; i < N_ROUNDS; i++){
+    const d = document.createElement("div");
+    d.className = "rpip" +
+      (roundResults[i] === "p" ? " pwin" : roundResults[i] === "c" ? " cwin" : "") +
+      (i === cur ? " cur" : "");
+    $("rounds").appendChild(d);
+  }
+}
+function status(html){ $("status").innerHTML = html; }
+function call(text, red){
+  const fx = $("fx");
+  fx.classList.remove("pop");
+  fx.classList.toggle("red", !!red);
+  void fx.offsetWidth;
+  fx.textContent = text;
+  fx.classList.add("pop");
+}
+function clearCall(){ $("fx").classList.remove("pop"); }
+async function blindCount(text, from = 3){
+  $("blindText").textContent = text;
+  $("blind").classList.add("show");
+  for(let i = from; i >= 1; i--){
+    $("blindCnt").textContent = i;
+    seCount();
+    await sleep(600);
+  }
+  $("blindCnt").textContent = "";
+  $("blind").classList.remove("show");
+  seGo();
+}
+
+/* ================================================================
+   ゲーム進行
+================================================================ */
+let state = "menu";            /* menu | playing */
+let myKey = "quon";
+let player, cpu;
+let roundIdx = 0;
+let seekResolve = null;        /* プレイヤー探索のクリック待ち */
+let seekTries = 0, seekTimeLeft = 0, seekTimerOn = false;
+let lastPlayerHide = -1;
+
+document.querySelectorAll(".pick").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".pick").forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel");
+    myKey = b.dataset.me;
+  });
+});
+$("goBtn").addEventListener("click", startMatch);
+
+const homeP = () => ({x: play.x0 + play.w*0.20, y: play.y1 - 14});
+const homeC = () => ({x: play.x0 + play.w*0.80, y: play.y1 - 14});
+
+async function startMatch(){
+  $("overlay").classList.add("hidden");
+  $("resultText").style.display = "none";
+  $("resultSub").style.display = "none";
+  $("ruleText").style.display = "";
+
+  player = myKey === "quon" ? B : A;
+  cpu    = player === A ? B : A;
+  roundResults = [];
+  roundIdx = 0;
+  lastPlayerHide = -1;
+  SPOTS.forEach(sp => sp.el.classList.remove("checked", "pickable"));
+
+  ACTORS.forEach(a => {
+    a.hiddenAt = null; a.peek = 0;
+    a.el.classList.remove("hiddenChar");
+    a.chara.expression("normal");
+    setLoop(a, null);
+  });
+  const hp = homeP(), hc = homeC();
+  player.x = hp.x; player.y = hp.y;
+  cpu.x = hc.x; cpu.y = hc.y;
+  setFace(player, "right"); setFace(cpu, "left");
+  render(player); render(cpu);
+
+  state = "playing";
+  nextRound();
+}
+
+async function nextRound(){
+  if(roundIdx >= N_ROUNDS){ return endMatch(); }
+  drawRounds(roundIdx);
+  const playerSeeks = roundIdx % 2 === 0;     /* 1,3,5R=さがす番 */
+  /* ホームへ戻す */
+  SPOTS.forEach(sp => sp.el.classList.remove("checked", "pickable"));
+  ACTORS.forEach(a => unhideActor(a));
+  const hp = homeP(), hc = homeC();
+  await Promise.all([moveTo(player, hp.x, hp.y, 340), moveTo(cpu, hc.x, hc.y, 340)]);
+  setLoop(player, null); setLoop(cpu, null);
+  setFace(player, "right"); setFace(cpu, "left");
+  player.chara.expression("normal"); cpu.chara.expression("normal");
+
+  call(`ラウンド ${roundIdx + 1}`);
+  await sleep(1000);
+  clearCall();
+  if(playerSeeks) await roundPlayerSeeks();
+  else await roundPlayerHides();
+  roundIdx++;
+  await sleep(400);
+  nextRound();
+}
+
+/* ---------------- あなたがさがす番 ---------------- */
+async function roundPlayerSeeks(){
+  status(`きみが<span class="oniC">鬼</span>! ${cpu.jaName}をさがせ`);
+  say(cpu, "かくれるよ〜!");
+  cpu.chara.expression("waku");
+  cpu.chara.motion("jump");
+  await sleep(1100);
+
+  /* 目かくし中にCPUがかくれる */
+  const spot = rand(SPOTS);
+  say(player, "もういいかい?", 1800);
+  player.chara.look(0, 1);                    /* 下を向いて目かくし */
+  await sleep(500);
+  const blindP = blindCount("もういいかい…?");
+  await sleep(350);
+  hideActorAt(cpu, spot, false);              /* 完全に見えなくする */
+  await blindP;
+  player.chara.look(0, 0);
+  say(cpu, "もういいよ!", 1200);
+
+  /* 探索フェーズ */
+  seekTries = 2;
+  seekTimeLeft = 20;
+  seekTimerOn = true;
+  $("seekInfo").style.display = "";
+  updateSeekInfo();
+  document.body.classList.add("seeking");
+  SPOTS.forEach(sp => sp.el.classList.add("pickable"));
+
+  /* CPUの顔出しスケジュール */
+  let peeking = true;
+  (async () => {
+    await sleep(1600);
+    while(peeking && cpu.hiddenAt){
+      if(Math.random() < 0.45){
+        /* ガサガサ */
+        spot.el.classList.remove("shake"); void spot.el.offsetWidth;
+        spot.el.classList.add("shake");
+        seRustle();
+      }else{
+        /* ひょこっと顔を出す */
+        cpu.el.classList.remove("hiddenChar");
+        for(let t = 0; t <= 1 && cpu.hiddenAt; t += 0.1){
+          cpu.peek = Math.sin(t*Math.PI);
+          render(cpu);
+          await sleep(45);
+        }
+        cpu.peek = 0;
+        if(cpu.hiddenAt){ cpu.el.classList.add("hiddenChar"); render(cpu); }
+      }
+      await sleep(1800 + Math.random()*1800);
+    }
+  })();
+
+  /* クリック or タイムアップを待つ */
+  const found = await new Promise(res => {
+    seekResolve = (spotIdx) => {
+      if(spotIdx === -1){ res(false); return; }          /* 時間切れ */
+      const sp = SPOTS[spotIdx];
+      if(sp.el.classList.contains("checked")) return;    /* 調べた場所 */
+      if(sp === spot){ res(true); return; }
+      /* はずれ */
+      sp.el.classList.add("checked");
+      sp.el.classList.remove("shake"); void sp.el.offsetWidth;
+      sp.el.classList.add("shake");
+      seMiss();
+      say(player, "いない…");
+      player.chara.motion("tilt");
+      seekTries--;
+      updateSeekInfo();
+      if(seekTries <= 0) res(false);
+    };
+  });
+  peeking = false;
+  seekTimerOn = false;
+  seekResolve = null;
+  document.body.classList.remove("seeking");
+  $("seekInfo").style.display = "none";
+  SPOTS.forEach(sp => sp.el.classList.remove("pickable"));
+
+  /* 結果 */
+  unhideActor(cpu);
+  if(found){
+    call("みーつけた!");
+    seFound();
+    cpu.chara.motion("surprise");
+    cpu.chara.expression("sad");
+    player.chara.motion("victory");
+    player.chara.expression("happy");
+    say(cpu, "みつかっちゃった〜");
+    roundResults[roundIdx] = "p";
+  }else{
+    call("みつからなかった…", true);
+    seLose();
+    cpu.chara.motion("joy");
+    cpu.chara.expression("happy");
+    player.chara.motion("down");
+    player.chara.expression("sad");
+    say(cpu, "ここだよ〜だ!");
+    roundResults[roundIdx] = "c";
+  }
+  drawRounds(-1);
+  await sleep(1900);
+  clearCall();
+}
+function updateSeekInfo(){
+  $("seekInfo").innerHTML =
+    `のこり <b class="${seekTimeLeft <= 5 ? "warn" : ""}">${Math.ceil(seekTimeLeft)}</b> 秒 / しらべられる回数 <b>${seekTries}</b> 回`;
+}
+function onSpotClick(i){
+  if(seekResolve) seekResolve(i);
+}
+
+/* ---------------- あなたがかくれる番 ---------------- */
+async function roundPlayerHides(){
+  status(`${cpu.jaName}が<span class="oniC">鬼</span>! かくれる場所をタップ!`);
+  say(cpu, "10かぞえるよ!");
+  cpu.chara.look(0, 1);
+  cpu.chara.expression("normal");
+
+  /* かくれ場所の選択を待つ */
+  document.body.classList.add("seeking");     /* spotをタップ可能に */
+  SPOTS.forEach(sp => sp.el.classList.add("pickable"));
+  const myIdx = await new Promise(res => { seekResolve = res; });
+  seekResolve = null;
+  document.body.classList.remove("seeking");
+  SPOTS.forEach(sp => sp.el.classList.remove("pickable"));
+  const mySpot = SPOTS[myIdx];
+
+  /* 走ってかくれる */
+  say(player, "よし、ここだ!");
+  await moveTo(player, mySpot.x, mySpot.y + 8, 380);
+  hideActorAt(player, mySpot, true);          /* 自分にはうっすら見える */
+  await blindCount("まあだだよ…");
+  say(cpu, "もういいかい? …さがすよ!", 1500);
+  cpu.chara.look(0, 0);
+  cpu.chara.expression("waku");
+  status(`${cpu.jaName}がさがしてる…! みつかるな!`);
+
+  /* CPUは2か所しらべる。前回と同じ場所は読まれやすい */
+  const picks = [];
+  const pool = SPOTS.map(sp => sp.i);
+  const readPrev = myIdx === lastPlayerHide && Math.random() < 0.7;
+  if(readPrev) picks.push(myIdx);             /* 「またここでしょ?」 */
+  while(picks.length < 2){
+    const c = rand(pool.filter(i => !picks.includes(i)));
+    picks.push(c);
+  }
+  lastPlayerHide = myIdx;
+
+  let caught = false;
+  for(let n = 0; n < picks.length && !caught; n++){
+    const sp = SPOTS[picks[n]];
+    await moveTo(cpu, sp.x + (sp.fx > 0.5 ? -95 : 95), sp.y + 6, 260);
+    setLoop(cpu, null);
+    setFace(cpu, sp.x < cpu.x ? "left" : "right");
+    cpu.chara.motion("lookaround");
+    say(cpu, readPrev && n === 0 ? "またここでしょ〜?" : "ここかな…?");
+    tone(330, 0.3, "triangle", 0.05);
+    await sleep(1500);
+    sp.el.classList.remove("shake"); void sp.el.offsetWidth;
+    sp.el.classList.add("shake");
+    seRustle();
+    await sleep(650);
+    if(sp === mySpot){
+      caught = true;
+    }else{
+      sp.el.classList.add("checked");
+      say(cpu, "いないなぁ");
+      cpu.chara.motion("tilt");
+      seMiss();
+      await sleep(900);
+    }
+  }
+
+  unhideActor(player);
+  if(caught){
+    call("みつかった!", true);
+    seLose();
+    player.chara.motion("damage");
+    player.chara.expression("sad");
+    cpu.chara.motion("victory");
+    cpu.chara.expression("happy");
+    say(cpu, "みーつけた!");
+    roundResults[roundIdx] = "c";
+  }else{
+    await moveTo(cpu, play.x0 + play.w*0.5, play.y0 + play.h*0.5, 260);
+    setLoop(cpu, null);
+    call("にげきった!");
+    seWin();
+    player.chara.motion("joy");
+    player.chara.expression("happy");
+    say(player, "もういいよ〜! こっちこっち!");
+    cpu.chara.motion("surprise");
+    cpu.chara.expression("sad");
+    roundResults[roundIdx] = "p";
+  }
+  drawRounds(-1);
+  await sleep(1900);
+  clearCall();
+}
+
+/* ---------------- 試合終了 ---------------- */
+async function endMatch(){
+  state = "end";
+  drawRounds(-1);
+  const pWins = roundResults.filter(x => x === "p").length;
+  const cWins = N_ROUNDS - pWins;
+  const playerWon = pWins > cWins;
+
+  const winner = playerWon ? player : cpu;
+  const loser  = playerWon ? cpu : player;
+  const hp = homeP(), hc = homeC();
+  await Promise.all([moveTo(player, hp.x, hp.y, 320), moveTo(cpu, hc.x, hc.y, 320)]);
+  setLoop(player, null); setLoop(cpu, null);
+  setFace(player, "right"); setFace(cpu, "left");
+  winner.chara.loop("cheer");
+  winner.chara.expression("happy");
+  loser.chara.motion("down");
+  loser.chara.expression("sad");
+  setTimeout(() => loser.chara.loop("tremble"), 1900);
+  call(playerWon ? "🌙 かくれんぼ名人!" : "しゅぎょうが足りぬ…", !playerWon);
+  (playerWon ? seWin : seLose)();
+  status("けっか発表!");
+
+  setTimeout(() => {
+    const rt = $("resultText"), rs = $("resultSub");
+    rt.textContent = playerWon ? `🎉 ${pWins} - ${cWins} で勝ち!` : `${pWins} - ${cWins} で負け…`;
+    rt.style.color = playerWon ? "var(--gold)" : "var(--oni)";
+    rs.innerHTML = playerWon
+      ? `${loser.jaName}「つぎは負けないんだから!」`
+      : `${winner.jaName}「まだまだ甘いね〜」`;
+    $("overlay").classList.remove("hidden");
+    rt.style.display = ""; rs.style.display = "";
+    $("ruleText").style.display = "none";
+    $("goBtn").textContent = "もう一回!";
+  }, 1900);
+}
+
+/* ================================================================
+   メインループ(移動・顔出し・タイマー)
+================================================================ */
+let last = performance.now();
+function frameLoop(t){
+  const dt = Math.min((t - last)/1000, 0.05);
+  last = t;
+
+  ACTORS.forEach(a => {
+    a.chara.update(dt);
+    if(a.target){
+      const dx = a.target.x - a.x, dy = a.target.y - a.y;
+      const d = Math.hypot(dx, dy);
+      const step = a.target.speed * dt;
+      if(d <= step){
+        a.x = a.target.x; a.y = a.target.y;
+        const res = a.target.res;
+        a.target = null;
+        setLoop(a, null);
+        res();
+      }else{
+        a.x += dx/d * step;
+        a.y += dy/d * step;
+      }
+      render(a);
+    }
+  });
+
+  if(seekTimerOn){
+    seekTimeLeft -= dt;
+    updateSeekInfo();
+    if(seekTimeLeft <= 0 && seekResolve){
+      seekTimerOn = false;
+      seekResolve(-1);
+    }
+  }
+  requestAnimationFrame(frameLoop);
+}
+
+/* メニュー用初期配置 */
+function menuPose(){
+  A.x = play.x0 + play.w*0.32; A.y = play.y0 + play.h*0.55;
+  B.x = play.x0 + play.w*0.68; B.y = play.y0 + play.h*0.55;
+  setFace(A, "right"); setFace(B, "left");
+  setLoop(A, "yura"); setLoop(B, "yura");
+  render(A); render(B);
+  drawRounds(-1);
+  status("かくれんぼで勝負!");
+}
+menuPose();
+requestAnimationFrame(frameLoop);
+</script>
+</body>
+</html>
