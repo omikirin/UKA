@@ -303,6 +303,7 @@
     <div class="card">
       <button class="btn end wide" id="endTurnBtn">ターン終了 ▸</button>
       <button class="btn wide" id="debugSkip" style="margin-top:8px; opacity:.55; font-size:11px;">おわりから（三幕クリア後・デバッグ）</button>
+      <button class="btn wide" id="debugSkip3" style="margin-top:6px; opacity:.55; font-size:11px;">三章から（デバッグ）</button>
     </div>
 
     <div class="card">
@@ -338,6 +339,7 @@
   <div class="kanji" id="overlayKanji">勝</div>
   <div class="msg" id="overlayMsg"></div>
   <button id="restartBtn">もう一戦</button>
+  <button id="restartBtn2" style="display:none; margin-left:12px;">最初から</button>
 </div></div>
 
 <script>
@@ -514,7 +516,7 @@ const STAGES=[
   },
   { // ═══ 第二章 ═══ 朧月の峠（往来可・再戦可）
     title:"朧月の峠",
-    ch2:true, next:null, item:{x:4,y:0},
+    ch:2, ch2:true, next:null, item:{x:4,y:0},
     intro:"月を隠す妖霧の峠。夜盗あがりの忍「朧火」が関を塞ぐ。",
     bossName:"朧火",
     buff:{hp:1.8, atk:1.35},
@@ -540,7 +542,7 @@ const STAGES=[
   },
   { // 第二章 亡霊の沼（往来可・再戦可）
     title:"亡霊の沼",
-    ch2:true, next:null, item:{x:8,y:4},
+    ch:2, ch2:true, next:null, item:{x:8,y:4},
     intro:"沈んだ兵の怨嗟が漂う泥の海。腐蝕の主「ロトン」が獲物を待つ。",
     bossName:"ロトン",
     buff:{hp:1.9, atk:1.4},
@@ -566,7 +568,7 @@ const STAGES=[
   },
   { // 第二章 最終決戦（峠と沼を制すると開放）
     title:"月下の魔城",
-    ch2:true, ch2Final:true, next:null, item:null,
+    ch:2, chFinal:true, ch2:true, ch2Final:true, next:null, item:null,
     intro:"常闇が月を呑む刻、魔城の主が玉座から立つ。すべてを終わらせる最後の戦い。",
     bossName:"常闇ノ皇",
     buff:{hp:2.3, atk:1.5},
@@ -592,8 +594,116 @@ const STAGES=[
       ["genjutsu","傀儡師・影繰",4,1],
     ],
   },
+  { // ═══ 第三章 ═══ 彼岸の雪原
+    title:"彼岸の雪原",
+    ch:3, next:null, item:{x:4,y:6},
+    intro:"常世ノ門より漏れ出た死者の吹雪。骨の巨兵「白骸」が門前を固める。",
+    bossName:"白骸",
+    buff:{hp:2.6, atk:1.6},
+    terrain:[
+      [1,0,0,3,0,3,0,0,1],
+      [0,0,0,0,0,0,0,0,0],
+      [0,2,2,0,1,0,2,2,0],
+      [0,0,0,0,0,0,0,0,0],
+      [1,0,0,2,2,2,0,0,1],
+      [0,0,0,0,0,0,0,0,0],
+      [0,1,0,0,0,0,0,1,0],
+      [0,0,0,0,0,0,0,0,0],
+    ],
+    foes:[
+      ["oni","白骸",4,0,true],
+      ["oni","骨兵・肋",2,1],
+      ["oni","骨兵・脛",6,1],
+      ["slash","骨剣士・髄",4,2],
+      ["karasu","死出烏・一",0,2],
+      ["karasu","死出烏・二",8,2],
+      ["throw","骨手裏剣・零",3,0],
+      ["throw","骨手裏剣・壱",5,0],
+    ],
+  },
+  { // 第三章 灼熱の火口
+    title:"灼熱の火口",
+    ch:3, next:null, item:{x:0,y:0},
+    intro:"常世の炎が噴き上がる火口。焔の化身「焔王グレン」が滾っている。",
+    bossName:"焔王グレン",
+    buff:{hp:2.7, atk:1.7},
+    terrain:[
+      [0,0,0,2,2,2,0,0,0],
+      [0,3,0,0,2,0,0,3,0],
+      [0,0,0,0,0,0,0,0,0],
+      [2,0,0,1,0,1,0,0,2],
+      [2,2,0,0,0,0,0,2,2],
+      [0,0,0,1,0,1,0,0,0],
+      [0,3,0,0,0,0,0,3,0],
+      [0,0,0,0,0,0,0,0,0],
+    ],
+    foes:[
+      ["taisho","焔王グレン",4,0,true],
+      ["oni","焔鬼・燃",2,1],
+      ["oni","焔鬼・燼",6,1],
+      ["slash","火剣士・熾",1,3],
+      ["slash","火剣士・熔",7,3],
+      ["genjutsu","陽炎遣い・翳",4,1],
+      ["throw","火薬手裏剣・爆",3,2],
+      ["throw","火薬手裏剣・轟",5,2],
+    ],
+  },
+  { // 第三章 最終決戦
+    title:"常世ノ門",
+    ch:3, chFinal:true, next:null, item:null,
+    intro:"開かれた門の奥、終焉ノ神が待つ。この戦いの果てに、すべての夜明けがある。",
+    bossName:"終焉ノ神・ヨミ",
+    buff:{hp:3.2, atk:1.85},
+    terrain:[
+      [3,3,0,2,0,2,0,3,3],
+      [3,0,0,0,0,0,0,0,3],
+      [0,0,1,0,0,0,1,0,0],
+      [2,0,0,0,0,0,0,0,2],
+      [0,0,0,2,0,2,0,0,0],
+      [0,1,0,0,0,0,0,1,0],
+      [0,0,0,0,0,0,0,0,0],
+      [3,0,0,0,0,0,0,0,3],
+    ],
+    foes:[
+      ["taisho","終焉ノ神・ヨミ",4,0,true],
+      ["oni","終兵・幽",2,1],
+      ["oni","終兵・冥",6,1],
+      ["slash","終剣士・骸",4,2],
+      ["slash","終剣士・屍",1,2],
+      ["genjutsu","彼岸遣い・霞",7,2],
+      ["karasu","終烏・朔",0,3],
+      ["karasu","終烏・晦",8,3],
+      ["throw","終手裏剣・滅",3,0],
+      ["throw","終手裏剣・尽",5,0],
+    ],
+  },
+  { // 修行場（何度でも・敵はレベルに応じて成長）
+    title:"里の修行場",
+    training:true, next:null, item:null,
+    intro:"師範代カシワの木人道場。手合わせで経験を積める。敵はこちらの練度に応じて強くなる。",
+    bossName:"師範代カシワ",
+    buff:{hp:1, atk:1},
+    terrain:[
+      [1,0,0,0,0,0,0,0,1],
+      [0,0,3,0,0,0,3,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,1,0,1,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,3,0,0,0,3,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [1,0,0,0,0,0,0,0,1],
+    ],
+    foes:[
+      ["taisho","師範代カシワ",4,0,true],
+      ["slash","木人・甲",2,1],
+      ["slash","木人・乙",6,1],
+      ["throw","木人・丙",3,2],
+      ["oni","木人・丁",5,2],
+    ],
+  },
 ];
 const SPECIAL_STAGE_IDX=STAGES.findIndex(st=>st.special);
+const TRAIN_IDX=STAGES.findIndex(st=>st.training);
 /* 導入会話。ステージ2はウカ勧誘済みかで分岐 */
 const C_ME='var(--ai-bright)', C_FOE='var(--shu-bright)', C_UKA='var(--kin)';
 const STAGE_DIALOGUE=[
@@ -632,6 +742,18 @@ const STAGE_DIALOGUE=[
     {name:"シオン", color:C_ME, text:"常闇ノ皇……大天狗すら、あなたの傀儡だったのですね。"},
     {name:"ジン", color:C_ME, text:"里の総力、ここに在り。——夜明けを、取り戻す！"},
     {name:"ウカ", color:C_UKA, text:"みんな、行くよ！　今度こそ、ぜんぶ終わらせる！"} ],
+  [ {name:"クオン", color:C_ME, text:"さ、寒い……。雪なのに、灰みたいな匂いがする……"},
+    {name:"白骸", color:C_FOE, text:"カタ……カタカタ……。門ハ、渡サヌ……"},
+    {name:"シオン", color:C_ME, text:"死者の兵……。祓いながら進みます。皆、体温を保って。"} ],
+  [ {name:"息吹イブキ", color:C_ME, text:"へえ……いい炎じゃない。あたし好みだけど、ちょっと熱すぎ。"},
+    {name:"焔王グレン", color:C_FOE, text:"グハハハ！　小娘の火遊びとは格が違うわ！　焼けて散れ！"},
+    {name:"ほんチい", color:"var(--kin)", text:"……ばくだん、よろこんでるチい。"} ],
+  [ {name:"終焉ノ神・ヨミ", color:C_FOE, text:"……ようこそ、終わりの門へ。皇も天狗も、我が見た夢にすぎぬ。"},
+    {name:"ジン", color:C_ME, text:"夢ならば——覚ましてやる。里の総力、ここに極まれり。"},
+    {name:"シオン", color:C_ME, text:"月が、私たちを見ています。……終焉に、引導を。"},
+    {name:"ウカ", color:C_UKA, text:"姉さん、みんな……最後の戦いだよ！"} ],
+  [ {name:"師範代カシワ", color:"var(--kin)", text:"よく来た！　木剣とて容赦はせん、全力で打ち込んで来い！"},
+    {name:"疾風ハヤテ", color:C_ME, text:"……手加減無用、だな。望むところだ。"} ],
 ];
 const STAGE2_DIALOGUE_JOINED=[
   {name:"ウカ", color:C_UKA, text:"この城の抜け道、あたしが知ってる。ついてきて、姉さん！"},
@@ -686,11 +808,12 @@ function makeRoster(){
     });
   }
   const srcFoes=(!sp&&(UKA_JOINED||!UKA_ENABLED))?st.foes.filter(f=>f[0]!=="uka"):st.foes;
+  const ngHp=1+NG_PLUS*0.45, ngAtk=1+NG_PLUS*0.22;
   const foes=srcFoes.map(([cls,name,x,y,leader])=>{
     const u=U("foe",cls,name,x,y,!!leader);
-    u.maxhp=Math.round(u.maxhp*st.buff.hp);
+    u.maxhp=Math.round(u.maxhp*st.buff.hp*ngHp);
     u.hp=u.maxhp;
-    u.atkBuff=st.buff.atk;
+    u.atkBuff=st.buff.atk*ngAtk;
     return u;
   });
   units=[...mine,...foes];
@@ -702,7 +825,7 @@ function makeRoster(){
 }
 function U(side,cls,name,x,y,leader=false){
   const c=CLASS[cls];
-  return {side,cls,name,x,y,leader,maxhp:c.hp,hp:c.hp,acted:false,el:null,atkBuff:1};
+  return {side,cls,name,x,y,leader,maxhp:c.hp,hp:c.hp,acted:false,el:null,atkBuff:1,cd:0};
 }
 function atkOf(u){
   let a=Math.round(CLASS[u.cls].atk*(u.atkBuff||1));
@@ -725,6 +848,10 @@ const QUOTES={
   "朧火":{kill:["月のねェ夜を恨みな！"],death:["ちっ……月が、出てきやがった……"]},
   "ロトン":{kill:["クサレ……オチロ……"],death:["ヤット……クチハテ、ラレル……"]},
   "常闇ノ皇":{kill:["塵に還れ。"],death:["夜が……明ける、だと……"]},
+  "白骸":{kill:["カタカタ……眠レ……"],death:["ヤット……土ニ、還レル……"]},
+  "焔王グレン":{kill:["燃エ尽キロォ！"],death:["俺ノ炎ガ……消エル……"]},
+  "終焉ノ神・ヨミ":{kill:["終わりを受け入れよ。"],death:["……良い、夢だった……"]},
+  "師範代カシワ":{kill:["まだまだ甘い！"],death:["……見事！　参った、参った！"]},
   "_slash":{kill:["斬り捨て御免。"],death:["腕が、立つ……"]},
   "狂乱ウカ":{kill:["ねえさんのいない世界なんて、いらない！"],death:["……ねえ、さん……？"]},
   "_nise":{kill:["ウカ、みてて？　わたし、つよいでしょ。"],death:["わたしは……ほんものの、ねえさん……"]},
@@ -773,8 +900,11 @@ let UKA_JOINED=false;
 let UKA_ENABLED=true;   // マップ選択で「ウカなし」を選ぶとfalse
 let UKA_GOD=false;      // 大炎神ウカ覚醒
 let CH2=false;              // 第二章突入
-let CH2_CLEARED={};         // 第二章: クリア済みマップ
+let CH3=false;              // 第三章突入
+let CH2_CLEARED={};         // 章マップ: クリア済み（全章共用・stageIdxキー）
 let SHION_JOINED=false;     // 新キャラ・シオン加入
+let NG_PLUS=0;              // 周回数（0=初回）
+let TRAIN_RET=null;         // 修行場から戻る先
 let SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
 
 /* ほんチいの道連れ大爆発: 周囲3マスの敵に20ダメージ */
@@ -926,6 +1056,11 @@ function gainExp(u, amt){
   if(leveled){
     lvUpFx(u, p.lv);
     log(`<span class="sys">${u.name}、Lv${p.lv} に上がった！ 攻+1 / 体力+3${p.lv%2===0?" / 防+1":""}</span>`);
+    const sk=SKILLS[u.name];
+    if(sk && p.lv>=sk.lv && p.lv-1<sk.lv){
+      log(`<span class="sys">★${u.name}、技「${sk.name}」を会得！</span>`);
+      speak(u,`技「${sk.name}」、会得！`);
+    }
   }
   refreshUnit(u);
   if(sel===u) showInfo(u);
@@ -940,6 +1075,100 @@ function lvUpFx(u, lv){
   wrap.appendChild(e); setTimeout(()=>e.remove(),1100);
 }
 function defOf(u){ return CLASS[u.cls].def + (u.defBonus||0); }
+
+/* ---- 技（レベルで解放・クールダウン制） ---- */
+const SKILLS={
+  "疾風ハヤテ":{name:"疾風二連", lv:3, cd:3, range:1, kind:"multi", hits:2, mult:0.75, desc:"同じ敵に2連撃（各75%）"},
+  "息吹イブキ":{name:"焔波",     lv:3, cd:3, range:1, kind:"blast", mult:1.0, splash:0.5, splashR:1, foesOnly:true, desc:"対象＋隣接の敵を焼く"},
+  "イズナ":{name:"兎連弾",       lv:3, cd:3, range:3, kind:"multi", hits:3, mult:0.5, desc:"遠くから3連撃（各50%）"},
+  "ジン":{name:"幻爆",           lv:3, cd:3, range:2, kind:"sure",  mult:1.8, desc:"必中・1.8倍の幻術"},
+  "クオン":{name:"祈りの雨",     lv:3, cd:4, kind:"healAll", amt:6, instant:true, desc:"味方全員を6回復"},
+  "ウカ":{name:"双刃旋風",       lv:3, cd:3, kind:"aoeSelf", radius:2, mult:0.8, instant:true, desc:"周囲2マスの敵へ80%"},
+  "大炎神ウカ":{name:"業火",     lv:1, cd:4, kind:"aoeSelf", radius:3, mult:1.0, instant:true, desc:"周囲3マスの敵を焼き払う"},
+  "シオン":{name:"式神・鴉",     lv:3, cd:3, range:4, kind:"sure",  mult:1.7, desc:"射程4・必中の狙撃"},
+  "アンネ":{name:"団子タイム",   lv:3, cd:4, kind:"healArea", radius:2, amt:8, instant:true, desc:"周囲2マスの味方(自分含む)を8回復"},
+  "ほんチい":{name:"特大ばくだん", lv:3, cd:4, range:2, kind:"blast", mult:1.2, splash:0.6, splashR:2, desc:"対象と周囲2マスを大爆撃（敵味方無差別）"},
+};
+function skillOf(u){ return u.side==="me" ? SKILLS[u.name] : null; }
+function skillReady(u){
+  const sk=skillOf(u); if(!sk) return false;
+  return progOf(u.name).lv>=sk.lv && (u.cd||0)<=0;
+}
+let skillUser=null, skillTargets=[];
+function useSkill(u){
+  const sk=skillOf(u); if(!sk||!skillReady(u)) return;
+  if(sk.instant){ runInstantSkill(u,sk); return; }
+  clearHL();
+  cells[u.y][u.x].classList.add("sel");
+  skillUser=u; mode="chooseSkill";
+  skillTargets=units.filter(t=>t.hp>0 && t.side!==u.side && dist(u,t)<=sk.range);
+  skillTargets.forEach(t=>cells[t.y][t.x].classList.add("atk"));
+  phaseTxt(`技「${sk.name}」——対象を選べ`);
+}
+function skillHit(a,t,mult,noEvade){
+  if(t.hp<=0) return;
+  if(!noEvade){
+    const evd=CLASS[t.cls].evd + terrainEvd(t);
+    if(Math.random()*100 < evd){
+      fx(t,"miss","回避","#cfe6ff");
+      log(`${t.name} が技を回避`);
+      return;
+    }
+  }
+  const def=defOf(t)+terrainDef(t);
+  const dmg=Math.max(1, Math.round(atkOf(a)*mult) + rnd(-1,1) - def);
+  t.hp-=dmg;
+  fx(t, a.cls==="throw"||a.cls==="bomb"?"splash":"slash", "-"+dmg, "#ffe27a");
+  refreshUnit(t);
+  gainExp(a, 4 + (t.hp<=0?(t.leader?35:22):0));
+  log(`<span class="me">${a.name}</span> の技 → <b>${t.name}</b> に ${dmg}`);
+  if(t.hp<=0) handleDeath(t,a);
+}
+function finishSkill(u,sk){
+  u.cd=sk.cd;
+  log(`<span class="sys">${u.name}、技「${sk.name}」！（再使用まで${sk.cd}ターン）</span>`);
+  skillUser=null; skillTargets=[];
+  endAction(u);
+}
+function execTargetSkill(a,t){
+  const sk=skillOf(a);
+  shake();
+  if(sk.kind==="multi"){
+    for(let i=0;i<sk.hits;i++) setTimeout(()=>skillHit(a,t,sk.mult,false), i*260);
+    setTimeout(()=>finishSkill(a,sk), sk.hits*260);
+  } else if(sk.kind==="sure"){
+    skillHit(a,t,sk.mult,true);
+    finishSkill(a,sk);
+  } else if(sk.kind==="blast"){
+    skillHit(a,t,sk.mult,false);
+    const pos={x:t.x,y:t.y};
+    setTimeout(()=>{
+      units.filter(v=>v.hp>0 && v!==a && v!==t
+          && dist(v,pos)<=sk.splashR
+          && (!sk.foesOnly || v.side!==a.side))
+        .forEach((v,i)=>setTimeout(()=>skillHit(a,v,sk.mult*sk.splash,false), i*150));
+    },300);
+    setTimeout(()=>finishSkill(a,sk), 900);
+  }
+}
+function runInstantSkill(u,sk){
+  if(sk.kind==="healAll"||sk.kind==="healArea"){
+    const targets=alive("me").filter(t=>
+      t.hp<t.maxhp && (sk.kind==="healAll" || dist(u,t)<=sk.radius));
+    targets.forEach((t,i)=>setTimeout(()=>{
+      t.hp=Math.min(t.maxhp, t.hp+sk.amt);
+      fx(t,"heal","+"+sk.amt,"#8fd0a0");
+      refreshUnit(t);
+    }, i*130));
+    gainExp(u, 12);
+    finishSkill(u,sk);
+  } else if(sk.kind==="aoeSelf"){
+    shake();
+    const targets=alive("foe").filter(t=>dist(u,t)<=sk.radius);
+    targets.forEach((t,i)=>setTimeout(()=>skillHit(u,t,sk.mult,false), i*160));
+    setTimeout(()=>finishSkill(u,sk), Math.max(1,targets.length)*160+200);
+  }
+}
 let stageItem=null; // {x,y,el}
 
 /* 水や重なりの上に湧かないよう最寄りの安全マスへ退避 */
@@ -1110,6 +1339,11 @@ function showOptions(u){
 /* ---- クリック処理 ---- */
 function onUnitClick(u){
   if(turn!=="me") return;
+  // 技の対象
+  if(mode==="chooseSkill" && skillUser){
+    if(skillTargets.includes(u)){ const su=skillUser; execTargetSkill(su,u); return; }
+    mode="chooseAtk"; skillUser=null; skillTargets=[];
+  }
   // 攻撃対象として選ばれた敵
   if(sel && mode==="chooseAtk" && atkTargets.includes(u)){ doAttack(sel,u); return; }
   if(u.side==="me"){ sel=u; mode="chooseAtk"; showInfo(u); showOptions(u); }
@@ -1272,7 +1506,13 @@ function showInfo(u){
     <div class="stat"><span>移動</span><b>${c.move}</b></div>
     <div class="stat"><span>射程</span><b>${c.range}</b></div>
     <div class="stat"><span>回避</span><b>${c.evd}%</b></div>
+    ${(()=>{const sk=skillOf(u); if(!sk) return "";
+      const p=progOf(u.name);
+      const stt= p.lv<sk.lv ? `Lv${sk.lv}で解放` : (u.cd>0?`再使用まで${u.cd}T`:`使用可`);
+      return `<div class="stat"><span>技「${sk.name}」</span><b style="color:${stt==='使用可'?'var(--kin)':'var(--washi-dim)'}">${stt}</b></div>
+      <div style="font-size:10.5px;color:var(--washi-dim);padding:2px 0 0;">${sk.desc}</div>`;})()}
     ${canAct?`<div class="acts">
+        ${skillReady(u)?`<button class="btn" id="skillBtn" style="border-color:var(--kin);color:var(--kin)">技を放つ</button>`:``}
         ${SPECIAL.active&&!izunaAliveOnBoard()&&STAGES[stageIdx].shrine&&u.x===STAGES[stageIdx].shrine.x&&u.y===STAGES[stageIdx].shrine.y?`<button class="btn" id="prayBtn" style="border-color:var(--kin);color:var(--kin)">祈祷</button>`:``}
         ${(u.cls==="heal"||u.cls==="uka"||u.cls==="ukagod"||u.cls==="shishou")&&u.hp<u.maxhp?`<button class="btn" id="selfHealBtn">自己回復</button>`:``}
         <button class="btn" id="waitBtn">待機</button>
@@ -1282,6 +1522,8 @@ function showInfo(u){
       autoEndCheck(); };
     const sh=$("#selfHealBtn");
     if(sh) sh.onclick=()=>doAttack(u,u);
+    const skb=$("#skillBtn");
+    if(skb) skb.onclick=()=>useSkill(u);
     const pb=$("#prayBtn");
     if(pb) pb.onclick=()=>{
       fx(u,"heal","祈","#ffe27a");
@@ -1306,7 +1548,7 @@ function autoEndCheck(){
 function endTurn(){
   clearHL(); sel=null; mode="idle"; showInfo(null);
   if(turn==="me"){ turn="foe"; setBanner(); phaseTxt("敵の動きを見よ…"); setTimeout(foeTurn,500); }
-  else { turn="me"; units.forEach(u=>{ if(u.side==="me") u.acted=false; });
+  else { turn="me"; units.forEach(u=>{ if(u.side==="me"){ u.acted=false; if(u.cd>0)u.cd--; } });
          units.forEach(refreshUnit); setBanner(); phaseTxt("駒を選んでください"); }
 }
 function setBanner(){
@@ -1451,19 +1693,40 @@ function endGame(win){
   const isFinal = !st.next;
   box.className="box "+(win?"win":"lose");
   const btn=$("#restartBtn");
-  if(win && st.ch2 && !st.ch2Final){
+  const btn2=$("#restartBtn2");
+  btn2.style.display="none";
+  if(win && st.training){
+    $("#overlayKanji").textContent="錬";
+    $("#overlayMsg").textContent="師範代カシワ「見事！　その調子で腕を磨け！」——修行完了、経験を積んだ。";
+    btn.textContent="戻る ▸";
+    btn.onclick=()=>{ ov.classList.remove("show");
+      carryHP=snapshotHP();
+      if(TRAIN_RET&&TRAIN_RET.ch) openChapterSelect(TRAIN_RET.ch);
+      else if(TRAIN_RET&&TRAIN_RET.next) openMapSelect(TRAIN_RET.next);
+      else openChapterSelect(CH3?3:2); };
+  } else if(win && st.ch && !st.chFinal){
     CH2_CLEARED[stageIdx]=true;
     $("#overlayKanji").textContent="討";
-    $("#overlayMsg").textContent=`${st.bossName}を討ち取った。峠と沼——二つの関を制せば、魔城への道が開く。`;
+    $("#overlayMsg").textContent=`${st.bossName}を討ち取った。二つの関を制せば、最奥への道が開く。`;
     btn.textContent="進軍先を選ぶ ▸";
     btn.onclick=()=>{ ov.classList.remove("show");
       carryHP=snapshotHP();
-      openCh2Select(); };
-  } else if(win && st.ch2Final){
+      openChapterSelect(st.ch); };
+  } else if(win && st.chFinal && st.ch===2){
+    $("#overlayKanji").textContent="討";
+    $("#overlayMsg").textContent="常闇ノ皇、消滅——だが皇は器にすぎなかった。常世ノ門が、静かに開く。物語は第三章へ。";
+    btn.textContent="第三章へ ▸";
+    btn.onclick=()=>{ ov.classList.remove("show");
+      carryHP=snapshotHP();
+      startChapter3(); };
+  } else if(win && st.chFinal && st.ch===3){
     $("#overlayKanji").textContent="終";
-    $("#overlayMsg").textContent="常闇ノ皇、消滅。永い夜が明け、忍びの里に本当の朝が来る——完。";
-    btn.textContent="最初から";
-    btn.onclick=()=>{ ov.classList.remove("show"); fullReset(); };
+    $("#overlayMsg").textContent=`終焉ノ神ヨミ、消滅。すべての夜が明けた——完。${NG_PLUS>0?`（${NG_PLUS+1}周目クリア）`:""} 周回プレイでは成長を引き継ぎ、敵がさらに強くなる。`;
+    btn.textContent="周回プレイへ ▸";
+    btn.onclick=()=>{ ov.classList.remove("show"); newGamePlus(); };
+    btn2.textContent="最初から";
+    btn2.style.display="inline-block";
+    btn2.onclick=()=>{ ov.classList.remove("show"); fullReset(); };
   } else if(win && !isFinal){
     $("#overlayKanji").textContent="討";
     $("#overlayMsg").textContent=`${st.bossName}を討ち取った。だが敵はさらに奥に潜む——`;
@@ -1498,8 +1761,36 @@ function fullReset(){
   JIN_BUFF={atk:0,maxhp:0}; itemPicked=STAGES.map(()=>false);
   UKA_JOINED=false; UKA_GOD=false; UKA_ENABLED=true; PROGRESS={};
   SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
-  CH2=false; CH2_CLEARED={}; SHION_JOINED=false;
+  CH2=false; CH3=false; CH2_CLEARED={}; SHION_JOINED=false;
+  NG_PLUS=0; TRAIN_RET=null;
   restart();
+}
+
+/* ---- 周回プレイ: レベル・秘伝書を引き継ぎ、敵が強くなる ---- */
+function newGamePlus(){
+  NG_PLUS++;
+  stageIdx=0; carryHP=null; actNum=1;
+  itemPicked=STAGES.map(()=>false);
+  UKA_JOINED=false; UKA_GOD=false; UKA_ENABLED=true;
+  SPECIAL={active:false, done:false, izunaRevived:false, returnStage:0, returnAct:1};
+  CH2=false; CH3=false; CH2_CLEARED={}; SHION_JOINED=false; TRAIN_RET=null;
+  log(`<span class="sys">【${NG_PLUS+1}周目】レベルと秘伝書を引き継いで、物語が最初から始まる。敵は大幅に強化！</span>`);
+  restart();
+}
+
+/* ---- 第三章開始 ---- */
+const CH3_INTRO=[
+  {name:"シオン", color:C_ME, text:"皇の骸から、瘴気が門へ……。常世ノ門が、開いています。"},
+  {name:"ジン", color:C_ME, text:"皇は器にすぎなかったか。真の主——終焉ノ神・ヨミ。"},
+  {name:"アンネ", color:C_ME, text:"やれやれ、団子はまだお預けかい。……いいさ、弟子の門出だ。付き合うよ。"},
+  {name:"ほんチい", color:"var(--kin)", text:"まだ、あばれるチい。"},
+  {name:"疾風ハヤテ", color:C_ME, text:"雪原と火口、二つの関の先に門はある。修行場で腕を磨くのも忘れるな。"},
+  {name:"―", color:"var(--kin)", text:"【第三章 開幕】雪原と火口は何度でも往来可能。両方を制せば常世ノ門が開く。修行場も引き続き使える。"},
+];
+function startChapter3(){
+  CH3=true;
+  STAGES.forEach((st,i)=>{ if(st.ch===3) delete CH2_CLEARED[i]; });
+  showDialog(CH3_INTRO, ()=>openChapterSelect(3));
 }
 
 /* ---- 第二章開始（新キャラ・シオン加入） ---- */
@@ -1524,25 +1815,50 @@ function startChapter2(){
   CH2=true; CH2_CLEARED={};
   SHION_JOINED=true;
   progOf("シオン");   // 成長枠を確保
-  showDialog(CH2_INTRO, ()=>openCh2Select());
+  showDialog(CH2_INTRO, ()=>openChapterSelect(2));
 }
 
-/* ---- 第二章マップ選択（行ったり戻ったり・再戦可） ---- */
-function openCh2Select(){
+/* ---- 章マップ選択（行ったり戻ったり・再戦可・修行場付き） ---- */
+function avgPartyLv(){
+  const names=["疾風ハヤテ","息吹イブキ","イズナ","ジン","クオン"];
+  if(UKA_JOINED) names.push(UKA_GOD?"大炎神ウカ":"ウカ");
+  if(SHION_JOINED) names.push("シオン","アンネ","ほんチい");
+  return names.reduce((a,n)=>a+progOf(n).lv,0)/names.length;
+}
+function enterTraining(ret){
+  TRAIN_RET=ret;
+  const t=STAGES[TRAIN_IDX];
+  const lv=avgPartyLv();
+  t.buff={ hp: 0.8 + lv*0.22, atk: 0.9 + lv*0.09 };
+  stageIdx=TRAIN_IDX;
+  restart();
+}
+function trainingCard(box, ms, ret){
+  const t=STAGES[TRAIN_IDX];
+  const card=el("div","mapCard");
+  card.style.borderColor="var(--sui)";
+  card.innerHTML=`
+    <div class="mTitle" style="color:var(--sui)">${t.title}</div>
+    <div class="mDesc">${t.intro}</div>
+    <div class="mBoss" style="color:var(--sui)">相手：${t.bossName}（現在の練度 Lv${avgPartyLv().toFixed(1)} に応じて強化）</div>`;
+  card.onclick=()=>{ ms.classList.remove("show"); enterTraining(ret); };
+  box.appendChild(card);
+}
+function openChapterSelect(ch){
   const ms=$("#mapsel"), box=$("#mapChoices");
   box.innerHTML="";
-  const idxs=STAGES.map((st,i)=>st.ch2?i:-1).filter(i=>i>=0);
-  const fields=idxs.filter(i=>!STAGES[i].ch2Final);
+  const idxs=STAGES.map((st,i)=>st.ch===ch?i:-1).filter(i=>i>=0);
+  const fields=idxs.filter(i=>!STAGES[i].chFinal);
   const finalUnlocked=fields.every(i=>CH2_CLEARED[i]);
   idxs.forEach(i=>{
     const st=STAGES[i];
     const card=el("div","mapCard");
-    const locked=st.ch2Final&&!finalUnlocked;
+    const locked=st.chFinal&&!finalUnlocked;
     const cleared=!!CH2_CLEARED[i];
     card.innerHTML=`
       <div class="mTitle">${st.title}${cleared?'　<span style="font-size:11px;color:var(--sui)">討伐済</span>':''}</div>
       <div class="mDesc">${st.intro}</div>
-      <div class="mBoss">${locked?'<span style="color:var(--washi-dim)">※峠と沼を制すれば道が開く</span>':`敵将：${st.bossName}${cleared?'（再戦・経験値稼ぎ可）':''}`}</div>`;
+      <div class="mBoss">${locked?'<span style="color:var(--washi-dim)">※二つの関を制すれば道が開く</span>':`敵将：${st.bossName}${cleared?'（再戦・経験値稼ぎ可）':''}`}</div>`;
     if(locked){ card.style.opacity=".45"; card.style.cursor="default"; }
     else card.onclick=()=>{
       ms.classList.remove("show");
@@ -1551,6 +1867,7 @@ function openCh2Select(){
     };
     box.appendChild(card);
   });
+  trainingCard(box, ms, {ch:ch});
   ms.classList.add("show");
 }
 
@@ -1617,6 +1934,7 @@ function openMapSelect(nextIdxs){
     }
     box.appendChild(card);
   });
+  trainingCard(box, ms, {next:nextIdxs});
   ms.classList.add("show");
 }
 function snapshotHP(){
@@ -1637,7 +1955,8 @@ function boot(){
   phaseTxt("駒を選んでください");
   const st=STAGES[stageIdx];
   const KAN=["","一","二","三","四","五","六","七","八","九","十"];
-  $("#stageTitle").textContent=(st.special?"外伝　":`第${KAN[actNum]||actNum}幕　`)+st.title;
+  const ngTag=NG_PLUS>0?`〔${NG_PLUS+1}周目〕`:"";
+  $("#stageTitle").textContent=(st.training?"修行　":st.special?"外伝　":`第${KAN[actNum]||actNum}幕　`)+st.title+ngTag;
   $("#endTurnBtn").onclick=()=>{ if(turn==="me") endTurn(); };
   $("#debugSkip").onclick=()=>{
     // 三幕クリア相当の状態を用意して第二章へ
@@ -1650,6 +1969,18 @@ function boot(){
     carryHP=null; actNum=3;
     log(`<span class="sys">【デバッグ】三幕クリア後の状態で第二章へ。</span>`);
     startChapter2();
+  };
+  $("#debugSkip3").onclick=()=>{
+    ["疾風ハヤテ","息吹イブキ","イズナ","ジン","クオン","ウカ","大炎神ウカ","シオン","アンネ","ほんチい"].forEach(n=>{
+      PROGRESS[n]={lv:7, exp:0, atk:6, hp:18, def:3};
+    });
+    UKA_JOINED=true; UKA_GOD=true; UKA_ENABLED=true;
+    SHION_JOINED=true; CH2=true;
+    JIN_BUFF={atk:4, maxhp:8};
+    SPECIAL={active:false, done:true, izunaRevived:false, returnStage:0, returnAct:1};
+    carryHP=null; actNum=6;
+    log(`<span class="sys">【デバッグ】二章クリア後の状態で第三章へ。</span>`);
+    startChapter3();
   };
   log(`<span class="sys">${st.title}。${st.intro}</span>`);
   let d=STAGE_DIALOGUE[stageIdx]||[];
