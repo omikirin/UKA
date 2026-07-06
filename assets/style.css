@@ -557,6 +557,38 @@ a.chapter-card:hover {
   pointer-events: none;
 }
 
+.featured-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 2.2rem;
+  align-items: stretch;
+}
+
+.featured-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.featured-art {
+  width: min(320px, 36%);
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: center top;
+  box-shadow: 0 10px 26px rgba(30, 8, 5, 0.45);
+  border: 1px solid rgba(240, 192, 114, 0.35);
+}
+
+@media (max-width: 700px) {
+  .featured-inner {
+    flex-direction: column-reverse;
+  }
+  .featured-art {
+    width: 100%;
+    max-height: 300px;
+  }
+}
+
 .featured-badge {
   display: inline-block;
   font-size: 0.75rem;
