@@ -11,6 +11,9 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
+  @supports (height: 100dvh) {
+    body { height: 100dvh; }
+  }
   body {
     font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
     background: #17100d;
@@ -51,30 +54,37 @@
   /* ---------- ビューア ---------- */
   .viewer {
     flex: 1;
+    min-height: 0;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.4rem;
   }
   .page-view {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
   }
   .page-view img.spread {
     display: block;
-    max-width: 100vw;
-    max-height: calc(100vh - 6.2rem);
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
   }
   /* 単ページ(見開きの半分)表示 */
   .half-wrap {
     position: relative;
     overflow: hidden;
-    height: calc(100vh - 6.2rem);
+    height: 100%;
+    max-height: 100%;
     aspect-ratio: 512 / 590; /* 見開き(1024x590)の半分 */
-    max-width: 100vw;
+    max-width: 100%;
   }
   .half-wrap img {
     position: absolute;
@@ -156,7 +166,7 @@
 
 <footer class="foot">
   <span id="pageInfo">- / -</span>
-  <span class="hint">右から左へ読みます ｜ 左クリック・←キー・左スワイプで次のページ</span>
+  <span class="hint">右から左へ読みます ｜ 左タップ・←キー・右スワイプで次のページ</span>
 </footer>
 
 <script>
@@ -262,8 +272,8 @@
   viewer.addEventListener("touchend", function (e) {
     if (touchX === null) return;
     var dx = e.changedTouches[0].clientX - touchX;
-    if (dx < -40) go(1);
-    if (dx > 40) go(-1);
+    if (dx > 40) go(1);
+    if (dx < -40) go(-1);
     touchX = null;
   }, { passive: true });
 
