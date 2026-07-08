@@ -349,7 +349,14 @@
       cov.className = "cover";
       cov.src = "img/" + u.ch.id + "/cover.jpg";
       cov.alt = u.ch.no + "　" + u.ch.title + "　表紙";
-      cov.onerror = function () { view.innerHTML = ""; view.appendChild(makeCard(u)); };
+      cov.onerror = function () {
+        if (cov.src.indexOf("cover.jpg") !== -1) {
+          cov.src = "img/" + u.ch.id + "/cover.png"; /* PNGでも可 */
+        } else {
+          view.innerHTML = "";
+          view.appendChild(makeCard(u));
+        }
+      };
       view.appendChild(cov);
       info.textContent = u.ch.no + "　表紙";
     } else if (u.type === "end") {
