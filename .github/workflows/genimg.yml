@@ -31,6 +31,11 @@ on:
         required: false
         default: ''
         type: string
+      image_urls:
+        description: '参照画像URL(カンマ区切り)。編集系モデル(nano-banana-pro/edit等)で使用'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -48,6 +53,7 @@ jobs:
           OUT_PATH: ${{ inputs.path }}
           ASPECT_RATIO: ${{ inputs.aspect_ratio }}
           IMAGE_SIZE: ${{ inputs.image_size }}
+          IMAGE_URLS: ${{ inputs.image_urls }}
           MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
@@ -59,9 +65,11 @@ jobs:
             --arg p "$PROMPT" \
             --arg ar "$ASPECT_RATIO" \
             --arg sz "$IMAGE_SIZE" \
+            --arg iu "$IMAGE_URLS" \
             '{prompt: $p, num_images: 1}
              + (if $ar != "" then {aspect_ratio: $ar} else {} end)
-             + (if $sz != "" then {image_size: $sz} else {} end)')
+             + (if $sz != "" then {image_size: $sz} else {} end)
+             + (if $iu != "" then {image_urls: ($iu | split(",") | map(gsub("^\\s+|\\s+$"; "")))} else {} end)')
           echo "model: $MODEL"
           resp=$(curl -sS -X POST "https://fal.run/$MODEL" \
             -H "Authorization: Key $FAL_KEY" \
@@ -86,4 +94,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "$OUT_PATH"
           git commit -m "画像生成: $OUT_PATH" -m "model: $MODEL" -m "prompt: $PROMPT"
-          git push
+          for i in 1 2 3; do git push && break || { git pull --rebase; sleep 3; }; done

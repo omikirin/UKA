@@ -1,0 +1,89 @@
+{
+  "title": "第二章 数式の花嫁",
+  "format_ref": "characters.json の format_rules_MANDATORY に準拠(1見開き=右3コマ+左3コマ=2ページ、16:9固定)",
+  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
+  "characters_required": {"designed": ["oto", "garen(IMG_0830で正典確定)"], "needed": ["乳母(モブ)", "シオン(第四章と共通・モブ可)"]},
+  "revision_note": "13コマ目: 初夜の寝室→嫁いだ日の書斎に変更(生成フィルタ対応)。53コマ目: 寝室引き絵→天井を見つめる目のクローズアップに変更。",
+  "spreads": [
+    {"spread": 1, "scene": "書斎の窓の世界", "panels": [
+      {"no": 1, "chars": [], "prompt": "tall narrow study window, manicured garden, cypress trees, rock mountain, thin strip of sky at top, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "オト・ハーヴェイの世界は、書斎の窓の大きさをしていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "small rabbit girl child at window with slate, calculating, curious eyes, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "幼い頃、オトはあの細長い空の面積を計算して遊んだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 3, "chars": [], "prompt": "elderly nursemaid smiling with troubled kindness, empty upper left", "dialogue": [{"speaker": "乳母", "text": "お嬢様、空の広さは測るものではございませんよ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 4, "chars": [], "prompt": "child tilting head puzzled, slate full of numbers, empty right side", "dialogue": [{"speaker": "オト", "text": "どうして? 測れるのに", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 5, "chars": [], "prompt": "desk with pendulum instrument, apple, hourglass, warm lamp, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "世界のたいていのものは、測れる。振り子の周期も、林檎の落ちる速さも。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 6, "chars": ["oto"], "prompt": "{oto} present day at desk surrounded by papers, soft night lamp, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "測れないのは人の心くらいのもので、だからオトは、人の心だけが少し苦手だった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "ガレン帰宅", "panels": [
+      {"no": 7, "chars": [], "prompt": "study door opening, tall officer silhouette in doorway, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "オト。また徹夜したのか", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 8, "chars": ["oto"], "prompt": "{oto} lifting face from desk, paper stuck to cheek, ink smudge, flustered, empty upper right", "dialogue": [{"speaker": "オト", "text": "ガレン様、お帰りなさいませ。……あの、これは、その", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 9, "chars": ["garen"], "prompt": "officer removing uniform jacket, fond exasperated sigh, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "何日ぶりの睡眠だった", "balloon": "top_left", "type": "normal"}, {"speaker": "オト", "text": "……二日、ぶり", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 10, "chars": ["garen"], "prompt": "officer deadpan look over shoulder, empty right side", "dialogue": [{"speaker": "ガレン", "text": "三日だろう。使用人に聞いた", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 11, "chars": [], "prompt": "formal wedding portrait style shot, arranged marriage stiffness, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "政略で結ばれた夫婦だった。武門の格と、実家の財と——「御国の宝というべき頭脳」と。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 12, "chars": ["oto"], "prompt": "flashback wedding, {oto} in bridal dress unable to look up, trembling, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "結婚式の日、オトは夫になる人の顔を、まともに見られなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "初夜の誤植", "panels": [
+      {"no": 13, "chars": ["garen"], "prompt": "flashback, bright library room, officer inspecting mountain of books stacked from moving crates, one by one, warm lamp, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "嫁いだ日、ガレンが最初にしたことは、運び込まれた彼女の書物の山を、一冊ずつ検分することだった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 14, "chars": ["garen"], "prompt": "officer holding open book seriously, empty upper right", "dialogue": [{"speaker": "ガレン", "text": "この弾性理論の本は誤植が多い版だ。明日、正しい版を取り寄せよう", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 15, "chars": ["oto"], "prompt": "{oto} wide star-highlight eyes, struck, blush, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "オトは、その瞬間に恋に落ちた。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 16, "chars": [], "prompt": "falling apple sketch on paper, formula unfinished, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "心は測れないというのは、本当だった。落ちる速度すら、測れなかったのだから。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 17, "chars": ["garen", "oto"], "prompt": "present, officer looking at her papers after asking permission, respectful distance, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "彼はいつも、彼女の数式を、彼女の領土として扱う。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 18, "chars": ["garen", "oto"], "prompt": "two shot at desk, warm lamp, empty upper right", "dialogue": [{"speaker": "ガレン", "text": "今日は何を解いていた", "balloon": "top_right", "type": "normal"}, {"speaker": "オト", "text": "風です", "balloon": "bottom_left", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "風の問題", "panels": [
+      {"no": 19, "chars": [], "prompt": "calculation sheets with elegant wind-flow curves and equations, empty upper left", "dialogue": [{"speaker": "オト", "text": "高高度の恒常風の中を、質量のあるものが長く飛ぶとき、風はそれをどう曲げるか", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 20, "chars": ["oto"], "prompt": "{oto} animated, eyes shining, gesturing over papers, empty upper right", "dialogue": [{"speaker": "オト", "text": "風は邪魔ではなくて、道なんです。風に乗せて曲げれば、届かないはずの距離が——", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 21, "chars": ["garen"], "prompt": "close-up officer's face, pride and pain surfacing in same place, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "夫の顔が、ほんの一瞬、見たことのない色をした。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 22, "chars": ["oto"], "prompt": "{oto} tilting head worried, empty upper right", "dialogue": [{"speaker": "オト", "text": "ガレン様?", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 23, "chars": ["garen"], "prompt": "officer recovering awkward gentle smile, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "……いや。君の答えは美しいと思っただけだ。学会に出せないのが惜しい", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["oto"], "prompt": "{oto} laughing lightly, hand to mouth, empty upper right", "dialogue": [{"speaker": "オト", "text": "あら。学会なんて。わたくしはただの遊びですもの", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "遊びの正体", "panels": [
+      {"no": 25, "chars": [], "prompt": "abstract problem sheets, units erased, no proper nouns, pure beautiful equations, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "問題はいつも紙の上の抽象で、単位は消され、固有名詞はなかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 26, "chars": ["garen"], "prompt": "officer carefully taking solved papers, back turned, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "オトはそれを解く。夫はそれを持っていく。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 27, "chars": ["garen", "oto"], "prompt": "officer smiling at doorway, {oto} pleased, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "知人が大変助かったそうだ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 28, "chars": [], "prompt": "narrow strip of sky through study window, bright, empty center", "dialogue": [{"speaker": "オト", "text": "わたくしの遊びが、この空の下の、広い広い世界のどこかで、誰かの役に立っている", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 29, "chars": ["garen", "oto"], "prompt": "dinner table, candlelight, quiet domestic scene, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "ガレンは近く、南部の山岳要塞へ長期の出張になると言った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 30, "chars": ["oto"], "prompt": "{oto} pouring tea calmly, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "訊いても答えられないことは、訊かない。それが軍人の妻の作法だった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "約束", "panels": [
+      {"no": 31, "chars": ["garen"], "prompt": "officer's face through rising tea steam, grave, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "オト。ひとつ約束してくれ。もし私に何かあっても——", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 32, "chars": ["oto"], "prompt": "{oto} frowning, cup down, empty upper right", "dialogue": [{"speaker": "オト", "text": "縁起でもないことを仰らないで", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 33, "chars": ["garen"], "prompt": "officer leaning forward, serious eyes, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "聞いてくれ。もし私に何かあっても、君は、君の数式を憎まないでくれ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 34, "chars": ["oto"], "prompt": "{oto} blank blinking, genuinely puzzled, empty right side", "dialogue": [{"speaker": "オト", "text": "数式を憎む? 数式は、この世でいちばん、人を裏切らないものなのに", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 35, "chars": ["garen", "oto"], "prompt": "both laughing warmly at table, empty upper left", "dialogue": [{"speaker": "オト", "text": "変なガレン様", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 36, "chars": ["garen"], "prompt": "freeze frame on officer's smile, slightly desaturated, memory-like, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "あれは何かを告げようとして、告げ損ねた人の顔だったと、千度目に気づくことになる。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "鐘", "panels": [
+      {"no": 37, "chars": [], "prompt": "morning, bell tower ringing over underground city streets, empty upper left", "dialogue": [], "sfx": "ゴーン… ゴーン…"},
+      {"no": 38, "chars": ["oto"], "prompt": "{oto} at window, calm cypresses outside, listening confused, empty upper right", "dialogue": [{"speaker": "オト", "text": "火事? ……いいえ、打ち方が違う。まるで、祝祭のような", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 39, "chars": [], "prompt": "elderly nursemaid running upstairs holding skirt like a child, breathless joy, empty upper left", "dialogue": [{"speaker": "乳母", "text": "勝ったのです、奥様! 旦那様の砲が——空に届いたのです!!", "balloon": "top_left", "type": "shout"}], "sfx": null},
+      {"no": 40, "chars": ["oto"], "prompt": "{oto} looking up at narrow strip of sky through window, stunned, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "届いた。夫が。届かせた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": ["oto"], "prompt": "{oto} hand on chest, pure radiant pride, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "胸に湧いたのは、混じり気のない誇らしさだった。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 42, "chars": [], "prompt": "solved equations on paper, elegant QED flourish, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "その報せは、夫が途方もなく難しい問題を解いたという報せと、寸分違わなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "祝祭と「仇」", "panels": [
+      {"no": 43, "chars": [], "prompt": "underground city street celebration, extra newspapers flying, officer's photo on front page, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "誰もが「ハーヴェイ将官」の名を口にしていた。", "balloon": "top_left", "type": "narration"}], "sfx": "ワアアッ"},
+      {"no": 44, "chars": [], "prompt": "newspaper illustration of mountain-sized cannon, bold headline, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "〈月ノ塔〉。空を墜とした男。連邦の英雄。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 45, "chars": ["oto"], "prompt": "grocer's wife gripping {oto}'s hands, tears, baker removing hat behind, empty upper left", "dialogue": [{"speaker": "おかみ", "text": "旦那様は、わたしらの仇を取ってくだすった。うちの人は、七年前の徴収で——", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 46, "chars": [], "prompt": "close-up on tightly gripped hands, empty right side", "dialogue": [{"speaker": "ナレーション", "text": "仇。その言葉だけが、祝祭の音の中で、冷たい石のように手の中に残った。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 47, "chars": ["oto"], "prompt": "{oto} uneasy amid celebration, sound receding around her, empty upper left", "dialogue": [{"speaker": "オト", "text": "仇を取るということは。つまり、誰かが——", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 48, "chars": ["oto"], "prompt": "{oto} closing eyes briefly, putting thought away, festival lights, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "測れないものについて考えるのは、いつだって、また今度でいいのだ。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "帰還", "panels": [
+      {"no": 49, "chars": ["garen"], "prompt": "officer returning home at door, visibly thinner, tired, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夫が帰ってきたのは、一週間後だった。英雄は、痩せていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 50, "chars": ["garen", "oto"], "prompt": "long embrace in hallway, his arms strong yet pleading, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "強く抱くのに、どこか、赦しを乞うような抱き方だった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 51, "chars": ["oto"], "prompt": "{oto} looking up at him carefully, empty upper left", "dialogue": [{"speaker": "オト", "text": "おめでとうございます。……と、申し上げてよいのですよね?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": ["garen"], "prompt": "officer face buried in her hair, eyes hidden, empty right side", "dialogue": [{"speaker": "ガレン", "text": "ああ。……ありがとう", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 53, "chars": ["garen"], "prompt": "night darkness, close-up of {garen} sleepless open eyes staring at ceiling, faint moonlight edge, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "訊けば、夫は答えたかもしれない。すべてが、そこで変わったかもしれない。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 54, "chars": [], "prompt": "in darkness her small hand finding his, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "だがオトは、軍人の妻の作法を守った。代わりに、暗闇の中で夫の手を探した。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 10, "scene": "流れ星", "panels": [
+      {"no": 55, "chars": [], "prompt": "his hand gripping back with drowning strength, close-up in dark, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "オト。君の数式は、美しい", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 56, "chars": [], "prompt": "darkness, only faint outlines, empty center", "dialogue": [{"speaker": "ガレン", "text": "それだけは、何があっても、本当だ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 57, "chars": ["oto"], "prompt": "{oto} eyes open in dark, hesitating toward the lamp, not reaching, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "夫が泣いているのではないかと思った。確かめる勇気は、出なかった。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 58, "chars": [], "prompt": "narrow night sky through window, one slow bright streak crossing, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "流れ星にしては、遅すぎた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 59, "chars": [], "prompt": "burning debris of white city district falling through atmosphere at night, beautiful and terrible, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "墜ちた区画の、誰かの暮らしだったものが、夜ごと、地上に降っている。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 60, "chars": ["oto"], "prompt": "{oto} asleep holding his hand, peaceful, dark room, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "生涯で最後の、何も知らない夜だった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}
