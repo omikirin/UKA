@@ -8,24 +8,28 @@ on:
         required: true
         type: string
       path:
-        description: '保存先パス(例: manga/img/ch02/cover.jpg)'
+        description: '保存先パス(例: manga/img/ch03/cover.jpg)'
         required: true
         type: string
-      image_size:
-        description: 'サイズ'
+      aspect_ratio:
+        description: '縦横比(nano-banana系: 1:1 / 3:4 / 4:3 / 9:16 / 16:9 / 21:9)'
         required: false
-        default: 'portrait_4_3'
-        type: choice
-        options:
-          - square_hd
-          - portrait_4_3
-          - portrait_16_9
-          - landscape_4_3
-          - landscape_16_9
+        default: '3:4'
+        type: string
       model:
         description: 'falモデルID'
         required: false
-        default: 'fal-ai/flux/dev'
+        default: 'fal-ai/nano-banana-pro'
+        type: choice
+        options:
+          - fal-ai/nano-banana-pro
+          - fal-ai/nano-banana
+          - fal-ai/flux/dev
+          - fal-ai/flux/schnell
+      image_size:
+        description: 'flux系のみ使用(square_hd / portrait_4_3 / landscape_16_9 等)'
+        required: false
+        default: ''
         type: string
 
 permissions:
@@ -42,6 +46,7 @@ jobs:
           FAL_KEY: ${{ secrets.FAL_KEY }}
           PROMPT: ${{ inputs.prompt }}
           OUT_PATH: ${{ inputs.path }}
+          ASPECT_RATIO: ${{ inputs.aspect_ratio }}
           IMAGE_SIZE: ${{ inputs.image_size }}
           MODEL: ${{ inputs.model }}
         run: |
@@ -49,8 +54,15 @@ jobs:
           if [ -z "${FAL_KEY:-}" ]; then
             echo "::error::リポジトリのSecretsにFAL_KEYが登録されていません" && exit 1
           fi
-          body=$(jq -n --arg p "$PROMPT" --arg s "$IMAGE_SIZE" \
-            '{prompt: $p, image_size: $s, num_images: 1}')
+          # モデル系統に応じてパラメータを組み立てる
+          body=$(jq -n \
+            --arg p "$PROMPT" \
+            --arg ar "$ASPECT_RATIO" \
+            --arg sz "$IMAGE_SIZE" \
+            '{prompt: $p, num_images: 1}
+             + (if $ar != "" then {aspect_ratio: $ar} else {} end)
+             + (if $sz != "" then {image_size: $sz} else {} end)')
+          echo "model: $MODEL"
           resp=$(curl -sS -X POST "https://fal.run/$MODEL" \
             -H "Authorization: Key $FAL_KEY" \
             -H "Content-Type: application/json" \
@@ -67,10 +79,11 @@ jobs:
         env:
           OUT_PATH: ${{ inputs.path }}
           PROMPT: ${{ inputs.prompt }}
+          MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "$OUT_PATH"
-          git commit -m "画像生成: $OUT_PATH" -m "prompt: $PROMPT"
+          git commit -m "画像生成: $OUT_PATH" -m "model: $MODEL" -m "prompt: $PROMPT"
           git push
