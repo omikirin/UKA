@@ -17,15 +17,10 @@ on:
         default: '3:4'
         type: string
       model:
-        description: 'falモデルID'
+        description: 'falモデルID(例: fal-ai/nano-banana-pro, fal-ai/nano-banana-pro/edit, fal-ai/flux/dev)'
         required: false
         default: 'fal-ai/nano-banana-pro'
-        type: choice
-        options:
-          - fal-ai/nano-banana-pro
-          - fal-ai/nano-banana
-          - fal-ai/flux/dev
-          - fal-ai/flux/schnell
+        type: string
       image_size:
         description: 'flux系のみ使用(square_hd / portrait_4_3 / landscape_16_9 等)'
         required: false
