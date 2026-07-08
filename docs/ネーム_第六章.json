@@ -1,0 +1,80 @@
+{
+  "title": "第六章 名前のない客",
+  "format_ref": "characters.json の format_rules_MANDATORY に準拠(右1p=コマ1-3、左2p=コマ4-6)",
+  "page_math": {"spreads": 9, "panels": 54, "single_pages": 18},
+  "characters_required": {"designed": ["uka", "oto", "kon"], "needed": ["シオン(モブ可)", "所長の老兎(モブ)"]},
+  "spreads": [
+    {"spread": 1, "scene": "貴婦人が来る", "panels": [
+      {"no": 1, "chars": [], "prompt": "small mountain prisoner camp in uproar, cleaning frenzy, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "第七十三地区に、都の貴婦人が来る。英雄ハーヴェイ将官の未亡人、オト・ハーヴェイその人だという。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "propaganda officer presenting itinerary papers with theatrical bow, empty upper right", "dialogue": [{"speaker": "シオン", "text": "この巡回こそ、奥様の悲しみの、最も美しい使い道でございます", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 3, "chars": ["oto"], "prompt": "{oto} drawing inspection route on map with ruler, precise line, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "巡回先の選定は、オト自身が行った。効率的で、誰の目にも不自然でない経路。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 4, "chars": [], "prompt": "map close-up, one camp marked as natural waypoint on the route, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "数式の中に一つの意図を隠すことなど、彼女には呼吸より易しかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 5, "chars": ["kon"], "prompt": "{kon} proudly wearing her one good outfit, old warden polishing everything behind, empty upper left", "dialogue": [], "sfx": "ゴシゴシ"},
+      {"no": 6, "chars": ["uka"], "prompt": "{uka} on knees polishing corridor floor, splint off now, indifferent, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "そしてウカは——医務室の雑用係として、その日、廊下の床を磨いていた。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "廊下", "panels": [
+      {"no": 7, "chars": ["uka"], "prompt": "procession footsteps passing polishing {uka} who keeps head down, floor level shot, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "都の見世物になるのは、ごめんだ", "balloon": "top_left", "type": "thought"}], "sfx": "コツ…コツ…"},
+      {"no": 8, "chars": [], "prompt": "one pair of footsteps stopping, mourning dress hem at edge of frame, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "足音の一つが、彼女の前で、止まった。", "balloon": "top_right", "type": "narration"}], "sfx": "…ピタ"},
+      {"no": 9, "chars": ["uka", "oto"], "prompt": "{uka} looking up from floor at small woman in deep mourning dress, low angle, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "知らない顔だ。会ったことはない。それなのに、この輪郭を、どこかで——", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 10, "chars": [], "prompt": "flash memory: tiny clinging shadow on stage seen from a kilometer up, desaturated, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "千メートル上空から見た、壇上の小さな影。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 11, "chars": ["oto"], "prompt": "{oto} looking at splinted arm, composed quiet face, empty upper left", "dialogue": [{"speaker": "オト", "text": "お怪我を、なさっているのね", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 12, "chars": ["uka", "oto"], "prompt": "{oto} already walking on, {uka} frozen with polishing cloth, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……不時着の際に。もう、ほとんど", "balloon": "top_right", "type": "normal"}, {"speaker": "オト", "text": "そう。捕虜の療養は、条約上の権利ですから", "balloon": "bottom_left", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "角の向こう", "panels": [
+      {"no": 13, "chars": ["uka"], "prompt": "{uka} watching the procession go, hand pressed to own chest, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "心臓が、理由の分からない速さで打っていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 14, "chars": ["oto"], "prompt": "{oto} turning corridor corner then bracing hand against wall, perfect posture breaking, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "角を曲がった瞬間、彼女は壁に手をついた。膝が、笑っていたのだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 15, "chars": ["oto"], "prompt": "{oto} stopping worried attendant with a single look, empty upper left", "dialogue": [{"speaker": "オト", "text": "大丈夫。長旅の疲れです", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 16, "chars": ["oto"], "prompt": "close-up {oto} eyes, cold certainty, empty upper right", "dialogue": [{"speaker": "オト", "text": "あの狐だ。あの目だ。網膜に灼きついた、あの機影の——", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 17, "chars": [], "prompt": "montage of imagined confrontations: accusation, tribunal, gallows, all crossed out, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "百回、想像していた。仇を見つけたら、糾弾するのか。処刑を要求するのか。現実の彼女がしたのは、そのどれでもなかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 18, "chars": ["oto"], "prompt": "{oto} straightening her spine again, resuming perfect walk, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "人違いで誰かを憎むことは、彼女の許容できる誤差を超えていた。憎むためにすら、彼女は、正確でなければならなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "樋の前で", "panels": [
+      {"no": 19, "chars": [], "prompt": "camp calendar, one night extended to three, attendants puzzled, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "貴婦人の滞在は、一泊から三泊に延びた。慎重に偶然を装った、接触の反復のために。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 20, "chars": ["oto"], "prompt": "{oto} alone before irrigation channels in farm cavern, tracing angles with her eyes, empty upper right", "dialogue": [{"speaker": "オト", "text": "……三段目の分岐、勾配が変わっていますのね", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 21, "chars": ["uka"], "prompt": "{uka} behind her holding basket of potatoes, answering plainly, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "五日前の補修で材が変わった。内面が粗いから、同じ勾配だと四段目が渇く。……と、ここの子どもに聞いた", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 22, "chars": ["oto"], "prompt": "{oto} turning around, scholarly spark, empty upper right", "dialogue": [{"speaker": "オト", "text": "流速の低下を、摩擦でどのくらいと見積もって?", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 23, "chars": ["uka"], "prompt": "{uka} pointing at water surface at channel junction, smooth flow, no standing waves, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "ほら、分岐の水面。段差の前後で、波が立ってない。合ってる証拠", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["uka", "oto"], "prompt": "the two side by side watching the water, strange quiet moment, light shaft above, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "敵国の捕虜と、敵国の貴婦人が、水路の波を並んで眺めている。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "正直な機械", "panels": [
+      {"no": 25, "chars": ["oto", "uka"], "prompt": "conversation continuing by the channels, empty upper left", "dialogue": [{"speaker": "オト", "text": "あなた、技術科の出?", "balloon": "top_left", "type": "normal"}, {"speaker": "ウカ", "text": "輪守——風車守りの家系。水と風を読む家", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 26, "chars": ["oto"], "prompt": "{oto} choosing words, looking at the humble channels with straight respect, empty upper right", "dialogue": [{"speaker": "オト", "text": "わたくしは、数が、好きなの。昔から。……こういう、正直な機械が", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 27, "chars": ["uka"], "prompt": "{uka} struck, distant memory of hangar and mechanic, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "——機械ってのは、作った奴の本音でできてる", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 28, "chars": ["oto"], "prompt": "close-up {oto} eyes on the geometry, no pity no curiosity, only respect, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "敵国の貴婦人の目としては、それは、あまりにも正しすぎる目だった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 29, "chars": ["oto", "uka"], "prompt": "{oto} asking, {uka} answering with borrowed name, empty upper left", "dialogue": [{"speaker": "オト", "text": "名前を、伺っていいかしら", "balloon": "top_left", "type": "normal"}, {"speaker": "ナレーション", "text": "ウカは、名簿にある偽名を答えた。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
+      {"no": 30, "chars": ["oto"], "prompt": "{oto} small nod, giving only her first name, empty upper right", "dialogue": [{"speaker": "オト", "text": "わたくしは、オト", "balloon": "top_right", "type": "normal"}, {"speaker": "ナレーション", "text": "姓は、名乗らなかった。", "balloon": "bottom_left", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "音という名前", "panels": [
+      {"no": 31, "chars": ["uka"], "prompt": "{uka} tasting the name, genuine curiosity, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "オト。変わった響き。地上の名前?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 32, "chars": ["oto"], "prompt": "{oto} soft rare smile, memory of grandmother, empty upper right", "dialogue": [{"speaker": "オト", "text": "古い言葉で「音」ですって。音は目に見えないのに、いちばん正確に世界を測れるのよ、って", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 33, "chars": ["uka"], "prompt": "{uka} sincere, wind-listening family's daughter, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "……いい名前だ", "balloon": "top_left", "type": "normal"}, {"speaker": "ナレーション", "text": "風の音で世界を測る家に生まれた彼女に、それを世辞で言う理由は、なかった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
+      {"no": 34, "chars": ["kon", "uka"], "prompt": "night infirmary, {kon} sneaking under blanket beside {uka}, whispering, empty upper right", "dialogue": [{"speaker": "コン", "text": "ねえねえ、都の奥様と仲良しなんでしょ。みんな言ってる。生意気だって。あと、かっこいいって", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 35, "chars": ["kon", "uka"], "prompt": "{uka} deadpan, {kon} grinning, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "どっちなんだ", "balloon": "top_left", "type": "normal"}, {"speaker": "コン", "text": "りょうほう!", "balloon": "bottom_right", "type": "shout"}], "sfx": null},
+      {"no": 36, "chars": ["kon"], "prompt": "{kon} voice dropping serious, moonlight from small window, empty upper right", "dialogue": [{"speaker": "コン", "text": "……あのね。奥様、今日、祠に来たんだよ", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "空の人のぶんの石", "panels": [
+      {"no": 37, "chars": ["oto"], "prompt": "memory scene told by kon: {oto} crouched long before the stone shrine with flowers, empty upper left", "dialogue": [{"speaker": "コン", "text": "お花持って、すっごく長いこと、しゃがんでた", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 38, "chars": ["oto", "kon"], "prompt": "{oto} asking {kon} at shrine, dusk, empty upper right", "dialogue": [{"speaker": "オト", "text": "この祠には、空の人のぶんも、あるのかしら", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 39, "chars": ["kon"], "prompt": "{kon} shrugging practical, {oto} faint smile placing one stone, empty upper left", "dialogue": [{"speaker": "コン", "text": "ないけど、石ならいっぱいあるから、積めば? って言ったら、ほんとに石、ひとつ積んでった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 40, "chars": ["uka"], "prompt": "early morning, {uka} at the shrine finding one new round river stone on the pile, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "角の取れた、丸い、川の石。誰の何を弔う石なのか、積んだ本人以外、知りようもない石。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": ["uka"], "prompt": "{uka} placing her own stone beside it, careful hands, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "九百の風車のぶん、というには小さすぎた。壇上の男のぶん、と認めるには、憎しみはまだ行き場を探していた。", "balloon": "top_left", "type": "narration"}], "sfx": "コト…"},
+      {"no": 42, "chars": [], "prompt": "two stones side by side on the pile, morning light shaft, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "名目のないまま、それでも積まずにいられない、ひとつの重さだった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "出立", "panels": [
+      {"no": 43, "chars": ["oto"], "prompt": "{oto} at carriage door turning back once toward the camp buildings, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "馬車に乗り込む間際、オトは一度だけ、振り返った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 44, "chars": [], "prompt": "infirmary window, empty, no fox figure, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "彼女は少しだけ落胆し、落胆した自分に驚愕し、その驚愕ごと喪服の下に畳み込んだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 45, "chars": ["oto"], "prompt": "{oto} in carriage, hands folded on lap, eyes closed, empty upper left", "dialogue": [{"speaker": "オト", "text": "証明は、まだ終わっていない。あの狐が仇である証明も——もうひとつの、認めがたい仮説も", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 46, "chars": [], "prompt": "mental calculation imagery: wheel-keeper lineage, crash site, unit insignia, arrows converging, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "あの狐の「輪守の家系」。撃墜地点。所属部隊。そこから逆算される、故郷の区画。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 47, "chars": [], "prompt": "the answer materializing, cold, a deck designation, empty center", "dialogue": [{"speaker": "ナレーション", "text": "第三甲板。夫の砲が——わたくしの数式が着弾させた、あの区画。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 48, "chars": [], "prompt": "carriage driving into dark wasteland, small against horizon, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "閉じた瞼の裏で、招かれざる計算が、いつものように、正確に、無慈悲に、進んでいった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "章間・二つの心", "panels": [
+      {"no": 49, "chars": ["uka"], "prompt": "{uka} at the infirmary window after all, watching the carriage dust trail, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "ウカは、窓の陰にいた。姿を見せる理由が、見つからなかっただけだった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 50, "chars": ["uka"], "prompt": "{uka} touching her own chest, puzzled by it, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "オト。……音は、いちばん正確に世界を測る、か", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 51, "chars": ["kon"], "prompt": "{kon} at shrine replacing flowers, now three new stones on the pile, empty upper left", "dialogue": [], "sfx": null},
+      {"no": 52, "chars": [], "prompt": "split composition: carriage on dark road / camp under light shaft, two worlds, empty center", "dialogue": [{"speaker": "ナレーション", "text": "仇かもしれない女と、仇の妻。二人はまだ、互いの名の重さを知らない。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 53, "chars": ["oto"], "prompt": "{oto} in carriage opening eyes, resolve set, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "検証には、最後の証人が要る。夫が「知人の技術者」と呼んだ、あの老人が。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 54, "chars": [], "prompt": "final: narrow line of dawn over the wasteland road, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "二十日後、彼女は戻ってくる。答えを、携えて。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}

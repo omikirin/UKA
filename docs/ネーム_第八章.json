@@ -1,0 +1,88 @@
+{
+  "title": "第八章 大徴収作戦",
+  "format_ref": "characters.json の format_rules_MANDATORY に準拠",
+  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
+  "characters_required": {"designed": ["uka", "oto", "shinra", "kon"], "needed": ["ガンジ翁", "ロトン(戦死回想)", "セキシュウ", "シオン", "おろちの長老(老狐・モブ可)", "イヅナ(言及のみ・次章までにデザイン)"]},
+  "spreads": [
+    {"spread": 1, "scene": "夜明け前の馬車", "panels": [
+      {"no": 1, "chars": [], "prompt": "carriage with widow's crest leaving camp before dawn, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夜明け前、一台の馬車が発った。英雄の寡婦の紋章を掲げた馬車を、検問で止められる兵は、この国にいない。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "old rabbit disguised as water engineer at driver's seat, checkpoint waving through, empty upper right", "dialogue": [], "sfx": null},
+      {"no": 3, "chars": ["uka"], "prompt": "inside, {uka} under blanket between cargo on floor, {oto} in mourning dress at window, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "……なんで。なんで、あんたが、あたしを逃がす", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 4, "chars": ["oto"], "prompt": "{oto} watching dark wasteland pass, not turning, empty upper right", "dialogue": [{"speaker": "オト", "text": "あなたが法廷で死ねば、あなたは「式典の凶手」という名の的になって終わります。戦争はまたひとつ、燃料を足される", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 5, "chars": ["oto"], "prompt": "{oto} jaw set, empty upper left", "dialogue": [{"speaker": "オト", "text": "……わたくしは、それが、我慢なりません", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 6, "chars": ["uka"], "prompt": "{uka} eyes from under blanket edge, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……あたしを赦したわけじゃ、ない", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "憎み続ける義務", "panels": [
+      {"no": 7, "chars": ["oto"], "prompt": "{oto} turning to look at her for the first time, dry eyes, empty upper left", "dialogue": [{"speaker": "オト", "text": "赦す? 思い上がらないで。わたくしはあなたを憎んでいます。おそらく生涯", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 8, "chars": ["oto"], "prompt": "{oto} precise and unwavering, empty upper right", "dialogue": [{"speaker": "オト", "text": "ただ、あなたが死ねば、九百人の記憶も、わたくしの罪の生きた証人も、消える。あなたには、生きて、わたくしを憎み続ける義務があります", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 9, "chars": ["uka"], "prompt": "{uka} under blanket chewing the words, strange fit, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "奇妙なことに、それはどんな慰めよりも、正確に、彼女の背骨に沿った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 10, "chars": [], "prompt": "driver's seat, old man speaking over shoulder as wasteland rolls, empty upper right", "dialogue": [{"speaker": "ガンジ", "text": "廃艦の民、というてな。墜ちた空の艦の生き残りと、故郷を追われた地上の民が、残骸を町に変えて暮らしとる", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 11, "chars": [], "prompt": "imagined vista: wrecked airship hull with homes between its ribs, foxes and rabbits together, empty upper left", "dialogue": [{"speaker": "ガンジ", "text": "狐と兎が屋根を分け合って三代になる場所が、この大地に、ちゃんとあるのだ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 12, "chars": ["uka"], "prompt": "{uka} listening, something loosening in her face, empty upper right", "dialogue": [], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "預けるだけ", "panels": [
+      {"no": 13, "chars": ["oto"], "prompt": "roadside parting, {oto} handing small cloth bundle from carriage, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "別れ際、オトはウカに、小さな包みを渡した。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 14, "chars": ["uka"], "prompt": "{uka} unwrapping: the pendulum pocket watch, lid open, swinging, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……これは、受け取れない。あんたの、旦那の", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 15, "chars": ["oto"], "prompt": "{oto} already looking out the window again, empty upper left", "dialogue": [{"speaker": "オト", "text": "預けるだけです。いつか、返しに来なさい。わたくしが、あなたの顔を、忘れないように", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 16, "chars": ["oto"], "prompt": "{oto} profile, cold and clear, empty upper right", "dialogue": [{"speaker": "オト", "text": "……憎むためには、正確な記憶が要るのです", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 17, "chars": ["uka"], "prompt": "{uka} standing alone in wasteland, carriage shrinking, watch in her hands, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "大風輪の音を失って以来、初めて、彼女の世界に、規則正しい機械の音が戻っていた。", "balloon": "top_left", "type": "narration"}], "sfx": "…チ… …チ…"},
+      {"no": 18, "chars": ["uka"], "prompt": "{uka} placing watch in breast pocket, weight accepted, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "自分が殺した男の心臓の代わりに時を刻んでいる、という事実の重さごと。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "大徴収", "panels": [
+      {"no": 19, "chars": [], "prompt": "seven days later, all nine decks at war stations, bomber swarms launching, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "七日後、空が、動いた。史上最大規模の航空作戦——作戦名〈大徴収〉。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 20, "chars": [], "prompt": "old fox admiral at war table, grim, empty upper right", "dialogue": [{"speaker": "セキシュウ", "text": "彼らは我々の区画をひとつ墜とした。我々は、彼らが次の砲を作る未来を、まるごと墜とす", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 21, "chars": [], "prompt": "three hundred bombers crossing cloud sea day and night, relentless, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "三百機を超える爆撃編隊が、七日七晩、雲海を渡った。", "balloon": "top_left", "type": "narration"}], "sfx": "ゴオオオ…"},
+      {"no": 22, "chars": [], "prompt": "ground: sirens as daily life, families in shelter tunnels, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "地上の空は、警報の鳴り止む時間のほうが、短くなった。", "balloon": "top_right", "type": "narration"}], "sfx": "ヴーーッ"},
+      {"no": 23, "chars": ["kon"], "prompt": "{kon} carrying the shrine flowers down into shelter, careful small hands, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "コンは祠の花を、地下の避難所に移した。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 24, "chars": [], "prompt": "flowers in a jar in dim shelter, distant thud vibrations, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "花のほうが、人より先に、地上を追われた。", "balloon": "top_right", "type": "narration"}], "sfx": "…ドン…ドン…"}
+    ]},
+    {"spread": 5, "scene": "ロトン", "panels": [
+      {"no": 25, "chars": [], "prompt": "new federation anti-air positions firing with unprecedented reach, layered forged barrels, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "月ノ塔で培われた長射程技術は、対空砲へと展開されていた。「敗者の廃品」と嗤われた、あの鍛接の地層の技術が。", "balloon": "top_left", "type": "narration"}], "sfx": "ドンッ"},
+      {"no": 26, "chars": [], "prompt": "sky nation aircraft dragged down one by one, trails of smoke, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "空の国の機体を、一機、また一機と、地上へ引きずり下ろしていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 27, "chars": [], "prompt": "one burning aircraft holding shield position at formation edge, refusing to fall out, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "その中に、ロトンの機体があった。彼は火を噴く機体で、最後まで編隊の盾の位置を守った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 28, "chars": [], "prompt": "the plane descending under control, canopy closed, no ejection, toward empty rocks away from village lights, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "脱出装置を作動させないまま、雲の下へ消えた。「彼らしくもない」と、誰もが言った。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 29, "chars": ["uka"], "prompt": "{uka} in wrecked-ship town listening to both armies' radio from old receiver, understanding, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "ロトンは地図を読むのが正確な男だった。墜ちる先に何があるか、最後まで計算してたんだ", "balloon": "top_left", "type": "thought"}], "sfx": "ザザ…"},
+      {"no": 30, "chars": ["uka"], "prompt": "{uka} placing one stone at the edge of the wreck town, small cairn beginning, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "名目のある石だった。初めての。", "balloon": "top_right", "type": "narration"}], "sfx": "コト…"}
+    ]},
+    {"spread": 6, "scene": "おろち", "panels": [
+      {"no": 31, "chars": [], "prompt": "wide: giant transport ship hull lying like a serpent along valley, homes built between its ribs, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "廃艦の民の町は、〈おろち〉と呼ばれていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 32, "chars": [], "prompt": "street life: fox and rabbit neighbors sharing laundry lines, children mixed, ordinary, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "狐と兎が、当たり前に隣り合って住んでいた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": ["uka"], "prompt": "{uka} watching the ordinary scene, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "最初の数日、ウカはそれが不思議で仕方なく、十日目には、不思議に思っていた自分のほうが不思議になった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 34, "chars": ["uka"], "prompt": "old fox elder watching how {uka} tilts her ears to wind, empty upper right", "dialogue": [{"speaker": "長老", "text": "あんた、輪守の家の子だろう。風の聞き方で分かる。……なら、うちの「心臓」を見ていくといい", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 35, "chars": [], "prompt": "descending into wrecked ship's engine section, warm mechanical glow, empty upper left", "dialogue": [], "sfx": "ゴウン…ゴウン…"},
+      {"no": 36, "chars": [], "prompt": "hybrid engine reveal: sky levitation core, ground waterwheel, forge-welded added gears, one living system, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "三十年前に墜ちた艦の機関が——小さく、しかし確かに、まだ稼働していた。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "おろちの心臓", "panels": [
+      {"no": 37, "chars": [], "prompt": "close on junction where waterwheel shaft meets forged gears meets floating core, empty upper left", "dialogue": [{"speaker": "長老", "text": "墜ちた時、機関は死にかけとった。空の技術だけでは直せなんだ。兎の連中が、水車と鍛接で、足りん部分を補いよった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 38, "chars": [], "prompt": "elder's hand on the humming casing, empty upper right", "dialogue": [{"speaker": "長老", "text": "見てみい。この機関はもう、空のものでも地上のものでもない。おろちのものだ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 39, "chars": ["uka"], "prompt": "{uka} palm against the engine, eyes closed, listening, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "不揃いで、雑多で、歯車の一枚ごとに違う出自の音がする。それなのに、系としては、破綻なく回っている。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 40, "chars": ["uka"], "prompt": "{uka} small smile, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "シンラに、見せたい", "balloon": "top_right", "type": "thought"}, {"speaker": "ナレーション", "text": "今度は、場違いだとは思わなかった。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": [], "prompt": "night, elder pausing at lantern, remembering something, empty upper left", "dialogue": [{"speaker": "長老", "text": "時にあんた、第三甲板の出と言うたな。……椿区画の。半年前、椿の生き残りが、ここを通った", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 42, "chars": ["uka"], "prompt": "extreme close-up {uka} eyes flying open, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ウカの心臓が、止まった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "イヅナ", "panels": [
+      {"no": 43, "chars": [], "prompt": "elder recounting: rescue teams pulling survivors from fallen district wreckage, empty upper left", "dialogue": [{"speaker": "長老", "text": "残骸から引き出された生存者が、幾人かおる。一人、技師の女がな、回収部隊と取引しよった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 44, "chars": [], "prompt": "silhouette of strong-eyed fox woman negotiating over blueprints for the wounded, empty upper right", "dialogue": [{"speaker": "長老", "text": "風車座の機構をくれてやる代わりに、生存者の治療をさせろと。気の強い、風読みの目をした女だ。名は、確か", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 45, "chars": [], "prompt": "elder's face in lantern light saying the name, empty upper left", "dialogue": [{"speaker": "長老", "text": "イヅナ、と言うた", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 46, "chars": ["uka"], "prompt": "{uka} whole body still, the words landing, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "姉さんは、生きている", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 47, "chars": ["uka"], "prompt": "night, {uka} alone on high deck remnant, crying with hand over mouth, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "式典の日にも、露見の夜にも出なかった涙が、堰を切って出た。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 48, "chars": ["uka"], "prompt": "{uka} against starry sky, watch at her chest ticking, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "憎しみは人を立たせるが、希望は人を泣かせるのだと、彼女は初めて知った。", "balloon": "top_right", "type": "narration"}], "sfx": "…チ… …チ…"}
+    ]},
+    {"spread": 9, "scene": "オト対シオン", "panels": [
+      {"no": 49, "chars": [], "prompt": "capital study, propaganda officer probing with polite menace, empty upper left", "dialogue": [{"speaker": "シオン", "text": "奥様。式典の凶手が、護送前夜に忽然と消えたと。……よもやとは思いますが", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["oto"], "prompt": "{oto} perfectly composed with folded fan, narrow sky window behind, empty upper right", "dialogue": [{"speaker": "オト", "text": "よもや、何かしら", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 51, "chars": [], "prompt": "officer pressing, veiled threat, empty upper left", "dialogue": [{"speaker": "シオン", "text": "あなた様はもはや、連邦の戦意そのものだ。万一、凶手の逃亡に関わったなどということになれば——", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": ["oto"], "prompt": "{oto} closing the fan with a click, temperature dropping, empty upper right", "dialogue": [{"speaker": "オト", "text": "わたくし近頃、夫の遺した書類を整理しておりますの。〈第一撃〉の目標座標の、変更命令のことなど。命令書の署名は、どなたのものかしら", "balloon": "top_right", "type": "normal"}], "sfx": "パチン"},
+      {"no": 53, "chars": [], "prompt": "officer's oily courtesy peeling off his face, empty upper left", "dialogue": [{"speaker": "オト", "text": "連邦の戦意は、そういう紙が新聞に載っても、保つものかしらね", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 54, "chars": ["oto"], "prompt": "{oto} smiling a smile the study girl could never have made, empty upper right", "dialogue": [{"speaker": "オト", "text": "わたくしたち、お互い、知らないままでいるのが、よろしくてよ", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 10, "scene": "解き始める", "panels": [
+      {"no": 55, "chars": ["oto"], "prompt": "{oto} alone at window after he leaves, distant bombing thunder beyond narrow sky, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "細長い空の向こうで、爆撃の遠雷が、今日も鳴っていた。夫の砲が開けた穴から、憎しみが倍になって降ってくる。", "balloon": "top_left", "type": "narration"}], "sfx": "…ゴロ…"},
+      {"no": 56, "chars": ["oto"], "prompt": "{oto} turning from window, resolve, empty upper right", "dialogue": [{"speaker": "オト", "text": "止めなければ", "balloon": "top_right", "type": "thought"}, {"speaker": "ナレーション", "text": "祈りではなかった。彼女は祈り方を知らない。彼女が知っているのは、解き方だけだ。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 57, "chars": ["oto"], "prompt": "{oto} at desk spreading a fresh sheet, pen poised, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "問い。この戦争を止める解は、存在するか。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 58, "chars": [], "prompt": "pen beginning to move, variables listed, conditions terrible, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "変数は多く、条件は最悪で、時間は少ない。それでも彼女は、書き始めた。", "balloon": "top_right", "type": "narration"}], "sfx": "カリ…カリ…"},
+      {"no": 59, "chars": ["oto"], "prompt": "{oto} writing through the night, lamplight, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "解けない問題と、まだ解けていない問題は、別のものだったからだ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 60, "chars": [], "prompt": "final: corner of the first page, an unconscious small sketch of a nine-bladed windmill, empty center", "dialogue": [{"speaker": "ナレーション", "text": "その一枚目の隅に、彼女は無意識に、小さな図を描いていた。九枚羽根の、風車の図を。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}

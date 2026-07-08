@@ -1,0 +1,96 @@
+{
+  "title": "第九章 第二射",
+  "format_ref": "characters.json の format_rules_MANDATORY に準拠",
+  "page_math": {"spreads": 11, "panels": 66, "single_pages": 22},
+  "characters_required": {"designed": ["uka", "oto", "shinra"], "needed": ["ガンジ翁"]},
+  "spreads": [
+    {"spread": 1, "scene": "命令書", "panels": [
+      {"no": 1, "chars": [], "prompt": "midnight workshop, priority sealed order delivered to old rabbit, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "連邦参謀本部発、最優先。〈月ノ塔〉改修計画。主任設計師ガンジの現場復帰を命ず。目的——第二射。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "teacup falling from old hands, shattering, empty upper right", "dialogue": [], "sfx": "ガチャンッ"},
+      {"no": 3, "chars": [], "prompt": "order sheet close-up, target field, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "目標、風輪国ヴェルダント、中央機関部。——大風輪、そのもの。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 4, "chars": [], "prompt": "cold planning document imagery: the great turbine crossed by targeting lines, nine cities implied below, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "大風輪が止まれば、送力は絶え、九つの甲板都市、人口二百七十万の国家は——丸ごと、大地に墜ちる。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 5, "chars": [], "prompt": "requirement sheet last line, one name, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "現行の連邦にこれを解ける頭脳は、一人しか記載されていなかった。特別技術顧問、オト・ハーヴェイの徴用を上申する。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 6, "chars": [], "prompt": "old man alone in workshop writing two letters by lamp, one unaddressed, empty upper right", "dialogue": [{"speaker": "ガンジ", "text": "……正気か", "balloon": "top_right", "type": "normal"}, {"speaker": "ナレーション", "text": "翁は夜のうちに、二通の手紙を書いた。", "balloon": "bottom_left", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "シンラ来訪", "panels": [
+      {"no": 7, "chars": [], "prompt": "small patchwork yet oddly refined aircraft landing feather-light on wrecked deck, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "手紙が〈おろち〉に着いた三日後、渓谷の空に、一機の飛行機が降りた。誰がどう見ても、それは着陸だった。", "balloon": "top_left", "type": "narration"}], "sfx": "フワ…"},
+      {"no": 8, "chars": ["shinra"], "prompt": "{shinra} climbing out, oil-stained as ever, grinning at running {uka}, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "ひどい面だな、ウカ。だが生きてる面だ。上等だ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 9, "chars": ["uka"], "prompt": "{uka} stunned, half laughing half shouting, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "シンラ!? あんた、なんで——どうやって", "balloon": "top_left", "type": "shout"}], "sfx": null},
+      {"no": 10, "chars": ["shinra"], "prompt": "{shinra} matter-of-fact, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "脱走だよ。〈大徴収〉の三日目に、俺は軍を降りた。ロトンの機体を俺が送り出して、墜ちるのを管制記録で見た。もう沢山だと思った", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 11, "chars": ["shinra"], "prompt": "{shinra} eyes hard and clear, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "俺は機械を直すために生まれたんであって、機械で人間を挽き潰すためじゃない", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 12, "chars": ["shinra"], "prompt": "{shinra} jerking chin toward engine section, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "ここの「心臓」の噂は、軍にいた頃から聞いてた。見せろ。話はそれからだ", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "三日三晩", "panels": [
+      {"no": 13, "chars": ["shinra"], "prompt": "{shinra} seeing the hybrid engine, boyish awe on soot face, empty upper left", "dialogue": [], "sfx": "…!"},
+      {"no": 14, "chars": [], "prompt": "montage: three days and nights in engine section, sparks, measurements, sleep at workbench, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "シンラは三日三晩、機関区から出てこなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 15, "chars": ["shinra"], "prompt": "fourth morning, {shinra} emerging oil-covered, spreading one large drawing before {uka} and elders, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "あの機関を見て、確信した。できるぞ、ウカ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 16, "chars": ["uka"], "prompt": "{uka} frowning at the drawing, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "何が", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 17, "chars": ["shinra"], "prompt": "{shinra} tapping the drawing, dead serious, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "風車を、降ろせる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 18, "chars": [], "prompt": "the drawing: great turbine and nine decks, added auxiliary wings, brake cables, staged buoyancy release, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "図面には、連結構造と——無数の補助翼と制動索と、段階的な浮力放出の手順が示されていた。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "三つ目の答え", "panels": [
+      {"no": 19, "chars": ["shinra"], "prompt": "{shinra} explaining over drawing, elders leaning in, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "風輪国はな、浮くか、墜ちるか、二択の国だ。だが、おろちの機関が教えてくれた。空の技術に地上の技術を継ぎ足せば、三つ目の答えが作れる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 20, "chars": ["shinra"], "prompt": "{shinra} finger tracing descent path, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "——降りる、だ。浮力を段階放出しながら、大風輪自体を巨大な制動翼に使う。時間をかけて、国ごと大地に降りる。死者を出さずに", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 21, "chars": [], "prompt": "elders murmuring, {uka} staring at one point of the drawing, empty upper left", "dialogue": [], "sfx": "ザワ…"},
+      {"no": 22, "chars": ["uka"], "prompt": "{uka} pointing at the nine blades, professional sharpness, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "羽根の制御は、誰がやるの。降下中の風は乱流だらけだ。九枚のピッチを刻一刻変え続けなきゃ、本当に墜ちる。機械じゃ間に合わない。人間が、風を読みながら——", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 23, "chars": ["shinra"], "prompt": "{shinra} looking straight at her, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "そうだ。輪守が要る。それも、飛行士の反射神経を持った輪守が", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["shinra"], "prompt": "close-up {shinra}, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "……この大陸に何人いると思う? 俺の知る限り、一人だ", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "決意", "panels": [
+      {"no": 25, "chars": ["uka"], "prompt": "{uka} silent, weight of it: lowering the symbol of her homeland with her own hands, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "空の民が数百年、正しさの証としてきた「高さ」を、終わらせる側に立つ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 26, "chars": ["uka"], "prompt": "{uka} raising her head, practical question, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……あたしがやるとして。そもそも、なんで今、降ろす話なんだ。国は飛んでる。誰も降りたがってない", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 27, "chars": ["shinra"], "prompt": "{shinra} taking the unaddressed letter from his jacket, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "読め。……時間がない理由が、書いてある", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 28, "chars": [], "prompt": "letter close-up: second shot, target the great wind turbine, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "第二射。目標、大風輪。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 29, "chars": ["uka"], "prompt": "{uka} reading twice, lifting face, wheel-keeper's quiet focus replacing doubt, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "彼女の目には、もう迷いの色はなかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 30, "chars": ["uka"], "prompt": "{uka} taking out the pocket watch, pendulum swinging, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "シンラ。首都に行く。オトに会う。取引する。……返すものが、あるんだ", "balloon": "top_right", "type": "normal"}], "sfx": "…チ…"}
+    ]},
+    {"spread": 6, "scene": "白紙の前", "panels": [
+      {"no": 31, "chars": ["oto"], "prompt": "underground calculation room, {oto} before blank paper, guards' shadows at door, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "徴用命令から十日。彼女はまだ、一つの数字も書いていなかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 32, "chars": [], "prompt": "two branching futures sketched cold: refusing→someone else's imprecise shell falling on a deck city / writing→270万 falling precisely, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "彼女が書けば二百七十万の国が計画的に墜とされ、書かなければ、精度の落ちた砲弾が、どこかの甲板都市に落ちる。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": ["oto"], "prompt": "{oto} hands folded, eyes on white paper, faith creaking, empty upper left", "dialogue": [{"speaker": "オト", "text": "解けない問題と、まだ解けていない問題は、別のものだ", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 34, "chars": ["oto"], "prompt": "{oto} at night in her quarters, exhausted, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "その信仰が、初めて、軋んでいた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 35, "chars": [], "prompt": "small knocking at third-floor window, night, empty upper left", "dialogue": [], "sfx": "コツ、コツ"},
+      {"no": 36, "chars": ["uka"], "prompt": "upside-down fox face outside the window, hanging from rope, deadpan, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "この世でいちばん会いたくて、いちばん会ってはならない顔が、そこにあった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "窓の狐", "panels": [
+      {"no": 37, "chars": ["oto", "uka"], "prompt": "{oto} opening window, {uka} dropping in silently, empty upper left", "dialogue": [{"speaker": "オト", "text": "……あなた、正気なの", "balloon": "top_left", "type": "normal"}, {"speaker": "ウカ", "text": "静かに。時計を返しに来た", "balloon": "bottom_right", "type": "normal"}], "sfx": "スタ…"},
+      {"no": 38, "chars": ["oto"], "prompt": "{oto} arms crossed, not taking the offered watch, empty upper right", "dialogue": [{"speaker": "オト", "text": "返しに来なさい、とは言いました。首都の官舎の窓からとは、言っていません", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 39, "chars": ["uka"], "prompt": "{uka} pocketing the watch again, cutting to business, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "細かいことを。……あんた、第二射の計算、まだ書いてないな", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 40, "chars": ["oto"], "prompt": "{oto} eyes narrowing, empty upper right", "dialogue": [{"speaker": "オト", "text": "なぜ、それを", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 41, "chars": ["uka"], "prompt": "{uka} counting on fingers, reading her exactly, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "ガンジの爺様の手紙と——あんたの性格だ。書けば正確に二百七十万が墜ち、書かなきゃ不正確に誰かが墜ちる。あんたの頭は、その両方を許せない", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 42, "chars": ["uka", "oto"], "prompt": "{uka} finishing, {oto} silent, silence as answer, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "だから白紙の前で、十日、止まってる。……違う?", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "図面を挟んで", "panels": [
+      {"no": 43, "chars": ["uka"], "prompt": "{uka} spreading shinra's drawing on the small desk, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "三つ目の答えを、持ってきた", "balloon": "top_left", "type": "normal"}], "sfx": "バサ…"},
+      {"no": 44, "chars": ["oto"], "prompt": "{oto} eyes transforming: widow's film peeling, then study girl, then coldest calculator on the continent, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "最初の一分で寡婦の膜が剥がれ、次の一分で書斎の令嬢に、三分目には、この大陸で最も冷徹な計算者の目になっていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 45, "chars": ["oto"], "prompt": "{oto} bent over drawing, pen already moving in margins, empty upper left", "dialogue": [{"speaker": "オト", "text": "浮力の段階放出。大風輪を制動翼に。降下十九——いえ、この係数なら二十二時間。九枚羽根の連続最適化……この計算量は、尋常ではありません", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 46, "chars": ["oto"], "prompt": "{oto} lifting face, naming the missing piece, empty upper right", "dialogue": [{"speaker": "オト", "text": "事前計算では足りない。誰かが、降りていく国の上で、風を読みながら、リアルタイムで解き続けなければ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 47, "chars": ["uka"], "prompt": "{uka} thumb to her own chest, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "読むのは、あたしがやる。風を読んで、あんたに渡す。あんたが解いて、羽根に返す", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 48, "chars": ["uka"], "prompt": "{uka} steady, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……輪守と、計算者。二人で一つの系だ", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "和解は要らない", "panels": [
+      {"no": 49, "chars": ["oto"], "prompt": "{oto} looking at the drawing a long time, then quietly, empty upper left", "dialogue": [{"speaker": "オト", "text": "わたくしは、あなたを憎んでいます", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["uka"], "prompt": "{uka} not flinching, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "知ってる。あたしも、あんたの数式があたしの故郷を撃った事実を、忘れたことはない", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 51, "chars": ["oto"], "prompt": "{oto} testing the impossible premise, empty upper left", "dialogue": [{"speaker": "オト", "text": "その二人が、同じ機関の中で、互いの出す数を、一瞬ごとに信じ合う。……できると、思って?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": ["uka"], "prompt": "{uka} offering the watch again, lid open this time, pendulum swinging between them, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "あんたの旦那の、これと同じだ。憎いとか、信じるとか、そういうのと関係なく——正確なものは、正確だ", "balloon": "top_right", "type": "normal"}], "sfx": "…チ… …チ…"},
+      {"no": 53, "chars": ["uka"], "prompt": "{uka} finishing, memory of the hybrid engine behind her words, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "おろちの機関が、そうだった。出自の違う歯車が、噛み合ってた。噛み合うのに、和解は要らなかった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 54, "chars": ["oto"], "prompt": "{oto} verifying the sentence in her head, then slowly reaching out and taking the watch, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "和解は、要らない。オトは、その言葉を検算した。検算は、通った。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 10, "scene": "誤差を仕込む", "panels": [
+      {"no": 55, "chars": ["oto"], "prompt": "{oto} closing her hand around the watch, empty upper left", "dialogue": [{"speaker": "オト", "text": "……条件が、あります", "balloon": "top_left", "type": "normal"}, {"speaker": "ウカ", "text": "言って", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 56, "chars": ["oto"], "prompt": "{oto} laying it out, dangerous light entering her eyes, empty upper right", "dialogue": [{"speaker": "オト", "text": "第二射は、必ず放たれます。ならば、撃たれる前に降ろすのではなく——撃たせた上で、外させます", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 57, "chars": ["oto"], "prompt": "{oto} the unasked-problem light fully lit, empty upper left", "dialogue": [{"speaker": "オト", "text": "第二射の計算は、わたくしが書く。わたくしにしか書けない精度で、わたくしにしか仕込めない誤差を、埋め込んで", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 58, "chars": [], "prompt": "trajectory sketch: shell path bending past the descending nation into empty sky, empty upper right", "dialogue": [{"speaker": "オト", "text": "連邦は撃ち、空の国は降り始めている。双方の面目と恐怖が均衡する、その一点の隙間に——停戦を、差し込みます", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 59, "chars": ["uka"], "prompt": "{uka} almost whistling, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "……あんた、とんでもない女だな", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 60, "chars": ["oto"], "prompt": "{oto} snapping the watch lid shut, first almost-smile, empty upper right", "dialogue": [{"speaker": "オト", "text": "今頃お気づき? 始めましょう。使える夜は、あと幾つもありません", "balloon": "top_right", "type": "normal"}], "sfx": "カチッ"}
+    ]},
+    {"spread": 11, "scene": "二つの頭、一つの図面", "panels": [
+      {"no": 61, "chars": ["oto"], "prompt": "{oto} pausing, adding one more thing, empty upper left", "dialogue": [{"speaker": "オト", "text": "——ああ、それから、狐の人", "balloon": "top_left", "type": "normal"}, {"speaker": "ウカ", "text": "なに", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 62, "chars": ["oto"], "prompt": "{oto} matter-of-fact, empty upper right", "dialogue": [{"speaker": "オト", "text": "ウカ、と呼びます。これからは。系の中で、呼び名が長いのは、非効率ですから", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 63, "chars": ["uka"], "prompt": "{uka} blinking, then small grin, empty upper left", "dialogue": [], "sfx": null},
+      {"no": 64, "chars": ["uka", "oto"], "prompt": "two heads bent over one drawing on the small desk, lamplight, sea of papers growing, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "その夜、首都の官舎の小さな机の上で、二つの頭が、一つの図面に屈み込んだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 65, "chars": [], "prompt": "narrow window, thin crescent moon in strip of night sky, empty upper area", "dialogue": [], "sfx": null},
+      {"no": 66, "chars": [], "prompt": "final: far away, the great windmill nation turning against the night, unaware, empty lower area", "dialogue": [{"speaker": "ナレーション", "text": "あの月とすれ違うように、巨大な風車の国が、何も知らずに回り続けていた。", "balloon": "bottom_right", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}
