@@ -1,0 +1,88 @@
+{
+  "title": "第三章 仇の名",
+  "format_ref": "chapter1_name.json と同一",
+  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
+  "characters_required": {"designed": ["uka", "shinra", "oto"], "needed": ["セキシュウ提督(老狐・モブ可)", "ロトン(同期・第八章まで登場、要デザイン)"]},
+  "spreads": [
+    {"spread": 1, "scene": "九百の紙風車", "panels": [
+      {"no": 1, "chars": [], "prompt": "wide deck covered with 900 white paper pinwheels spinning in wind, funeral banners, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "葬列に、棺はなかった。椿区画の死者たちは、故郷ごと地上へ墜ちた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "close on paper pinwheels turning all at once, dry fragile motion, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ひとつが、確認された死者ひとり。行方不明者は、数えられてすらいない。", "balloon": "top_right", "type": "narration"}], "sfx": "カラ…カラ…"},
+      {"no": 3, "chars": ["uka"], "prompt": "{uka} in dress uniform front row, rigid, listening to the pinwheels, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "ウカはその音を、最前列で聞いていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 4, "chars": [], "prompt": "small huddled section of survivors' seats in corner of vast deck, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "生存者の席は、悲しくなるほど小さくまとまっていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 5, "chars": ["uka"], "prompt": "{uka} eyes scanning rows of pinwheels, one absence, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "姉のイヅナの風車は、なかった。死者の列にも、生存者の席にも。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 6, "chars": [], "prompt": "official document close-up, one cold printed line, stamp, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "捜索は「地上勢力圏内のため実施不能」——たった一行で、打ち切られていた。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "弔辞と願書", "panels": [
+      {"no": 7, "chars": [], "prompt": "old fox admiral at funeral podium, low commanding presence, empty upper left", "dialogue": [{"speaker": "セキシュウ", "text": "彼らの砲は我々の油断を撃った。ゆえに我々は、二度と油断しないことで、死者に応えねばならない", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 8, "chars": ["uka"], "prompt": "{uka} face hardening as she listens, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "この立派な弔辞に、ただの一度も、「取り戻す」という言葉がない", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 9, "chars": [], "prompt": "pinwheels spinning harder in gust, some petals of paper tearing loose, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "国は前だけを向いている。九百の紙風車ごと、過去を風に流して。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 10, "chars": ["uka"], "prompt": "{uka} slamming application form on personnel office counter, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "前線配置転換願。志望、対地攻撃隊。", "balloon": "top_right", "type": "narration"}], "sfx": "バンッ"},
+      {"no": 11, "chars": [], "prompt": "clerk officer comparing blank form field and her face, weary pity, empty upper left", "dialogue": [{"speaker": "士官", "text": "……動機の欄が空白だが", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 12, "chars": ["uka"], "prompt": "{uka} dead-eyed stare, stamp coming down on form, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "書く必要がありますか", "balloon": "top_right", "type": "normal"}], "sfx": "ダンッ"}
+    ]},
+    {"spread": 3, "scene": "馬鹿の顔", "panels": [
+      {"no": 13, "chars": [], "prompt": "mechanic's legs sticking out from under aircraft, voice from below, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "馬鹿の顔をしてるな、ウカ。復讐する奴の顔は二種類ある。氷の顔と、馬鹿の顔だ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 14, "chars": [], "prompt": "tools and creeper board, voice continuing, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "誰を、どうやって、どこで。何も決まってないのに、心臓だけが先に走ってる", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 15, "chars": ["uka"], "prompt": "{uka} fists clenched, glaring down, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "……決まってる。ガレン・ハーヴェイ。月ノ塔の指揮官", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 16, "chars": ["shinra"], "prompt": "{shinra} sliding out from under plane, soot-stained, strangely calm eyes, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "ほう。で、そのハーヴェイ将官サマの射程まで、どういう経路で近づくんだ?", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 17, "chars": ["uka"], "prompt": "{uka} unable to answer, jaw tight, empty left side", "dialogue": [], "sfx": null},
+      {"no": 18, "chars": ["shinra"], "prompt": "{shinra} standing, jerking head toward back of hangar, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "来い。見せたいものがある", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "破片", "panels": [
+      {"no": 19, "chars": ["shinra"], "prompt": "{shinra} pulling tarp off workbench, twisted burnt metal fragments revealed, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "椿区画に刺さっていた、砲弾の破片。", "balloon": "top_left", "type": "narration"}], "sfx": "バサッ"},
+      {"no": 20, "chars": ["shinra", "uka"], "prompt": "{shinra} tossing heavy fragment, {uka} catching with both hands, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "上の連中は「敵性新兵器」として封印して終わりだ。俺は封印より分解が好きだ", "balloon": "top_right", "type": "normal"}], "sfx": "ズシッ"},
+      {"no": 21, "chars": [], "prompt": "extreme close-up of fragment cross-section, dozens of forge-welded steel layers, mixed quality, empty left side", "dialogue": [{"speaker": "シンラ", "text": "この外殻、単一の鋳造じゃない。何十枚もの鋼板の鍛接だ。上等な層と、屑鉄の層が混ざってる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 22, "chars": ["uka"], "prompt": "{uka} frowning at fragment in her hands, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "……粗悪品ってこと?", "balloon": "top_right", "type": "normal"}, {"speaker": "シンラ", "text": "逆だ", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 23, "chars": ["shinra"], "prompt": "{shinra} face lit from below by work lamp, low intense voice, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "でかい炉がないから鍛接した。いい鋼が足りないから屑鉄を混ぜた。「実現不能」の条件で——それでも作りやがったんだ。何十年もかけて", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["uka"], "prompt": "{uka} staring at layered cross-section, light tracing the strata, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "層また層。誰かの根気の、地層のような断面。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "技術の本音", "panels": [
+      {"no": 25, "chars": ["shinra"], "prompt": "{shinra} arms crossed against workbench, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "技術ってのはな、高い低いで勝ち負けが決まるんじゃない。何のために、どれだけ本気か、で決まる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 26, "chars": ["shinra"], "prompt": "{shinra} looking up at aircraft above, bitter, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "俺たちは威張るために飛んでた。連中は届くために撃った。……この差が分からん限り、また撃たれるぞ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 27, "chars": ["uka"], "prompt": "{uka} quiet, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "あんた、それ、上に報告した?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 28, "chars": ["shinra"], "prompt": "{shinra} snorting, mock salute, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "技術士官サマの返答はこうだ。「敗者の廃品を過大評価するのは敗北主義である」", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 29, "chars": ["shinra"], "prompt": "{shinra} smile gone, dead serious, empty left side", "dialogue": [{"speaker": "シンラ", "text": "お前が殺しに行くその男は、何十年分の、届きたいという執念の、いちばん上に立ってた男だ", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 30, "chars": ["shinra"], "prompt": "close-up {shinra} eyes, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "憎むのは勝手だが、軽く見るな。軽く見た側から、墜ちる", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "報復爆撃", "panels": [
+      {"no": 31, "chars": [], "prompt": "bomber formation descending over valley, industrial hamlet below, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "標的は月ノ塔——ではなかった。「軍事転用可能な工業集落」。どこまでも伸びる言葉だった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 32, "chars": [], "prompt": "laundry lines strung between furnace chimneys, ordinary life detail from above, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "高度を下げた瞬間、ウカの目は見てしまった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": [], "prompt": "tiny figures scattering in panic below, some very small, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "あの影の小ささは、大人のものでは、なかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 34, "chars": ["uka"], "prompt": "{uka} finger frozen over release button, trembling, empty upper right", "dialogue": [{"speaker": "無線", "text": "三番機、何をしている。投下しろ", "balloon": "top_right", "type": "radio"}], "sfx": null},
+      {"no": 35, "chars": ["uka"], "prompt": "{uka} eyes forced open, pressing the button, tears held, empty left side", "dialogue": [{"speaker": "ナレーション", "text": "閉じたまま押すことだけは、自分に許さなかった。", "balloon": "bottom_left", "type": "narration"}], "sfx": "カチッ"},
+      {"no": 36, "chars": ["uka"], "prompt": "{uka} on knees vomiting behind hangar, night, one hand on wall, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "胃が空になっても、こみ上げるものは、止まらなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "名前という的", "panels": [
+      {"no": 37, "chars": ["uka"], "prompt": "{uka} wiping mouth, hollow but resolute, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "……違う。あたしのは、違う。あたしのは、名前がある", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 38, "chars": [], "prompt": "dark imagery, layered strata of flame and steel repeating endlessly, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "今日撃った村の子の誰かが、二十年後に、次の月ノ塔を鍛接する。層また層。憎しみの断面", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 39, "chars": ["uka"], "prompt": "{uka} pressing fist to chest hard, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "名前は的だ。的は一つでいい。一つでなければ、いけない。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 40, "chars": [], "prompt": "laundry lines burning in imagined future, world on fire, nightmare tone, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "そうでなければ、この憎しみはいつか、あの洗濯物ごと世界を焼くことを望むようになる。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": [], "prompt": "radio room, operators transcribing enemy propaganda broadcast, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "情報源は、皮肉なことに、敵の宣伝放送だった。英雄の動静は、高らかに報じられていた。", "balloon": "top_left", "type": "narration"}], "sfx": "ザザ…"},
+      {"no": 42, "chars": [], "prompt": "map table, hero's itinerary plotted as connected line of pins, young officer smirking over it, empty upper right", "dialogue": [{"speaker": "ロトン", "text": "宣伝ってのは、居場所を教える術のことらしいな", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "作戦", "panels": [
+      {"no": 43, "chars": [], "prompt": "finger tapping map at fortress location, briefing room, empty upper left", "dialogue": [{"speaker": "ロトン", "text": "次の視察先は東部戦線の第四要塞。式典は屋外。対空砲の傘の、ぎりぎり端になる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 44, "chars": [], "prompt": "briefing slide, attack plan arrows, diversion and strike routes, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "要塞攻撃の陽動に紛れた、少数機による式典会場への強襲。名目は「敵指揮系統の打撃」。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 45, "chars": [], "prompt": "crew roster paper, one name circled, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "編成表にウカの名を見つけた者は、誰もが本音を察した。椿の生き残りに、仇を討たせてやれ——と。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 46, "chars": ["uka"], "prompt": "{uka} descending stairs to dark hangar at night, sleepless, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "出撃前夜。ウカは眠れないまま、整備場に降りた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 47, "chars": ["shinra"], "prompt": "work light glowing under her aircraft, {shinra} doing unrequested final maintenance, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "シンラ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 48, "chars": ["shinra"], "prompt": "{shinra} patting fuselage, looking at her sideways, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "機嫌は上々だ、こいつは。お前は最悪の顔だがな。……氷の顔になったか", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "前夜", "panels": [
+      {"no": 49, "chars": ["uka"], "prompt": "{uka} leaning on wing, looking at fragment scar memories, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "あの破片、層になってた。執念の。……あたしが明日殺しに行く男は、たぶん、悪い男ですらない", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["uka"], "prompt": "{uka} words failing, hand gripping her own sleeve, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "それでも——それでも、あたしは", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 51, "chars": ["shinra"], "prompt": "{shinra} setting wrench down slowly, long silence, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "機械は作った奴の本音でできてる、って話をしたな。……復讐も同じだ", "balloon": "top_left", "type": "normal"}], "sfx": "コト…"},
+      {"no": 52, "chars": ["shinra"], "prompt": "{shinra} looking straight at her, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "果たした後のお前は、果たしたときの本音でできてる。憎しみだけで引き金を引けば、憎しみだけの人間ができ上がる。あとは空の上で、お前が決めろ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 53, "chars": ["shinra"], "prompt": "{shinra} walking away with toolbox, turning back once at hangar door, empty upper left", "dialogue": [{"speaker": "シンラ", "text": "生きて戻れ、ウカ。直す機体がなくなると、俺は暇なんだ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 54, "chars": ["uka"], "prompt": "{uka} alone with her aircraft in dark hangar, small under its wing, empty upper area", "dialogue": [], "sfx": null}
+    ]},
+    {"spread": 10, "scene": "発進と、空を見上げる人", "panels": [
+      {"no": 55, "chars": [], "prompt": "pre-dawn, strike squadron launching off deck in sequence, dark blue sky, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "東の空が白む前に、強襲隊は発進甲板を蹴った。", "balloon": "top_left", "type": "narration"}], "sfx": "ゴオオッ"},
+      {"no": 56, "chars": [], "prompt": "below clouds, festival stage being assembled in morning sun, federation flags, crowds gathering, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "雲海の下では、第四要塞の式典会場に、朝日を受けた演壇が組み上がりつつあった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 57, "chars": ["oto"], "prompt": "{oto} stepping down from carriage at fortress, first time at the front, holding hat, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夫の晴れ姿を見るために、生まれて初めて前線に足を踏み入れた、一人の令嬢。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 58, "chars": ["oto"], "prompt": "{oto} looking up, unobstructed sky horizon to horizon, wind in hair, awe, empty upper area", "dialogue": [{"speaker": "オト", "text": "……なんて、広いの", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 59, "chars": [], "prompt": "vast morning sky from ground level, not the narrow study window sky, empty center", "dialogue": [{"speaker": "ナレーション", "text": "なんて広くて、なんて、綺麗で。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
+      {"no": 60, "chars": [], "prompt": "high in that sky, nine tiny aircraft glinting with the rising sun behind them, ominous beauty, empty lower area", "dialogue": [{"speaker": "ナレーション", "text": "その空の高みに、九つの小さな機影が、朝日を背負って光った。", "balloon": "bottom_left", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}

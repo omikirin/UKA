@@ -1,0 +1,104 @@
+{
+  "title": "第四章 式典の銃声",
+  "format_ref": "chapter1_name.json と同一",
+  "page_math": {"spreads": 12, "panels": 72, "single_pages": 24},
+  "characters_required": {"designed": ["uka", "oto", "garen(要キャラシート化)"], "needed": ["シオン(宣伝将校)", "ロトン", "老将校(モブ)"]},
+  "spreads": [
+    {"spread": 1, "scene": "鏡と振り子", "panels": [
+      {"no": 1, "chars": ["garen"], "prompt": "{garen} before mirror in full dress uniform, adjusting medal position, morning light, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "式典の朝、ガレン・ハーヴェイは鏡の前で、三度、勲章の位置を直した。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": [], "prompt": "pocket watch back lid opening, inside not a clock face but a fine pendulum and scale, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "精密観測用の振り子基準器。妻いわく、「時計より正直な機械」。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 3, "chars": [], "prompt": "extreme close-up of pendulum swinging quietly, precise, empty left side", "dialogue": [], "sfx": "…チ… …チ…"},
+      {"no": 4, "chars": ["garen"], "prompt": "{garen} face in mirror, exhausted honesty behind composure, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "この二月、ガレンは十七回、真実を告げようとして、十七回、失敗していた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 5, "chars": ["garen"], "prompt": "{garen} closing eyes, words dying in throat visualized as fading letters, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "君の解いたあの風の問題は——。言えるはずが、なかった", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 6, "chars": [], "prompt": "memory image of equations dissolving into artillery blueprint, cold overlay, empty upper right", "dialogue": [{"speaker": "ガレン", "text": "彼女の信仰ごと娶ったのは自分だ。その信仰を戦争に売ったのも、自分だ", "balloon": "top_right", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "決意とシオン", "panels": [
+      {"no": 7, "chars": ["garen"], "prompt": "{garen} straightening, resolve settling, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "式典が終わったら、参謀本部に辞表を出す", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 8, "chars": [], "prompt": "desk with unwritten letter paper and pen waiting, quiet room, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "降りて、それから、時間をかけて、いつか、告げる。何年かかっても。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 9, "chars": [], "prompt": "door being knocked, oily-polite propaganda officer leaning in, empty upper left", "dialogue": [{"speaker": "シオン", "text": "将官殿、お時間です。——本日は奥方もお見えとか", "balloon": "top_left", "type": "normal"}], "sfx": "コンコン"},
+      {"no": 10, "chars": [], "prompt": "propaganda officer smiling wide, papers under arm, empty upper right", "dialogue": [{"speaker": "シオン", "text": "連邦中の新聞が、英雄夫妻の写真を欲しがっておりますぞ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 11, "chars": ["garen"], "prompt": "{garen} closing watch lid, placing it into breast pocket over heart, empty upper left", "dialogue": [], "sfx": "カチッ"},
+      {"no": 12, "chars": ["garen"], "prompt": "{garen} walking out into corridor light, back view, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "振り子の揺れが、布越しに、心臓のすぐ隣で続いていた。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "来賓席のオト", "panels": [
+      {"no": 13, "chars": [], "prompt": "vast parade ground filled with tens of thousands, federation flags, military band, overwhelming scale, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "数万の群衆は、それ自体がひとつの巨大な気象現象のようだった。", "balloon": "top_left", "type": "narration"}], "sfx": "ワアアア"},
+      {"no": 14, "chars": ["oto"], "prompt": "{oto} in VIP front row, slightly overwhelmed, hands folded, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "書斎の静けさで育ったオトは、少し途方に暮れていた。それでも、来てよかった、と思った。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 15, "chars": ["garen"], "prompt": "{garen} on distant stage, dignified in dress uniform, seen from her seat, empty upper left", "dialogue": [{"speaker": "オト", "text": "あの人が、届かせたのだ。何万人の、何十年分の、届きたいという願いを", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 16, "chars": ["oto"], "prompt": "elderly officer beside her leaning in, pointing at gun crews, {oto} nodding politely, empty upper right", "dialogue": [{"speaker": "老将校", "text": "奥様、ご覧なさい。あの砲兵たちが月ノ塔の初弾装填を——", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 17, "chars": ["oto"], "prompt": "{oto} eyes shifting, unconsciously scanning gun placements and elevation angles, thin geometric overlay, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "ふと、演算を始めている自分に気づいた。癖だった。砲と砲の間隔が生む、火網の——隙間。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 18, "chars": [], "prompt": "sky diagram, fire coverage arcs with one thin gap to the north-northwest, cold schematic, empty lower right", "dialogue": [{"speaker": "オト", "text": "北北西の空域が——薄い", "balloon": "bottom_right", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "視線", "panels": [
+      {"no": 19, "chars": ["oto"], "prompt": "{oto} smiling at herself, small embarrassed laugh, empty upper left", "dialogue": [{"speaker": "オト", "text": "いやだわ。お祝いの席で", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 20, "chars": ["garen"], "prompt": "{garen} saluting on stage, crowd roaring to peak, flags, empty upper right", "dialogue": [], "sfx": "ワアアアアッ"},
+      {"no": 21, "chars": ["garen"], "prompt": "{garen} eyes crossing the crowd, finding her in VIP seats, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夫の目が、群衆を渡って、彼女を見つけた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 22, "chars": ["garen"], "prompt": "close-up {garen} forgetting his public face for one instant, awkward private smile, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "あの不器用な、初夜に誤植の話をした時と同じ笑い方をした。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 23, "chars": ["oto"], "prompt": "{oto} smiling back, fingertips waving tiny on her lap, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "手を振るのは作法に反する気がして、膝の上で、指先だけ小さく振った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 24, "chars": [], "prompt": "air raid siren horn blaring, red warning, whole panel jolting, empty center", "dialogue": [{"speaker": "ナレーション", "text": "警報が鳴ったのは、その時だった。", "balloon": "bottom_right", "type": "narration"}], "sfx": "ヴーーーッ"}
+    ]},
+    {"spread": 5, "scene": "降下", "panels": [
+      {"no": 25, "chars": ["uka"], "prompt": "{uka} diving with morning sun at her back, north-northwest high altitude, goggles down, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "北北西、高度四千。陽動は、完璧に機能していた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 26, "chars": [], "prompt": "flak bursts concentrated far away over main fortress, clean corridor of empty sky here, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "式典会場上空の火網には、事前の解析通りの穴が開いていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 27, "chars": [], "prompt": "three diving aircraft, left and right wingmen, center machine slightly ahead, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "会場へ向かうのは三機。ロトンが左に、もう一機が右に。中央——ウカ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 28, "chars": [], "prompt": "through windshield, parade ground rushing closer, crowd scattering like spilled ink, falling flags, empty upper right", "dialogue": [], "sfx": "ゴオオオッ"},
+      {"no": 29, "chars": [], "prompt": "one motionless figure on the stage amid the chaos, distant, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "そして壇上——動かない、一つの影。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 30, "chars": ["garen"], "prompt": "{garen} shoving adjutants off the stage, standing alone at its center, arms at sides, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "まるで、的であることを、引き受けるように。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "照準環", "panels": [
+      {"no": 31, "chars": ["garen"], "prompt": "{garen} upturned face framed inside gunsight ring, looking straight at viewer, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "写真で千度見た顔が、照準環の中で、こちらを見上げていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 32, "chars": ["uka"], "prompt": "{uka} eyes behind goggles, time stretching, everything slow, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "時間が、粘性を持った。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": [], "prompt": "flash montage: paper pinwheels, sister's silhouette, document stamp, burning district, empty center", "dialogue": [{"speaker": "ウカ", "text": "姉さん。椿の九百の風車。実施不能の四文字。焼けた鉄の味", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 34, "chars": [], "prompt": "dark hangar memory, mechanic's silhouette by work light, empty upper right", "dialogue": [{"speaker": "シンラ", "text": "——復讐も同じだ。果たした後のお前は、果たしたときの本音でできてる", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 35, "chars": ["garen"], "prompt": "{garen} in the ring, chin up, expression faintly — impossibly — relieved, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "照準環の中の男は、なぜか、少しだけ安堵したように見えた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 36, "chars": ["uka"], "prompt": "extreme close-up gloved finger squeezing trigger, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "その瞬間の本音が何だったのか。彼女自身、生涯、答えを出せなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "銃声", "panels": [
+      {"no": 37, "chars": [], "prompt": "muzzle flashes from diving aircraft wings, harsh light, empty upper left", "dialogue": [], "sfx": "ダダダダッ"},
+      {"no": 38, "chars": [], "prompt": "stage wood splintering in a sweeping line of impacts, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "機銃は正確だった。シンラの機械は、いつだって正直に、撃った通りに当たるのだった。", "balloon": "top_right", "type": "narration"}], "sfx": "バキバキッ"},
+      {"no": 39, "chars": ["garen"], "prompt": "{garen} silhouette on stage, not dodging, to the very last, backlit, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "壇上の男は、最後まで、避けなかった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 40, "chars": [], "prompt": "same moment from far VIP seats, small and quiet, plane streak and flash on distant stage, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "オトの席から、それはとても静かに見えた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": [], "prompt": "frozen crowd, mouths opening, sound not yet arrived, half-second suspended, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "歓声が悲鳴に裏返るまでの、奇妙に長い半秒。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 42, "chars": ["oto"], "prompt": "human wave crashing over {oto}, pushing her back, chaos, empty upper right", "dialogue": [], "sfx": "ワアアアッ"}
+    ]},
+    {"spread": 8, "scene": "オト、走る", "panels": [
+      {"no": 43, "chars": ["oto"], "prompt": "{oto} running against the fleeing crowd toward the stage, dress torn at hem, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "淑女の作法が、生まれて初めて、一枚残らず彼女から剥がれ落ちた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 44, "chars": ["oto"], "prompt": "someone's hand grabbing her arm, her shaking it off without looking, empty upper right", "dialogue": [], "sfx": "バッ"},
+      {"no": 45, "chars": ["garen"], "prompt": "{garen} fallen on the splintered stage, medals scattered, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "壇に、夫は倒れていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 46, "chars": ["oto", "garen"], "prompt": "{oto} on knees lifting him, straining, his weight, empty upper right", "dialogue": [{"speaker": "オト", "text": "ガレン様", "balloon": "top_right", "type": "normal"}, {"speaker": "ナレーション", "text": "人の体は、こんなに重かったか。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 47, "chars": [], "prompt": "dark red spreading across uniform chest, her hands pressing, faint equation overlay flickering, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "頭の中で、招かれもしない計算が走った。出血量。時間。確率。数式は、嘘をつかない——", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 48, "chars": ["oto"], "prompt": "{oto} squeezing eyes shut, speaking to her own mind, empty upper right", "dialogue": [{"speaker": "オト", "text": "やめて。計算しないで。今だけは。お願いだから", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "約束", "panels": [
+      {"no": 49, "chars": ["garen"], "prompt": "{garen} unfocused eyes finding her face, remnant of the awkward smile, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "……オト", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["oto"], "prompt": "{oto} shaking head fast, holding him, empty upper right", "dialogue": [{"speaker": "オト", "text": "しゃべらないで。衛生兵が、いま衛生兵が来ますから", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 51, "chars": ["garen"], "prompt": "{garen} lips barely moving, effort of each word, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "オト。……約束を。君の数式を……憎まないで、くれ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": ["oto"], "prompt": "{oto} face breaking, tears finally, gripping his shoulder, empty upper right", "dialogue": [{"speaker": "オト", "text": "いやです、そんな約束より、生きて。わたくし、まだ何も——あなたに、何も", "balloon": "top_right", "type": "shout"}], "sfx": null},
+      {"no": 53, "chars": [], "prompt": "his weak hand and hers, the pocket watch passed, pushed back gently into her palm, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夫は首を小さく振り、時計を、彼女の手のほうへ、押し戻した。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 54, "chars": [], "prompt": "open watch lid, pendulum swinging precisely amid chaos, blood-flecked glass, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "銃声にも、この世の何にも乱されない周期で。正確に、正直に。", "balloon": "top_right", "type": "narration"}], "sfx": "…チ… …チ…"}
+    ]},
+    {"spread": 10, "scene": "最後の言葉", "panels": [
+      {"no": 55, "chars": ["garen"], "prompt": "{garen} gaze softening at pendulum or her or something beyond, faint smile, empty upper left", "dialogue": [{"speaker": "ガレン", "text": "……美しい、な", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 56, "chars": [], "prompt": "white sky over the stage, sound fading, empty center", "dialogue": [{"speaker": "ナレーション", "text": "何が美しいのか——を確かめる時間は、もう、与えられなかった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
+      {"no": 57, "chars": ["oto", "garen"], "prompt": "{oto} holding him motionless, chaos blurred around them, pietà composition, empty upper right", "dialogue": [], "sfx": null},
+      {"no": 58, "chars": ["uka"], "prompt": "{uka} pulling out of dive high above, glancing down once, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "上空で機体を引き起こしながら、ウカは一度だけ、下を見た。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 59, "chars": [], "prompt": "from a kilometer up: tiny stage, one fallen shadow and one small shadow clinging to it, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "距離は千メートル以上。顔など、見えるはずもなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 60, "chars": [], "prompt": "canopy glass with frost, the small silhouette lingering ghost-like in it, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "それなのに、その小さな影の輪郭は、いつまでも網膜に残った。", "balloon": "top_left", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 11, "scene": "何も、なかった", "panels": [
+      {"no": 61, "chars": ["uka"], "prompt": "{uka} climbing through bright empty sky, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "仇は、討った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 62, "chars": [], "prompt": "radio crackling, urgent voice, cockpit gauges, empty upper right", "dialogue": [{"speaker": "無線", "text": "成功だ、離脱しろ! 聞こえてるのか、三番機!", "balloon": "top_right", "type": "radio"}], "sfx": "ザザッ"},
+      {"no": 63, "chars": ["uka"], "prompt": "{uka} face blank, searching inside herself, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "晴れているはずだった。軽いはずだった。九百の風車が、姉さんが、これで——", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 64, "chars": ["uka"], "prompt": "close-up {uka} eyes, hollow, no relief no grief, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "何も、なかった。晴れも、軽さも、悲しみですらも。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 65, "chars": [], "prompt": "gunsight ring now empty, only sky in it, empty center", "dialogue": [{"speaker": "ナレーション", "text": "的は、消えた。憎しみは、消えなかった。", "balloon": "bottom_left", "type": "narration"}], "sfx": null},
+      {"no": 66, "chars": [], "prompt": "clouds swallowing the climbing aircraft whole, white erasing everything, empty lower area", "dialogue": [{"speaker": "ウカ", "text": "あたしはたった今、自分がどんな人間でできてしまったのか、分からないままの人間に、なった", "balloon": "top_left", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 12, "scene": "名前を欲した女", "panels": [
+      {"no": 67, "chars": [], "prompt": "pure white cloud interior, everything gone, empty center", "dialogue": [{"speaker": "ナレーション", "text": "眼下の練兵場も、壇も、小さな影も、白一色に消えた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 68, "chars": ["oto"], "prompt": "ground, {oto} still holding him, but her eyes lifted to the sky, terrifyingly precise, dry, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "オトはその日、生まれて初めて、憎むための名前を欲した。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 69, "chars": [], "prompt": "flash freeze-frame of the attacking aircraft, wing identification markings sharply in focus, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "夫を撃った機体の識別章を、正確なものだけを愛してきたその目は——", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 70, "chars": [], "prompt": "flash extreme close-up: nose art beside squadron emblem, a small doodle of a windmill, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "群衆の誰よりも正確に、記憶してしまっていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 71, "chars": ["oto"], "prompt": "{oto} face half in shadow, star highlights gone from her amber eyes, empty upper left", "dialogue": [], "sfx": null},
+      {"no": 72, "chars": [], "prompt": "final: the pendulum watch in her bloodstained hand, still swinging, precise, empty lower area", "dialogue": [{"speaker": "ナレーション", "text": "機首の、小さな風車の落書きまで。", "balloon": "bottom_right", "type": "narration"}], "sfx": "…チ… …チ…"}
+    ]}
+  ]
+}
