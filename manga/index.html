@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>マンガ版『空の狐と地上のウサギ』 | クリプト忍者のウカ</title>
 <meta name="description" content="長編小説『空の狐と地上のウサギ』のマンガ版。右から左へ読む日本式漫画リーダー。章をまたいで続けて読めます。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,6 +62,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.4rem;
+    touch-action: manipulation; /* スマホのダブルタップ拡大の誤作動防止 */
   }
   .page-view {
     width: 100%;
@@ -81,10 +82,7 @@
   .half-wrap {
     position: relative;
     overflow: hidden;
-    height: 100%;
-    max-height: 100%;
-    aspect-ratio: 512 / 590;
-    max-width: 100%;
+    /* 寸法はJSが画像の実比率(横幅の半分:高さ)から計算して設定する */
   }
   .half-wrap img {
     position: absolute;
@@ -188,7 +186,7 @@
     align-items: center;
     justify-content: center;
     gap: 1.4rem;
-    padding: 0.5rem 1rem 0.7rem;
+    padding: 0.5rem 1rem calc(0.7rem + env(safe-area-inset-bottom, 0px)); /* iPhoneホームバー回避 */
     font-size: 0.82rem;
     letter-spacing: 0.15em;
     color: #b3a189;
@@ -391,8 +389,10 @@
       img.src = u.src;
       img.alt = u.ch.no + " " + u.n + (half === "right" ? "右" : "左");
       img.onerror = function () { view.innerHTML = ""; view.appendChild(placeholder(u.ch.no + " 見開き" + u.n)); };
+      img.onload = function () { layoutHalf(wrap, img); };
       wrap.appendChild(img);
       view.appendChild(wrap);
+      if (img.complete && img.naturalWidth) layoutHalf(wrap, img); /* キャッシュ済みはonloadが来ない */
       info.textContent = u.ch.no + "　" + (u.n * 2 - (half === "right" ? 1 : 0)) + " / " + u.ch.count * 2 + "ページ";
     }
     modeBtn.textContent = mode === "spread" ? "単ページ" : "見開き";
@@ -403,6 +403,21 @@
     var nu = currentUi() + 1;
     if (nu < UNITS.length && UNITS[nu].type === "spread") { (new Image()).src = UNITS[nu].src; }
   }
+
+  /* 半ページ枠を画像の実比率で、画面内に収まる最大サイズに合わせる */
+  function layoutHalf(wrap, img) {
+    if (!img.naturalWidth || !img.naturalHeight) return;
+    var r = (img.naturalWidth / 2) / img.naturalHeight; /* 半ページの縦横比 */
+    var cw = view.clientWidth, ch = view.clientHeight;
+    var w = Math.min(cw, ch * r);
+    wrap.style.width = w + "px";
+    wrap.style.height = (w / r) + "px";
+  }
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(render, 120); /* 回転・リサイズ時に組み直す */
+  });
 
   function go(delta) {
     var n = idx + delta;
