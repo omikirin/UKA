@@ -17,7 +17,11 @@ stories/storyNN.html  読書ページ（build.py が生成）
 tools/build.py        原稿から読書ページを生成するスクリプト
 docs/                 企画資料（王道プロット50 など）
 games/                CryptoNinja ゲーム集（自己完結型のHTMLゲーム）
+manga/                マンガ版リーダー（右綴じ・見開き/単ページ切替）
 ```
+
+マンガの見開き画像は `manga/img/chNN/spread01.jpg` 〜 の連番で配置します
+（1枚 = 右ページ+左ページの横長見開き。単ページ表示では右半分→左半分の順に表示）。
 
 ゲームを追加するときは `games/` にHTMLを置き、`games/index.html` にカードを1枚足すだけです。
 
