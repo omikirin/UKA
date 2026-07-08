@@ -1,0 +1,76 @@
+name: 画像生成 (fal.ai)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: '生成プロンプト(英語推奨)'
+        required: true
+        type: string
+      path:
+        description: '保存先パス(例: manga/img/ch02/cover.jpg)'
+        required: true
+        type: string
+      image_size:
+        description: 'サイズ'
+        required: false
+        default: 'portrait_4_3'
+        type: choice
+        options:
+          - square_hd
+          - portrait_4_3
+          - portrait_16_9
+          - landscape_4_3
+          - landscape_16_9
+      model:
+        description: 'falモデルID'
+        required: false
+        default: 'fal-ai/flux/dev'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 画像を生成してダウンロード
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+          PROMPT: ${{ inputs.prompt }}
+          OUT_PATH: ${{ inputs.path }}
+          IMAGE_SIZE: ${{ inputs.image_size }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FAL_KEY:-}" ]; then
+            echo "::error::リポジトリのSecretsにFAL_KEYが登録されていません" && exit 1
+          fi
+          body=$(jq -n --arg p "$PROMPT" --arg s "$IMAGE_SIZE" \
+            '{prompt: $p, image_size: $s, num_images: 1}')
+          resp=$(curl -sS -X POST "https://fal.run/$MODEL" \
+            -H "Authorization: Key $FAL_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$body")
+          url=$(echo "$resp" | jq -r '.images[0].url // empty')
+          if [ -z "$url" ]; then
+            echo "::error::生成に失敗しました" && echo "$resp" | jq . && exit 1
+          fi
+          mkdir -p "$(dirname "$OUT_PATH")"
+          curl -sS -o "$OUT_PATH" "$url"
+          ls -la "$OUT_PATH"
+
+      - name: コミットしてプッシュ
+        env:
+          OUT_PATH: ${{ inputs.path }}
+          PROMPT: ${{ inputs.prompt }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$OUT_PATH"
+          git commit -m "画像生成: $OUT_PATH" -m "prompt: $PROMPT"
+          git push
