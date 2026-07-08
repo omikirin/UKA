@@ -95,6 +95,17 @@
   .half-wrap.right img { left: -100%; }
   .half-wrap.left img { left: 0; }
 
+  /* 章表紙(img/chNN/cover.jpg があれば、とびらの代わりに表示) */
+  .page-view img.cover {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.55);
+    border: 1px solid rgba(240,192,114,0.25);
+  }
+
   /* 章とびら・巻末カード */
   .card {
     width: min(88vw, 34rem);
@@ -333,9 +344,17 @@
     var u = mode === "spread" ? UNITS[idx] : SINGLES[idx].u;
     var half = mode === "spread" ? null : SINGLES[idx].half;
 
-    if (u.type !== "spread") {
+    if (u.type === "title") {
+      var cov = document.createElement("img");
+      cov.className = "cover";
+      cov.src = "img/" + u.ch.id + "/cover.jpg";
+      cov.alt = u.ch.no + "　" + u.ch.title + "　表紙";
+      cov.onerror = function () { view.innerHTML = ""; view.appendChild(makeCard(u)); };
+      view.appendChild(cov);
+      info.textContent = u.ch.no + "　表紙";
+    } else if (u.type === "end") {
       view.appendChild(makeCard(u));
-      info.textContent = u.type === "title" ? u.ch.no + "　とびら" : "巻末";
+      info.textContent = "巻末";
     } else if (mode === "spread") {
       var el = document.createElement("img");
       el.className = "spread";
