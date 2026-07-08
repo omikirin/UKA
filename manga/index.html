@@ -214,7 +214,7 @@
   /* ---- 章の設定: 画像が揃ったら available を true に、count を枚数に ---- */
   var CHAPTERS = [
     { id: "ch01", no: "第一章", title: "風の音のする国", count: 15, available: true },
-    { id: "ch02", no: "第二章", title: "数式の花嫁", count: 0, available: false }
+    { id: "ch02", no: "第二章", title: "数式の花嫁", count: 2, available: true }
   ];
   var WORK = "空の狐と地上のウサギ";
 
@@ -306,7 +306,7 @@
       }
       d.innerHTML = '<span class="work">マンガ版『' + WORK + '』</span>' +
         '<span class="ch">つづく</span>' +
-        '<span class="sub">' + (next ? next.no + "「" + next.title + "」は近日公開" : "") + '</span>';
+        '<span class="sub">' + (next ? next.no + "「" + next.title + "」は近日公開" : "続きの見開きも順次追加予定") + '</span>';
       var a = document.createElement("a");
       a.className = "btn";
       a.href = "../novels/chapter02.html";
