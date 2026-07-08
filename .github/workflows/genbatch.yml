@@ -1,0 +1,68 @@
+name: 画像バッチ生成 (fal.ai)
+
+on:
+  workflow_dispatch:
+    inputs:
+      list:
+        description: 'プロンプトJSONLのパス(例: prompts/ch06.jsonl)'
+        required: true
+        type: string
+      model:
+        description: 'falモデルID'
+        required: false
+        default: 'fal-ai/nano-banana-pro/edit'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 一覧の画像を順に生成
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+          LIST: ${{ inputs.list }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          set -uo pipefail
+          if [ -z "${FAL_KEY:-}" ]; then
+            echo "::error::FAL_KEYが未設定です" && exit 1
+          fi
+          ok=0; ng=0
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            path=$(echo "$line" | jq -r .path)
+            if [ -f "$path" ]; then echo "skip(exists): $path"; continue; fi
+            body=$(echo "$line" | jq '{prompt: .prompt, num_images: 1, aspect_ratio: .aspect_ratio, image_urls: .image_urls}')
+            resp=$(curl -sS -X POST "https://fal.run/$MODEL" \
+              -H "Authorization: Key $FAL_KEY" \
+              -H "Content-Type: application/json" \
+              -d "$body")
+            url=$(echo "$resp" | jq -r '.images[0].url // empty')
+            if [ -z "$url" ]; then
+              echo "::warning::生成失敗: $path"
+              echo "$resp" | head -c 500; echo
+              ng=$((ng+1)); continue
+            fi
+            mkdir -p "$(dirname "$path")"
+            curl -sS -o "$path" "$url" && ok=$((ok+1)) && echo "done: $path"
+          done < "$LIST"
+          echo "生成 成功=$ok 失敗=$ng"
+
+      - name: コミットしてプッシュ
+        env:
+          LIST: ${{ inputs.list }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manga/img || true
+          if git diff --cached --quiet; then echo "変更なし"; exit 0; fi
+          git commit -m "画像バッチ生成: $LIST"
+          for i in 1 2 3 4 5 6 7 8; do
+            git push && break || { git pull --rebase; sleep $((RANDOM % 8 + 2)); }
+          done
