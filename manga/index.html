@@ -323,14 +323,20 @@
       for (var i = 0; i < CHAPTERS.length; i++) {
         if (!CHAPTERS[i].available) { next = CHAPTERS[i]; break; }
       }
-      d.innerHTML = '<span class="work">マンガ版『' + WORK + '』</span>' +
-        '<span class="ch">つづく</span>' +
-        '<span class="sub">' + (next ? next.no + "「" + next.title + "」は近日公開" : "続きの見開きも順次追加予定") + '</span>';
-      var a = document.createElement("a");
-      a.className = "btn";
-      a.href = "../novels/chapter02.html";
-      a.textContent = "つづきを小説で読む";
-      d.appendChild(a);
+      if (next) {
+        d.innerHTML = '<span class="work">マンガ版『' + WORK + '』</span>' +
+          '<span class="ch">つづく</span>' +
+          '<span class="sub">' + next.no + "「" + next.title + "」は近日公開" + '</span>';
+      } else {
+        d.innerHTML = '<span class="work">マンガ版『' + WORK + '』</span>' +
+          '<span class="ch">完</span>' +
+          '<span class="sub">全十章・完結　お読みいただきありがとうございました</span>';
+        var a0 = document.createElement("a");
+        a0.className = "btn";
+        a0.href = "../novels/chapter01.html";
+        a0.textContent = "小説版で読みなおす";
+        d.appendChild(a0);
+      }
       var a2 = document.createElement("a");
       a2.className = "btn ghost";
       a2.href = "../index.html#novels";
