@@ -114,7 +114,7 @@ input[type=file]{font-size:12px;color:var(--sub);}
     <button class="sub" id="btnPlay">▶ 再生</button>
     <input type="range" id="seek" min="0" max="0" value="0">
     <span id="tc">00:00.000 #000</span>
-    <button id="btnWebm">🎬 WebM書き出し</button>
+    <button id="btnWebm">🎬 動画書き出し(MP4)</button>
   </div>
   <div class="status" id="st4"></div>
 </section>
@@ -796,6 +796,20 @@ $("btnPlay").onclick=()=>{
     renderKoma(Math.min(curKoma+2,DATA.meta.total_drawings-1)); // 先読み
   },1000*KOMA/FPS);
 };
+/* MP4優先で録画形式を選ぶ(非対応ブラウザはWebMにフォールバック) */
+function pickVideoFormat(){
+  const candidates=[
+    ["video/mp4;codecs=avc1.42E01E","mp4"],
+    ["video/mp4;codecs=avc1","mp4"],
+    ["video/mp4","mp4"],
+    ["video/webm;codecs=vp9","webm"],
+    ["video/webm","webm"],
+  ];
+  for(const [mime,ext] of candidates){
+    try{ if(MediaRecorder.isTypeSupported(mime)) return {mime,ext}; }catch(e){}
+  }
+  return {mime:"video/webm",ext:"webm"};
+}
 $("btnWebm").onclick=async()=>{
   if(!DATA)return;
   stopPlay();
@@ -803,8 +817,9 @@ $("btnWebm").onclick=async()=>{
   $("btnWebm").disabled=true;
   frameCache={};
   const total=DATA.meta.total_drawings;
+  const fmt=pickVideoFormat();
   const stream=$("stage").captureStream(FPS);
-  const rec=new MediaRecorder(stream,{mimeType:"video/webm",videoBitsPerSecond:4_000_000});
+  const rec=new MediaRecorder(stream,{mimeType:fmt.mime,videoBitsPerSecond:4_000_000});
   const chunks=[];rec.ondataavailable=e=>chunks.push(e.data);
   const done=new Promise(res=>rec.onstop=res);
   await drawKoma(0);rec.start();
@@ -819,10 +834,12 @@ $("btnWebm").onclick=async()=>{
   }
   await new Promise(r=>setTimeout(r,200));
   rec.stop();await done;
-  const blob=new Blob(chunks,{type:"video/webm"});
+  const blob=new Blob(chunks,{type:fmt.mime.split(";")[0]});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-  a.download=(DATA.meta.title||"animatic")+".webm";a.click();
-  $("st4").textContent=`✓ WebM書き出し完了(${(blob.size/1024/1024).toFixed(1)}MB)`;
+  a.download=(DATA.meta.title||"animatic")+"."+fmt.ext;a.click();
+  const label=fmt.ext.toUpperCase();
+  $("st4").textContent=`✓ ${label}書き出し完了(${(blob.size/1024/1024).toFixed(1)}MB)`+
+    (fmt.ext==="webm"?" ※このブラウザはMP4録画非対応のためWebMで保存しました":"");
   $("btnWebm").disabled=false;
 };
 
