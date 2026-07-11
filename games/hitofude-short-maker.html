@@ -445,9 +445,15 @@ document.getElementById('btnPreview').onclick = () => { AC.resume(); playAnimate
 let lastBlob = null, lastIsMp4 = false;
 document.getElementById('btnRender').onclick = () => {
   AC.resume();
-  const dest = AC.createMediaStreamDestination();
   const stream = cv.captureStream(30);
-  dest.stream.getAudioTracks().forEach(tr=>stream.addTrack(tr));
+  // 音声がある時だけオーディオトラックを追加する。
+  // 無音モードで空のトラックを繋ぐと、音声データが来ないためMediaRecorderが
+  // 1バイトも出力しない(=「データ0」で失敗する)ブラウザがある。
+  let dest = null;
+  if (audioBuf) {
+    dest = AC.createMediaStreamDestination();
+    dest.stream.getAudioTracks().forEach(tr=>stream.addTrack(tr));
+  }
   // mp4直接出力はavc1明示対応(実質Safari)のみ。Chromeの自称mp4対応は壊れたファイルになるためwebmへ
   let mp4Native = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1');
   const webmMime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus'
