@@ -92,6 +92,7 @@ footer{padding:6px 14px;background:var(--panel);border-top:1px solid var(--line)
     <div class="sec">
       <h2>塗り生成 <span id="fillTarget" style="color:var(--kin)"></span></h2>
       <div class="filltypes">
+        <button data-ft="solid">ベタ</button>
         <button data-ft="hatch" class="on">ハッチ</button>
         <button data-ft="cross">クロス</button>
         <button data-ft="zigzag">ジグザグ</button>
@@ -414,8 +415,11 @@ function render(){
   let defs='',body='';
   for(const sh of S.shapes){
     const d=shapePathD(sh);
-    const fd=previewFillD(sh);
+    const fd=sh.fill.type==='solid'?'':previewFillD(sh);
     const selMark = sh.id===S.sel ? `stroke-dasharray="none"` : '';
+    if(sh.fill.type==='solid'){
+      body+=`<path d="${d}" fill="${sh.fill.color}" stroke="none" pointer-events="none"/>`;
+    }
     if(fd){
       defs+=`<clipPath id="clip${sh.id}"><path d="${d}"/></clipPath>`;
       body+=`<path d="${fd}" clip-path="url(#clip${sh.id})" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round" pointer-events="none"/>`;
@@ -592,7 +596,9 @@ $('bExport').onclick=()=>{
     const pivotAttr=sh.rig.pivot?` data-pivot="${sh.rig.pivot[0].toFixed(1)},${sh.rig.pivot[1].toFixed(1)}"`:'';
     const parentAttr=sh.rig.parent?` data-parent="${sh.rig.parent}"`:'';
     out+=`  <g id="${nm}"${pivotAttr}${parentAttr}>\n`;
-    const fd=materializeFill(sh);
+    const fd=sh.fill.type==='solid'?'':materializeFill(sh);
+    if(sh.fill.type==='solid')
+      out+=`    <path class="fill" d="${shapePathD(sh)}" fill="${sh.fill.color}" stroke="none"/>\n`;
     if(fd) out+=`    <path class="fill" d="${fd}" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round"/>\n`;
     out+=`    <path class="outline" d="${shapePathD(sh)}" fill="none" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" stroke-linejoin="round"/>\n`;
     out+=`  </g>\n`;
@@ -662,7 +668,7 @@ function importSvg(text){
     S.shapes.push({id:uid++,pts:fitted.pts,bez:fitted.bez,
       outline:{color:p.stroke||defaults.outline.color,width:defaults.outline.width},
       fill:{...defaults.fill,color:p.fill||defaults.fill.color,
-        type:p.fill?defaults.fill.type:'none',seed:(Math.random()*1e9)|0},
+        type:p.fill?'solid':'none',seed:(Math.random()*1e9)|0},
       rig:{name:p.name?p.name+'_'+(++ci):('svg_'+(++ci)),parent:'',pivot:null}});}
   S.sel=S.shapes.at(-1)?.id??null;
   render();}
