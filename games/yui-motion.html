@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゆい 口パク・視線システム</title>
+<style>
+  :root{
+    --bg:#fdeef2; --panel:#fff7f9; --line:#f0cdd8;
+    --ink:#5a3a45; --sub:#a97e8d; --accent:#e8543f; --accent2:#d4708f;
+  }
+  *{box-sizing:border-box; margin:0}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    background:var(--bg); color:var(--ink);
+    display:flex; min-height:100vh;
+  }
+  #stage{
+    position:relative;
+    flex:1; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 30%, #ffffff 0%, var(--bg) 70%);
+    cursor:crosshair;
+  }
+  #stage svg{ height:min(92vh,760px); width:auto; max-width:96%; transition:height .25s; }
+  #stage.tv svg{
+    height:auto; width:min(92%, 1100px); aspect-ratio:16/9;
+    background:#fff; border-radius:10px;
+    box-shadow:0 8px 30px rgba(212,112,143,.25), 0 0 0 6px #fff, 0 0 0 8px #f0cdd8;
+  }
+  #panel{
+    width:300px; background:var(--panel); border-left:1px solid var(--line);
+    padding:20px 18px; display:flex; flex-direction:column; gap:18px;
+  }
+  h1{ font-size:15px; letter-spacing:.12em; color:var(--accent2); font-weight:600 }
+  h1 small{ display:block; color:var(--sub); font-size:10px; letter-spacing:.2em; margin-top:4px; font-weight:400 }
+  .sec{ border-top:1px solid var(--line); padding-top:14px }
+  .sec h2{ font-size:11px; color:var(--sub); letter-spacing:.15em; margin-bottom:10px }
+  .row{ display:flex; gap:8px; flex-wrap:wrap }
+  button{
+    font:inherit; font-size:12px; padding:7px 12px; border-radius:8px;
+    border:1px solid var(--line); background:#ffffff; color:var(--ink); cursor:pointer;
+  }
+  button:hover{ border-color:var(--accent) }
+  button.on{ background:var(--accent); border-color:var(--accent); color:#fff }
+  textarea{
+    width:100%; height:64px; font:inherit; font-size:13px; resize:none;
+    background:#ffffff; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px;
+  }
+  label.sl{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--sub) }
+  input[type=range]{ flex:1; accent-color:var(--accent) }
+  #status{ font-size:11px; color:var(--sub); min-height:14px }
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="subtitle" style="position:absolute; bottom:9%; left:50%; transform:translateX(-50%);
+  max-width:90%; font-size:24px; font-weight:800; color:#c25b7e; letter-spacing:.05em;
+  paint-order:stroke fill; -webkit-text-stroke:6px #ffffff;
+  text-shadow:0 2px 6px rgba(212,112,143,.35);
+  opacity:0; transition:opacity .2s; pointer-events:none; text-align:center;"></div>
+<div id="callout" style="position:absolute; top:8%; left:50%; transform:translateX(-50%);
+  font-size:30px; font-weight:700; color:#d4708f; letter-spacing:.08em;
+  text-shadow:0 2px 0 #fff, 0 0 14px #ffd9e4; opacity:0; transition:opacity .15s; pointer-events:none;"></div>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 640">
+<defs>
+  <!-- 桜の花(5弁) 原点中心 半径約10 -->
+  <g id="sakura">
+    <g id="petal5">
+      <path d="M0,-2 C-3,-6 -3,-11 0,-13 C3,-11 3,-6 0,-2 Z" transform="rotate(0)"/>
+      <path d="M0,-2 C-3,-6 -3,-11 0,-13 C3,-11 3,-6 0,-2 Z" transform="rotate(72)"/>
+      <path d="M0,-2 C-3,-6 -3,-11 0,-13 C3,-11 3,-6 0,-2 Z" transform="rotate(144)"/>
+      <path d="M0,-2 C-3,-6 -3,-11 0,-13 C3,-11 3,-6 0,-2 Z" transform="rotate(216)"/>
+      <path d="M0,-2 C-3,-6 -3,-11 0,-13 C3,-11 3,-6 0,-2 Z" transform="rotate(288)"/>
+    </g>
+    <circle r="1.6"/>
+  </g>
+</defs>
+
+<g id="ゆい">
+
+  <g id="リボン" data-pivot="200,80" data-bone-parent="頭">
+    <path id="リボン_羽L" d="M196,70 C178,48 152,44 145,57 C139,69 154,85 184,86 Z" fill="#221f26"/>
+    <path id="リボン_羽R" d="M204,70 C222,48 248,44 255,57 C261,69 246,85 216,86 Z" fill="#221f26"/>
+    <path id="リボン_羽L_陰" d="M184,86 C160,84 147,72 148,60 C144,66 146,76 156,82 C164,86 176,87 184,86 Z" fill="#141218"/>
+    <path id="リボン_羽R_陰" d="M216,86 C240,84 253,72 252,60 C256,66 254,76 244,82 C236,86 224,87 216,86 Z" fill="#141218"/>
+    <path id="リボン_結び" d="M191,62 C196,55 208,55 212,63 C215,73 207,81 199,81 C190,81 186,70 191,62 Z" fill="#141218"/>
+  </g>
+
+  <!-- 最背面: 後ろ髪(首・体より奥) -->
+  <g id="後ろ髪" data-pivot="200,218" data-bone-parent="頭">
+      <path d="M200,70 C238,70 258,98 258,130 C264,150 265,174 256,194 L250,212 L244,197 L236,213 L227,198 L218,212 L209,197 L200,213 L191,197 L182,212 L173,198 L164,213 L156,197 L150,212 L144,194 C135,174 136,150 142,130 C142,98 162,70 200,70 Z" fill="#d13a34"/>
+      <path d="M200,70 C238,70 258,98 258,130 C264,150 265,174 256,194 L250,212 C255,186 257,152 250,126 C243,98 224,78 200,72 Z" fill="#b52c2c" opacity="0.55"/>
+      <g id="後ろ髪_毛束線" fill="none" stroke="#b52c2c" stroke-width="1.6" stroke-linecap="round" opacity="0.7">
+        <path d="M155,140 C152,162 153,184 158,202"/>
+        <path d="M169,146 C167,168 168,188 172,204"/>
+        <path d="M184,150 C183,170 184,190 186,204"/>
+        <path d="M216,150 C217,170 216,190 214,204"/>
+        <path d="M231,146 C233,168 232,188 228,204"/>
+        <path d="M245,140 C248,162 247,184 242,202"/>
+      </g>
+    </g>
+
+
+  <!-- ============ 下半身パーツ ============ -->
+  <g id="座布団" style="display:none">
+    <path d="M126,436 L274,436 Q288,436 288,450 L288,458 Q288,472 274,472 L126,472 Q112,472 112,458 L112,450 Q112,436 126,436 Z" fill="#8a4a5e"/>
+    <ellipse cx="200" cy="446" rx="86" ry="14" fill="#a05e74"/>
+    <circle cx="200" cy="446" r="3" fill="#5e3140"/>
+    <path d="M116,441 l-7,-6 M284,441 l7,-6 M116,466 l-7,6 M284,466 l7,6" stroke="#5e3140" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <g id="下半身" data-pivot="200,362">
+<g id="脚L" data-pivot="178,372">
+<path id="太ももL" d="M169.0,360 L189.0,360 L187.0,472 L171.0,472 Z" fill="#f6d9bd"/>
+<g id="膝下L" data-pivot="179,468">
+<path id="すねL" d="M172.0,462 L187.0,462 L185.0,556 L175.0,556 Z" fill="#f6d9bd"/>
+<g id="足L" data-pivot="180,564">
+<g id="下駄L">
+<path id="下駄L_台" d="M166.0,584 Q166.0,581 170.0,581 L190.0,581 Q194.0,581 194.0,584 L194.0,589 Q194.0,591 190.0,591 L170.0,591 Q166.0,591 166.0,589 Z" fill="#a5713f"/>
+<rect id="下駄L_歯前" x="169.0" y="591" width="5" height="8" rx="1" fill="#7d5430"/>
+<rect id="下駄L_歯後" x="186.0" y="591" width="5" height="8" rx="1" fill="#7d5430"/>
+</g>
+<path id="足袋L_本体" d="M172.0,544 L188.0,544 L189.0,570 L188.0,578 L172.0,578 L171.0,570 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+<g id="足親指L" data-pivot="184.0,578">
+<path d="M180.5,577 L188.5,577 L188.5,583 Q188.5,588 184.5,588 Q180.5,588 180.5,583 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+</g>
+<g id="足指L" data-pivot="175.0,578">
+<path d="M171.5,577 L179.5,577 L179.5,583 Q179.5,588 175.5,588 Q171.5,588 171.5,583 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+</g>
+<path id="鼻緒L" d="M180.0,583 L180.0,578 M174.0,580 L180.0,583 L186.0,580" fill="none" stroke="#8a2f3a" stroke-width="1.8" stroke-linecap="round"/>
+</g></g></g>
+<g id="脚R" data-pivot="222,372">
+<path id="太ももR" d="M231.0,360 L211.0,360 L213.0,472 L229.0,472 Z" fill="#f6d9bd"/>
+<g id="膝下R" data-pivot="221,468">
+<path id="すねR" d="M228.0,462 L213.0,462 L215.0,556 L225.0,556 Z" fill="#f6d9bd"/>
+<g id="足R" data-pivot="220,564">
+<g id="下駄R">
+<path id="下駄R_台" d="M234.0,584 Q234.0,581 230.0,581 L210.0,581 Q206.0,581 206.0,584 L206.0,589 Q206.0,591 210.0,591 L230.0,591 Q234.0,591 234.0,589 Z" fill="#a5713f"/>
+<rect id="下駄R_歯前" x="226.0" y="591" width="5" height="8" rx="1" fill="#7d5430"/>
+<rect id="下駄R_歯後" x="209.0" y="591" width="5" height="8" rx="1" fill="#7d5430"/>
+</g>
+<path id="足袋R_本体" d="M228.0,544 L212.0,544 L211.0,570 L212.0,578 L228.0,578 L229.0,570 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+<g id="足親指R" data-pivot="216.0,578">
+<path d="M219.5,577 L211.5,577 L211.5,583 Q211.5,588 215.5,588 Q219.5,588 219.5,583 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+</g>
+<g id="足指R" data-pivot="225.0,578">
+<path d="M228.5,577 L220.5,577 L220.5,583 Q220.5,588 224.5,588 Q228.5,588 228.5,583 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+</g>
+<path id="鼻緒R" d="M220.0,583 L220.0,578 M226.0,580 L220.0,583 L214.0,580" fill="none" stroke="#8a2f3a" stroke-width="1.8" stroke-linecap="round"/>
+</g></g></g>
+    <g id="スカート">
+      <path id="スカート_布" d="M158,352 L242,352 C245,352 247,412 245,472 C244,512 241,547 238,562 C226,567 174,567 162,562 C159,547 156,512 155,472 C153,412 155,352 158,352 Z" fill="#26222a"/>
+      <path id="スカート_陰" d="M200,352 L242,352 C245,352 247,412 245,472 C244,512 241,547 238,562 C228,566 214,567 200,567 Z" fill="#1c1922"/>
+      <g id="スカート_桜柄" fill="#eeaec4">
+        <use xlink:href="#sakura" transform="translate(182,518) scale(1.2)"/>
+        <use xlink:href="#sakura" transform="translate(216,540) scale(0.9) rotate(30)"/>
+        <use xlink:href="#sakura" transform="translate(168,476) scale(0.8) rotate(-20)"/>
+        <use xlink:href="#sakura" transform="translate(228,494) scale(1.0) rotate(50)"/>
+        <use xlink:href="#sakura" transform="translate(198,554) scale(0.7) rotate(10)"/>
+      </g>
+    </g>
+  </g>
+
+  <g id="下半身_正座" style="display:none" data-pivot="200,362">
+    <path id="正座_膝掛け" d="M152,352 L248,352 C258,352 263,378 261,406 C259,432 246,449 200,452 C154,449 141,432 139,406 C137,378 142,352 152,352 Z" fill="#26222a"/>
+    <path id="正座_陰" d="M200,352 L248,352 C258,352 263,378 261,406 C259,432 246,449 200,452 Z" fill="#1c1922"/>
+    <path id="正座_裾ライン" d="M146,420 C165,436 235,436 254,420" fill="none" stroke="#141218" stroke-width="1.5" opacity="0.6"/>
+    <path id="正座_膝L" d="M158,430 C162,422 176,420 182,428" fill="none" stroke="#141218" stroke-width="1.2" opacity="0.45"/>
+    <path id="正座_膝R" d="M242,430 C238,422 224,420 218,428" fill="none" stroke="#141218" stroke-width="1.2" opacity="0.45"/>
+    <g id="正座_桜柄" fill="#eeaec4">
+      <use xlink:href="#sakura" transform="translate(170,400) scale(1.1) rotate(-15)"/>
+      <use xlink:href="#sakura" transform="translate(226,414) scale(0.9) rotate(35)"/>
+      <use xlink:href="#sakura" transform="translate(198,436) scale(0.7) rotate(10)"/>
+      <use xlink:href="#sakura" transform="translate(148,378) scale(0.65) rotate(60)"/>
+    </g>
+    <g id="正座_足先">
+      <path d="M166,446 q-6,4 -4,9 q6,2 10,-3 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+      <path d="M234,446 q6,4 4,9 q-6,2 -10,-3 Z" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="0.8"/>
+    </g>
+  </g>
+
+  
+
+  <!-- ============ 体パーツ(胴体) ============ -->
+  <g id="体" data-pivot="200,352">
+    <path id="首" d="M192,184 C197,182 203,182 208,184 L208,226 L192,226 Z" fill="#f6d9bd"/>
+    <path id="首_陰" d="M192,184 C197,182 203,182 208,184 L208,212 C202,217 197,217 192,212 Z" fill="#e9bd9a"/>
+
+<g id="腕L" data-pivot="163,248">
+<g id="上腕L">
+<path id="上腕L_肌" d="M171.0,234.0  C162.0,240.0 157.0,252.0 156.0,266.0  C155.0,280.0 155.0,292.0 157.0,302.0  L169.0,302.0  C170.0,288.0 171.0,270.0 172.0,252.0  C172.0,242.0 172.0,236.0 171.0,234.0  Z" fill="#f6d9bd"/>
+<g id="袖L_上" class="小物 着物袖" data-part="小物">
+<path d="M178.0,226.0  C156.0,228.0 144.0,240.0 141.0,254.0  C138.0,270.0 139.0,287.0 143.0,299.0  C147.0,308.0 164.0,309.0 170.0,302.0  C174.0,292.0 175.0,275.0 175.0,258.0  C175.0,244.0 179.0,233.0 178.0,226.0  Z" fill="#26222a"/>
+<path d="M143.0,299.0  C147.0,308.0 164.0,309.0 170.0,302.0  C174.0,292.0 175.0,275.0 175.0,258.0  L168.0,260.0  C167.0,280.0 162.0,294.0 153.0,303.0  Z" fill="#1c1922"/>
+</g></g></g>
+<g id="腕R" data-pivot="237,248">
+<g id="上腕R">
+<path id="上腕R_肌" d="M229.0,234.0  C238.0,240.0 243.0,252.0 244.0,266.0  C245.0,280.0 245.0,292.0 243.0,302.0  L231.0,302.0  C230.0,288.0 229.0,270.0 228.0,252.0  C228.0,242.0 228.0,236.0 229.0,234.0  Z" fill="#f6d9bd"/>
+<g id="袖R_上" class="小物 着物袖" data-part="小物">
+<path d="M222.0,226.0  C244.0,228.0 256.0,240.0 259.0,254.0  C262.0,270.0 261.0,287.0 257.0,299.0  C253.0,308.0 236.0,309.0 230.0,302.0  C226.0,292.0 225.0,275.0 225.0,258.0  C225.0,244.0 221.0,233.0 222.0,226.0  Z" fill="#26222a"/>
+<path d="M257.0,299.0  C253.0,308.0 236.0,309.0 230.0,302.0  C226.0,292.0 225.0,275.0 225.0,258.0  L232.0,260.0  C233.0,280.0 238.0,294.0 247.0,303.0  Z" fill="#1c1922"/>
+</g></g></g>
+
+    <g id="胴体">
+      <path id="着物_胴" d="M168,214 C180,208 220,208 232,214 C246,222 254,238 255,256 C256,268 252,276 248,278 C250,304 250,332 248,356 C230,362 170,362 152,356 C150,332 150,304 152,278 C148,276 144,268 145,256 C146,238 154,222 168,214 Z" fill="#26222a"/>
+      <path id="着物_陰" d="M232,214 C246,222 254,238 255,256 C256,268 252,276 248,278 C250,304 250,332 248,356 C240,359 224,361 208,362 L214,300 L208,222 Z" fill="#1c1922"/>
+      
+      
+      <path id="衿_白襦袢" d="M184,212 L200,250 L216,212 L208,207 L200,232 L192,207 Z" fill="#f4f1ea"/>
+      <path id="衿_着物L" d="M178,215 C183,211 188,209 192,209 L202,244 L196,258 Z" fill="#302b34" stroke="#141218" stroke-width="1"/>
+      <path id="衿_着物R" d="M222,215 C217,211 212,209 208,209 L199,242 L202,252 L206,258 Z" fill="#302b34" stroke="#141218" stroke-width="1"/>
+      <g id="胴_桜柄" fill="#eeaec4">
+        <use xlink:href="#sakura" transform="translate(228,258) scale(1.5) rotate(20)"/>
+        <use xlink:href="#sakura" transform="translate(214,278) scale(0.9) rotate(-40)"/>
+      </g>
+    </g>
+
+    <g id="帯まわり">
+      <path id="帯揚げ_緑" d="M158,306 C180,301 220,301 242,306 L242,316 C220,311 180,311 158,316 Z" fill="#a9c9a1"/>
+      <path id="帯" d="M156,312 C182,306 218,306 244,312 L246,350 C218,356 182,356 154,350 Z" fill="#c96b7a"/>
+      <g id="帯_桜柄" fill="#f5e8d8">
+        <use xlink:href="#sakura" transform="translate(172,326) scale(0.85) rotate(10)"/>
+        <use xlink:href="#sakura" transform="translate(194,336) scale(1.0) rotate(-25)"/>
+        <use xlink:href="#sakura" transform="translate(218,324) scale(0.8) rotate(45)"/>
+        <use xlink:href="#sakura" transform="translate(236,338) scale(0.7) rotate(80)"/>
+        <use xlink:href="#sakura" transform="translate(160,342) scale(0.65) rotate(60)"/>
+      </g>
+      <path id="帯締め" d="M154,334 C182,340 218,340 246,334" fill="none" stroke="#8a2f3a" stroke-width="3.5"/>
+      <circle id="帯締め_結び" cx="200" cy="338" r="3.4" fill="#8a2f3a"/>
+    </g>
+  
+
+    <!-- 前面レイヤー: 肘から先(上半身より上に表示) -->
+<g id="前腕L" data-pivot="160,298" data-bone-parent="腕L">
+<path id="前腕L_肌" d="M152.0,296.0  L168.0,296.0  C167.0,318.0 166.0,338.0 165.0,353.0  L150.0,353.0  C150.0,334.0 151.0,314.0 152.0,296.0  Z" fill="#f6d9bd"/>
+<g id="袖L_筒" class="小物 着物袖" data-part="小物">
+<path d="M147.5,293 L170.5,293 C169.8,318 168.8,338 167.8,355.5 L147.2,355.5 C147.2,334 146.8,314 147.5,293 Z" fill="#26222a"/>
+<path d="M170.5,293 C169.8,318 168.8,338 167.8,355.5 L162,355.5 C163.5,336 164.5,314 165,293 Z" fill="#1c1922"/>
+</g>
+
+<g id="袖L_下" class="小物 着物袖" data-part="小物" data-pivot="158,293">
+<path id="袂L" d="M151.0,288.0  C140.0,300.0 133.0,320.0 132.0,340.0  C131.0,368.0 136.0,400.0 146.0,430.0  C148.0,436.0 153.0,436.0 155.0,430.0  C161.0,402.0 164.0,372.0 166.0,344.0  C166.0,322.0 165.0,304.0 164.0,292.0  Z" fill="#26222a"/>
+<path id="袂L_陰" d="M146.0,430.0  C148.0,436.0 153.0,436.0 155.0,430.0  C161.0,402.0 164.0,372.0 166.0,344.0  C166.0,322.0 165.0,304.0 164.0,292.0  L159.0,294.0  C160.0,330.0 159.0,380.0 150.0,428.0  Z" fill="#1c1922"/>
+<g fill="#eeaec4">
+<use xlink:href="#sakura" transform="translate(146,330) scale(0.85) rotate(15)"/>
+<use xlink:href="#sakura" transform="translate(143,386) scale(1.1) rotate(-20)"/>
+<use xlink:href="#sakura" transform="translate(152,416) scale(0.7) rotate(40)"/>
+</g></g>
+<g id="手L" data-pivot="158.2,354.0">
+<path id="掌L" d="M150.0,352 L166.8,352 C168.2,352.4 168.7,354.1 168.7,356.6 L168.7,366.4 C168.7,370.5 166.1,372.6 162.1,372.8 L155.4,372.8 C151.4,372.6 148.8,370.5 148.8,366.4 L148.8,356.6 C148.8,354.1 149.3,352.4 150.0,352 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<path id="掌L_甲線" d="M151.8,369.3 Q158.2,372.1 165.2,369.3" fill="none" stroke="#e0ac86" stroke-width="0.55" opacity="0.6"/>
+<g id="親指L" data-pivot="147.4,361.4" transform="rotate(-28 147.4 361.4)">
+<path d="M145.7,360.2 L145.7,365.5 Q145.7,367.1 147.4,367.1 Q149.1,367.1 149.1,365.5 L149.1,360.2 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="親指L_先" data-pivot="147.4,367.5"><path d="M145.80,366.9 L146.05,370.3 Q146.10,371.7 147.4,371.7 Q148.70,371.7 148.75,370.3 L149.00,366.9 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="人差指L" data-pivot="150.6,372.2">
+<path d="M148.8,370.4 L148.8,376.3 Q148.8,378.0 150.6,378.0 Q152.4,378.0 152.4,376.3 L152.4,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="人差指L_先" data-pivot="150.6,378.3"><path d="M148.90,377.0 L149.15,381.3 Q149.30,382.8 150.6,382.8 Q151.90,382.8 152.05,381.3 L152.30,377.0 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="中指L" data-pivot="155.2,372.2">
+<path d="M153.4,370.4 L153.4,377.7 Q153.4,379.4 155.2,379.4 Q157.0,379.4 157.0,377.7 L157.0,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="中指L_先" data-pivot="155.2,379.7"><path d="M153.50,378.4 L153.75,384.0 Q153.90,385.5 155.2,385.5 Q156.50,385.5 156.65,384.0 L156.90,378.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="薬指L" data-pivot="159.8,372.2">
+<path d="M158.0,370.4 L158.0,377.0 Q158.0,378.7 159.8,378.7 Q161.6,378.7 161.6,377.0 L161.6,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="薬指L_先" data-pivot="159.8,379.0"><path d="M158.10,377.7 L158.35,382.7 Q158.50,384.2 159.8,384.2 Q161.10,384.2 161.25,382.7 L161.50,377.7 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="小指L" data-pivot="164.4,372.2">
+<path d="M162.6,370.4 L162.6,375.8 Q162.6,377.4 164.4,377.4 Q166.2,377.4 166.2,375.8 L166.2,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="小指L_先" data-pivot="164.4,377.6"><path d="M162.80,376.3 L163.05,380.1 Q163.10,381.5 164.4,381.5 Q165.70,381.5 165.75,380.1 L166.00,376.3 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+
+<g id="小物_本" class="小物 手持ち" style="display:none">
+  <path d="M156,360 Q178,352 200,359 L200,384 Q178,377 156,384 Z" fill="#f4efe2" stroke="#c9bfa8" stroke-width="1"/>
+  <path d="M244,360 Q222,352 200,359 L200,384 Q222,377 244,384 Z" fill="#faf6ec" stroke="#c9bfa8" stroke-width="1"/>
+  <path d="M200,359 L200,384" stroke="#a89878" stroke-width="1.4"/>
+  <path d="M162,364 Q178,358 195,363 M162,369 Q178,363 195,368 M162,374 Q178,368 195,373 M205,363 Q222,358 238,364 M205,368 Q222,363 238,369" stroke="#c9bfa8" stroke-width="0.8" fill="none"/>
+</g>
+<g id="小物_巻物" class="小物 手持ち" style="display:none">
+  <rect x="158" y="360" width="84" height="17" fill="#f4ead2" stroke="#c9b48a" stroke-width="1"/>
+  <circle cx="158" cy="368.5" r="9" fill="#d9c49a" stroke="#a8905e" stroke-width="1"/>
+  <circle cx="242" cy="368.5" r="9" fill="#d9c49a" stroke="#a8905e" stroke-width="1"/>
+  <path d="M172,364 L186,364 M172,368.5 L190,368.5 M172,373 L182,373 M200,364 L226,364 M200,368.5 L220,368.5 M200,373 L228,373" stroke="#a8905e" stroke-width="1"/>
+</g>
+<g id="小物_ほうき" class="小物 手持ち" style="display:none" transform="rotate(6 158 360)">
+  <rect x="155.5" y="318" width="5" height="98" rx="2" fill="#a5713f"/>
+  <path d="M150,414 L166,414 L172,448 L144,448 Z" fill="#d9b46a"/>
+  <path d="M150,420 L148,446 M155,418 L153,447 M160,418 L161,447 M165,420 L168,446" stroke="#b08c46" stroke-width="1"/>
+  <path d="M149,414 L167,414" stroke="#8a5f2e" stroke-width="2.5"/>
+</g>
+</g>
+<path id="袖口L" class="小物 着物袖" data-part="小物" d="M143,345 C150,351 166,351 173,345 L173,355 C166,361 150,361 143,355 Z" fill="#26222a"/>
+</g>
+<g id="前腕R" data-pivot="240,298" data-bone-parent="腕R">
+<path id="前腕R_肌" d="M248.0,296.0  L232.0,296.0  C233.0,318.0 234.0,338.0 235.0,353.0  L250.0,353.0  C250.0,334.0 249.0,314.0 248.0,296.0  Z" fill="#f6d9bd"/>
+<g id="袖R_筒" class="小物 着物袖" data-part="小物">
+<path d="M229.5,293 L252.5,293 C253.2,314 252.8,334 252.8,355.5 L232.2,355.5 C231.2,338 230.2,318 229.5,293 Z" fill="#26222a"/>
+<path d="M229.5,293 C230.2,318 231.2,338 232.2,355.5 L238,355.5 C236.5,336 235.5,314 235,293 Z" fill="#1c1922"/>
+</g>
+
+<g id="袖R_下" class="小物 着物袖" data-part="小物" data-pivot="242,293">
+<path id="袂R" d="M249.0,288.0  C260.0,300.0 267.0,320.0 268.0,340.0  C269.0,368.0 264.0,400.0 254.0,430.0  C252.0,436.0 247.0,436.0 245.0,430.0  C239.0,402.0 236.0,372.0 234.0,344.0  C234.0,322.0 235.0,304.0 236.0,292.0  Z" fill="#26222a"/>
+<path id="袂R_陰" d="M254.0,430.0  C252.0,436.0 247.0,436.0 245.0,430.0  C239.0,402.0 236.0,372.0 234.0,344.0  C234.0,322.0 235.0,304.0 236.0,292.0  L241.0,294.0  C240.0,330.0 241.0,380.0 250.0,428.0  Z" fill="#1c1922"/>
+<g fill="#eeaec4">
+<use xlink:href="#sakura" transform="translate(254,330) scale(0.85) rotate(-15)"/>
+<use xlink:href="#sakura" transform="translate(257,386) scale(1.1) rotate(20)"/>
+<use xlink:href="#sakura" transform="translate(248,416) scale(0.7) rotate(-40)"/>
+</g></g>
+<g id="手R" data-pivot="241.8,354.0">
+<path id="掌R" d="M250.0,352 L233.2,352 C231.8,352.4 231.3,354.1 231.3,356.6 L231.3,366.4 C231.3,370.5 233.9,372.6 237.9,372.8 L244.6,372.8 C248.6,372.6 251.2,370.5 251.2,366.4 L251.2,356.6 C251.2,354.1 250.7,352.4 250.0,352 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<path id="掌R_甲線" d="M248.2,369.3 Q241.8,372.1 234.8,369.3" fill="none" stroke="#e0ac86" stroke-width="0.55" opacity="0.6"/>
+<g id="親指R" data-pivot="252.6,361.4" transform="rotate(28 252.6 361.4)">
+<path d="M250.9,360.2 L250.9,365.5 Q250.9,367.1 252.6,367.1 Q254.3,367.1 254.3,365.5 L254.3,360.2 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="親指R_先" data-pivot="252.6,367.5"><path d="M251.00,366.9 L251.25,370.3 Q251.30,371.7 252.6,371.7 Q253.90,371.7 253.95,370.3 L254.20,366.9 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="人差指R" data-pivot="249.4,372.2">
+<path d="M247.6,370.4 L247.6,376.3 Q247.6,378.0 249.4,378.0 Q251.2,378.0 251.2,376.3 L251.2,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="人差指R_先" data-pivot="249.4,378.3"><path d="M247.70,377.0 L247.95,381.3 Q248.10,382.8 249.4,382.8 Q250.70,382.8 250.85,381.3 L251.10,377.0 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="中指R" data-pivot="244.8,372.2">
+<path d="M243.0,370.4 L243.0,377.7 Q243.0,379.4 244.8,379.4 Q246.6,379.4 246.6,377.7 L246.6,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="中指R_先" data-pivot="244.8,379.7"><path d="M243.10,378.4 L243.35,384.0 Q243.50,385.5 244.8,385.5 Q246.10,385.5 246.25,384.0 L246.50,378.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="薬指R" data-pivot="240.2,372.2">
+<path d="M238.4,370.4 L238.4,377.0 Q238.4,378.7 240.2,378.7 Q242.0,378.7 242.0,377.0 L242.0,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="薬指R_先" data-pivot="240.2,379.0"><path d="M238.50,377.7 L238.75,382.7 Q238.90,384.2 240.2,384.2 Q241.50,384.2 241.65,382.7 L241.90,377.7 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+<g id="小指R" data-pivot="235.6,372.2">
+<path d="M233.8,370.4 L233.8,375.8 Q233.8,377.4 235.6,377.4 Q237.4,377.4 237.4,375.8 L237.4,370.4 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/>
+<g id="小指R_先" data-pivot="235.6,377.6"><path d="M234.00,376.3 L234.25,380.1 Q234.30,381.5 235.6,381.5 Q236.90,381.5 236.95,380.1 L237.20,376.3 Z" fill="#f6d9bd" stroke="#e6bb97" stroke-width="0.45"/></g></g>
+
+<g id="小物_スマホ" class="小物 手持ち" style="display:none" transform="rotate(-8 242 366)">
+  <rect x="234.5" y="353" width="15" height="26" rx="3" fill="#2a2d36"/>
+  <rect x="236.5" y="356.5" width="11" height="18" rx="1" fill="#cfe3f2"/>
+  <circle cx="242" cy="376.5" r="1.2" fill="#888"/>
+</g>
+<g id="小物_湯呑み" class="小物 手持ち" style="display:none">
+  <path d="M234,361 C234,373 236,378 242,378 C248,378 250,373 250,361 Z" fill="#7a8a6e"/>
+  <path d="M234,368 L250,368" stroke="#5e6b52" stroke-width="1.5"/>
+  <ellipse cx="242" cy="361" rx="8" ry="2.6" fill="#b8d48a"/>
+</g>
+<g id="小物_扇子" class="小物 手持ち" style="display:none">
+  <path d="M242,368 L224,342 A31,31 0 0 1 260,342 Z" fill="#f4dde6" stroke="#c96b7a" stroke-width="1"/>
+  <path d="M242,368 L228,345 M242,368 L237,340 M242,368 L247,340 M242,368 L256,345" stroke="#d9a9b5" stroke-width="0.8"/>
+  <use xlink:href="#sakura" transform="translate(242,349) scale(0.75)" fill="#e89bb4"/>
+</g>
+<g id="小物_マイク" class="小物 手持ち" style="display:none">
+  <rect x="239" y="352" width="6" height="20" rx="2.5" fill="#3a3d44"/>
+  <circle cx="242" cy="348" r="7" fill="#8a8f98"/>
+  <path d="M237,345 L247,351 M237,351 L247,345 M242,341.5 L242,354.5" stroke="#6a6f78" stroke-width="0.8"/>
+</g>
+<g id="小物_手裏剣" class="小物 手持ち" style="display:none">
+  <path d="M242,357 L245.5,364.5 L253,368 L245.5,371.5 L242,379 L238.5,371.5 L231,368 L238.5,364.5 Z" fill="#4a4e58"/>
+  <circle cx="242" cy="368" r="2.2" fill="#f7ecec"/>
+</g>
+</g>
+<path id="袖口R" class="小物 着物袖" data-part="小物" d="M227,345 C234,351 250,351 257,345 L257,355 C250,361 234,361 227,355 Z" fill="#26222a"/>
+</g>
+  </g>
+
+  <!-- ============ 頭(首がピボット) ============ -->
+  <g id="頭" data-pivot="200,218">
+
+    
+
+    <g id="耳">
+      <g id="耳L">
+        <path d="M158,146 C149,140 142,147 144,159 C147,168 155,171 160,165 C161,158 160,150 158,146 Z" fill="#f6d9bd"/>
+        <path id="耳L_内" d="M155,150 C150,148 147,152 149,158 C150,162 154,164 157,161" fill="none" stroke="#e0b391" stroke-width="1.3" stroke-linecap="round"/>
+      </g>
+      <g id="耳R">
+        <path d="M242,146 C251,140 258,147 256,159 C253,168 245,171 240,165 C239,158 240,150 242,146 Z" fill="#f6d9bd"/>
+        <path id="耳R_内" d="M245,150 C250,148 253,152 251,158 C250,162 246,164 243,161" fill="none" stroke="#e0b391" stroke-width="1.3" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- ============ 顔パーツ ============ -->
+    <g id="顔">
+      <path id="輪郭" d="M200,94 C232,94 246,116 244,148 C243,170 226,190 200,196 C174,190 157,170 156,148 C154,116 168,94 200,94 Z" fill="#f9e2c8"/>
+      <path id="輪郭_陰" d="M200,94 C232,94 246,116 244,148 C243,170 226,190 200,196 C213,186 225,170 227,148 C228,120 217,100 200,94 Z" fill="#f2cfae" opacity="0.5"/>
+
+      <g id="眉">
+        <path id="眉L" transform="translate(-6,-6)" d="M172,131 C177,127 185,126 191,128" fill="none" stroke="#7a2a26" stroke-width="2.2" stroke-linecap="round"/>
+        <path id="眉R" transform="translate(6,-6)" d="M228,131 C223,127 215,126 209,128" fill="none" stroke="#7a2a26" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+
+      <g id="目L" data-pivot="177,149" transform="translate(-6,-8) translate(183,157) scale(0.84) translate(-183,-157)">
+        <g id="目L_通常">
+        <path id="白目L" d="M171,150 C176,145.5 191,145.5 194,150 C195.5,156 195.5,162 194,165.5 C187,168.5 178,168.5 172,165.5 C170.5,162 170.5,156 171,150 Z" fill="#ffffff"/>
+        <g id="瞳L">
+          <ellipse id="黒目L_ベース" cx="183" cy="156.5" rx="8.6" ry="9.6" fill="#3a2230"/>
+          <circle id="虹彩L_紫" cx="183" cy="158" r="6.4" fill="#b46a99"/>
+          <circle id="虹彩L_明" cx="183" cy="159.5" r="4.3" fill="#e2a9c6"/>
+          <ellipse id="瞳孔L" cx="183" cy="156" rx="2.7" ry="3.4" fill="#241220"/>
+          <circle id="光L" cx="179.2" cy="150.5" r="3.1" fill="#ffffff"/>
+          <circle id="光L2" cx="187.2" cy="162.5" r="1.5" fill="#ffffff" opacity="0.85"/>
+        </g>
+        <path id="下まぶたL" d="M173,165.5 C179,168 187,168 193,165.5" fill="none" stroke="#c98a72" stroke-width="1.4" stroke-linecap="round"/>
+        <path id="まつ毛L" d="M155,151.5 C160,146 170,142.5 183,142 C190,141.5 195,143 195,145 C196,146 196,148 195,149 C188,145.5 176,146 168,148.5 C163,150 158,151.5 155,151.5 Z" fill="#4a1e22"/>
+      </g>
+        <g id="目L_にっこり" style="display:none">
+          <path d="M172,159 C176,147 190,147 194,159" fill="none" stroke="#4a1e22" stroke-width="3.6" stroke-linecap="round"/>
+          <path d="M172,159 C170,157.5 168.5,157.5 167,158.5" fill="none" stroke="#4a1e22" stroke-width="2.2" stroke-linecap="round"/>
+        </g>
+        <g id="目L_ぎゅっ" style="display:none">
+          <path d="M175,148 L189,156 L175,164" fill="none" stroke="#4a1e22" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g id="目L_ハート" style="display:none">
+          <path d="M183,151 C180,145.5 172,146.5 172,153 C172,159 179,164 183,167.5 C187,164 194,159 194,153 C194,146.5 186,145.5 183,151 Z" fill="#ec5f86"/>
+          <circle cx="179" cy="152" r="2" fill="#ffffff" opacity="0.85"/>
+        </g>
+        <g id="目L_ぐるぐる" style="display:none">
+          <path d="M184.0,157.0L184.3,157.6 L184.3,158.4 L183.9,159.2 L182.9,159.8 L181.6,160.0 L180.2,159.5 L179.0,158.4 L178.3,156.7 L178.4,154.7 L179.3,152.8 L181.1,151.2 L183.6,150.5 L186.3,150.8 L188.8,152.3 L190.6,154.8 L191.3,158.0 L190.7,161.4 L188.6,164.4 L185.4,166.4 L181.5,167.1 L177.5,166.1 L174.0,163.5 L171.7,159.6 L171.1,154.9 L172.5,150.2 L175.7,146.3 L180.4,143.8 L185.8,143.4 L191.1,145.2 L195.5,149.1 L198.0,154.5 L198.3,160.6 L196.0,166.6 L191.5,171.3 L185.3,173.9 L178.4,174.0 L171.9,171.2 L166.9,166.0 L164.2,159.0 L164.4,151.4" fill="none" stroke="#4a2430" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g id="目L_星" style="display:none">
+          <ellipse cx="183" cy="157" rx="9" ry="11" fill="#3a2230"/>
+          <path d="M183,147 L185.6,154 L192.5,156.5 L185.6,159 L183,166.5 L180.4,159 L173.5,156.5 L180.4,154 Z" fill="#f6c453"/>
+          <circle cx="180" cy="152" r="1.6" fill="#ffffff"/>
+        </g>
+        <g id="目L_白目" style="display:none">
+          <ellipse cx="183" cy="157" rx="8.5" ry="10.5" fill="#ffffff" stroke="#c9c2b8" stroke-width="1"/>
+        </g>
+        <g id="目L_半目" style="display:none">
+          <path d="M173,153 L193,153 L191,165 Q183,170.5 175,165 Z" fill="#ffffff"/>
+          <ellipse cx="183" cy="159.5" rx="5.6" ry="6.2" fill="#8e4d78"/>
+          <ellipse cx="183" cy="158.5" rx="2.2" ry="2.8" fill="#241220"/>
+          <path d="M172,153 L194,153" fill="none" stroke="#4a1e22" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g id="涙L" style="display:none">
+          <path d="M176,170 q-3.2,6.5 0,9.5 q3.2,-3 0,-9.5" fill="#9fd4ee" opacity="0.9"/>
+          <path d="M189,172 q-2.4,5 0,7.4 q2.4,-2.4 0,-7.4" fill="#bfe3f4" opacity="0.85"/>
+        </g>
+      </g>
+      <g id="目R" data-pivot="223,149" transform="translate(6,-8) translate(217,157) scale(0.84) translate(-217,-157)">
+        <g id="目R_通常">
+        <path id="白目R" d="M229,150 C224,145.5 209,145.5 206,150 C204.5,156 204.5,162 206,165.5 C213,168.5 222,168.5 228,165.5 C229.5,162 229.5,156 229,150 Z" fill="#ffffff"/>
+        <g id="瞳R">
+          <ellipse id="黒目R_ベース" cx="217" cy="156.5" rx="8.6" ry="9.6" fill="#3a2230"/>
+          <circle id="虹彩R_紫" cx="217" cy="158" r="6.4" fill="#b46a99"/>
+          <circle id="虹彩R_明" cx="217" cy="159.5" r="4.3" fill="#e2a9c6"/>
+          <ellipse id="瞳孔R" cx="217" cy="156" rx="2.7" ry="3.4" fill="#241220"/>
+          <circle id="光R" cx="213.2" cy="150.5" r="3.1" fill="#ffffff"/>
+          <circle id="光R2" cx="221.2" cy="162.5" r="1.5" fill="#ffffff" opacity="0.85"/>
+        </g>
+        <path id="下まぶたR" d="M207,165.5 C213,168 221,168 227,165.5" fill="none" stroke="#c98a72" stroke-width="1.4" stroke-linecap="round"/>
+        <path id="まつ毛R" d="M245,151.5 C240,146 230,142.5 217,142 C210,141.5 205,143 205,145 C204,146 204,148 205,149 C212,145.5 224,146 232,148.5 C237,150 242,151.5 245,151.5 Z" fill="#4a1e22"/>
+      </g>
+        <g id="目R_にっこり" style="display:none">
+          <path d="M206,159 C210,147 224,147 228,159" fill="none" stroke="#4a1e22" stroke-width="3.6" stroke-linecap="round"/>
+          <path d="M228,159 C230,157.5 231.5,157.5 233,158.5" fill="none" stroke="#4a1e22" stroke-width="2.2" stroke-linecap="round"/>
+        </g>
+        <g id="目R_ぎゅっ" style="display:none">
+          <path d="M225,148 L211,156 L225,164" fill="none" stroke="#4a1e22" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g id="目R_ハート" style="display:none">
+          <path d="M217,151 C214,145.5 206,146.5 206,153 C206,159 213,164 217,167.5 C221,164 228,159 228,153 C228,146.5 220,145.5 217,151 Z" fill="#ec5f86"/>
+          <circle cx="213" cy="152" r="2" fill="#ffffff" opacity="0.85"/>
+        </g>
+        <g id="目R_ぐるぐる" style="display:none">
+          <path d="M218.0,157.0L218.3,157.6 L218.3,158.4 L217.9,159.2 L216.9,159.8 L215.6,160.0 L214.2,159.5 L213.0,158.4 L212.3,156.7 L212.4,154.7 L213.3,152.8 L215.1,151.2 L217.6,150.5 L220.3,150.8 L222.8,152.3 L224.6,154.8 L225.3,158.0 L224.7,161.4 L222.6,164.4 L219.4,166.4 L215.5,167.1 L211.5,166.1 L208.0,163.5 L205.7,159.6 L205.1,154.9 L206.5,150.2 L209.7,146.3 L214.4,143.8 L219.8,143.4 L225.1,145.2 L229.5,149.1 L232.0,154.5 L232.3,160.6 L230.0,166.6 L225.5,171.3 L219.3,173.9 L212.4,174.0 L205.9,171.2 L200.9,166.0 L198.2,159.0 L198.4,151.4" fill="none" stroke="#4a2430" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g id="目R_星" style="display:none">
+          <ellipse cx="217" cy="157" rx="9" ry="11" fill="#3a2230"/>
+          <path d="M217,147 L219.6,154 L226.5,156.5 L219.6,159 L217,166.5 L214.4,159 L207.5,156.5 L214.4,154 Z" fill="#f6c453"/>
+          <circle cx="214" cy="152" r="1.6" fill="#ffffff"/>
+        </g>
+        <g id="目R_白目" style="display:none">
+          <ellipse cx="217" cy="157" rx="8.5" ry="10.5" fill="#ffffff" stroke="#c9c2b8" stroke-width="1"/>
+        </g>
+        <g id="目R_半目" style="display:none">
+          <path d="M207,153 L227,153 L225,165 Q217,170.5 209,165 Z" fill="#ffffff"/>
+          <ellipse cx="217" cy="159.5" rx="5.6" ry="6.2" fill="#8e4d78"/>
+          <ellipse cx="217" cy="158.5" rx="2.2" ry="2.8" fill="#241220"/>
+          <path d="M206,153 L228,153" fill="none" stroke="#4a1e22" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g id="涙R" style="display:none">
+          <path d="M210,170 q-3.2,6.5 0,9.5 q3.2,-3 0,-9.5" fill="#9fd4ee" opacity="0.9"/>
+          <path d="M223,172 q-2.4,5 0,7.4 q2.4,-2.4 0,-7.4" fill="#bfe3f4" opacity="0.85"/>
+        </g>
+      </g>
+
+      <circle id="鼻" cx="200.5" cy="166" r="1.2" fill="#d9a583"/>
+      <g id="口" transform="translate(0,-9)">
+        <path id="口_線" d="M192,182 C197,187 203,187 208,182" fill="none" stroke="#a05446" stroke-width="1.8" stroke-linecap="round"/>
+        <path id="口_中" d="M193,183 C197,187 203,187 207,183 C204,188 196,188 193,183 Z" fill="#e58a7c"/>
+      </g>
+      <g id="頬" fill="#f4a9a0" opacity="0.45">
+        <ellipse id="頬L" cx="168" cy="172" rx="7" ry="4"/>
+        <ellipse id="頬R" cx="232" cy="172" rx="7" ry="4"/>
+      </g>
+    </g>
+
+    <!-- ============ 髪パーツ(前面) ============ -->
+    <g id="横髪L" data-pivot="151,120" transform="translate(-15,0)">
+      <path d="M170,102 C166,110 164,130 164.5,152 C165.5,172 166,192 169,206 C172,200 173,188 172,176 C176,182 178,190 178,198 C182,190 182,176 179,160 C176,142 174,118 170,102 Z" fill="#e0483c"/>
+      <path d="M169,206 C172,200 173,188 172,176 C170,150 169,124 170,102 C166,112 165,132 166,156 C166.5,176 167,194 169,206 Z" fill="#c53430" opacity="0.6"/>
+      <path d="M174,130 C175,152 176,172 175,190" fill="none" stroke="#c53430" stroke-width="1.3" stroke-linecap="round" opacity="0.7"/>
+    </g>
+    <g id="横髪R" data-pivot="249,120" transform="translate(15,0)">
+      <path d="M230,102 C234,110 236,130 235.5,152 C234.5,172 234,192 231,206 C228,200 227,188 228,176 C224,182 222,190 222,198 C218,190 218,176 221,160 C224,142 226,118 230,102 Z" fill="#e0483c"/>
+      <path d="M231,206 C228,200 227,188 228,176 C230,150 231,124 230,102 C234,112 235,132 234,156 C233.5,176 233,194 231,206 Z" fill="#c53430" opacity="0.6"/>
+      <path d="M226,130 C225,152 224,172 225,190" fill="none" stroke="#c53430" stroke-width="1.3" stroke-linecap="round" opacity="0.7"/>
+    </g>
+
+    <g id="前髪" data-pivot="200,100">
+      <path d="M200,74 C170,74 156,94 158,116 C155,126 151,133 147,138 C154,135 160,128 163,122 C162,130 160,137 159,142 C165,137 170,130 172,123 C170,131 170,138 170,144 C174,138 182,126 186,113 C188,126 190,138 191,148 C194,142 195,135 195,128 C196,138 197,148 199,154 C202,148 203,138 204,128 C205,138 207,143 209,148 C211,138 213,126 214,113 C218,125 226,138 230,144 C230,138 230,131 228,123 C230,130 235,137 241,142 C240,137 238,130 237,122 C240,128 246,135 253,138 C249,133 245,126 242,116 C244,94 230,74 200,74 Z" fill="#e8543f"/>
+      <path d="M200,74 C170,74 156,94 158,116 C155,126 151,133 147,138 C154,135 160,128 163,122 C162,104 176,88 200,84 C224,88 238,104 237,122 C240,128 246,135 253,138 C249,133 245,126 242,116 C244,94 230,74 200,74 Z" fill="#f27a58" opacity="0.5"/>
+    </g>
+
+    <!-- ============ 小物・装飾パーツ ============ -->
+    <g id="小物">
+      
+      <g id="桜の髪飾り" data-pivot="170,112" fill="#f0a5be">
+        <use xlink:href="#sakura" transform="translate(170,112) scale(1.8)"/>
+        <circle cx="170" cy="112" r="2.6" fill="#d4708f"/>
+      </g>
+    </g>
+  </g>
+</g>
+</svg>
+
+</div>
+<aside id="panel">
+  <h1>ゆい モーション<small>KUCHIPAKU / GAZE SYSTEM</small></h1>
+
+  <div class="sec">
+    <h2>画面</h2>
+    <div class="row">
+      <button id="vwFull" class="on">全身</button>
+      <button id="vwBust">バストアップ</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>口パク</h2>
+    <div class="row">
+      <button id="btnTalk">しゃべる開始</button>
+    </div>
+    <div style="height:8px"></div>
+    <textarea id="talkText" placeholder="セリフを入れて「セリフ再生」(文字数で口パク時間が決まります)">こんにちは!ゆいです。にんケットで待ってるね!</textarea>
+    <div style="height:8px"></div>
+    <div class="row"><button id="btnSpeak">セリフ再生</button></div>
+    <div style="height:10px"></div>
+    <label class="sl">速さ <input type="range" id="talkSpeed" min="60" max="200" value="110"></label>
+  </div>
+
+  <div class="sec">
+    <h2>手の動き</h2>
+    <div class="row">
+      <button id="hgNone" class="on">なし</button>
+      <button id="hgWave">手を振る</button>
+      <button id="hgRaise">挙手</button>
+      <button id="hgBanzai">バンザイ</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>手の形</h2>
+    <div class="row">
+      <button id="hsPaper" class="on">パー</button>
+      <button id="hsRock">グー</button>
+      <button id="hsScissors">チョキ</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>じゃんけん</h2>
+    <div class="row">
+      <button id="btnJanken">じゃんけん開始</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>視線</h2>
+    <div class="row">
+      <button id="gzMouse" class="on">マウス追従</button>
+      <button id="gzAuto">自動キョロキョロ</button>
+      <button id="gzFix">正面固定</button>
+    </div>
+    <div style="height:10px"></div>
+    <label class="sl">可動域 <input type="range" id="gazeRange" min="1" max="5" step="0.5" value="3"></label>
+  </div>
+
+  <div class="sec">
+    <h2>まばたき</h2>
+    <div class="row">
+      <button id="btnBlink" class="on">自動まばたき ON</button>
+      <button id="btnBlinkOnce">1回まばたき</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>録画</h2>
+    <div class="row">
+      <button id="btnRec">● 録画開始</button>
+      <a id="recLink" style="display:none; font-size:12px; color:#d4708f; align-self:center;" download="yui_anime.webm">↓ 動画を保存</a>
+    </div>
+  </div>
+
+  <div class="sec"><div id="status">待機中</div></div>
+</aside>
+
+<script>
+const $ = id => document.getElementById(id);
+const svgRoot = document.querySelector('#stage svg');
+const status = $('status');
+
+/* ========== 手の動き ========== */
+// ボーン: 腕(肩) → 前腕(肘) → 手(手首)。FKで上腕の回転を前腕に合成
+// 袂(垂れ袖)は腕に付いていくが、向きはカウンター回転で常に垂れ下がったまま
+const boneArmL = svgRoot.getElementById('腕L');     // pivot 163,248
+const boneArmR = svgRoot.getElementById('腕R');     // pivot 237,248
+const boneForeL = svgRoot.getElementById('前腕L');  // pivot 160,298
+const boneForeR = svgRoot.getElementById('前腕R');  // pivot 240,298
+const boneHandL = svgRoot.getElementById('手L');    // pivot 158.2,354
+const boneHandR = svgRoot.getElementById('手R');    // pivot 241.8,354
+const sleeveL = svgRoot.getElementById('袖L_下');   // pivot 158,293
+const sleeveR = svgRoot.getElementById('袖R_下');   // pivot 242,293
+
+let gesture = 'none';
+const ang = {armL:0, armR:0, foreL:0, foreR:0, handL:0, handR:0};
+const tgt = {armL:0, armR:0, foreL:0, foreR:0, handL:0, handR:0};
+
+function setGesture(g){
+  gesture = g;
+  ['hgNone','hgWave','hgRaise','hgBanzai'].forEach(id=>$(id).classList.remove('on'));
+  ({none:'hgNone', wave:'hgWave', raise:'hgRaise', banzai:'hgBanzai'})[g] &&
+    $({none:'hgNone',wave:'hgWave',raise:'hgRaise',banzai:'hgBanzai'}[g]).classList.add('on');
+}
+$('hgNone').onclick   = ()=>setGesture('none');
+$('hgWave').onclick   = ()=>setGesture('wave');
+$('hgRaise').onclick  = ()=>setGesture('raise');
+$('hgBanzai').onclick = ()=>setGesture('banzai');
+
+function handLoop(ts){
+  const t = ts/1000;
+  if(gesture==='none'){
+    tgt.armL=0; tgt.armR=0; tgt.foreL=0; tgt.foreR=0; tgt.handL=0; tgt.handR=0;
+  }else if(gesture==='droop'){
+    // しょんぼり: 両腕を内側にだらん、かすかに揺れる
+    const s = Math.sin(t*1.2)*1.5;
+    tgt.armL=-7+s; tgt.armR=-7+s; tgt.foreL=-4; tgt.foreR=-4;
+    tgt.handL=-6; tgt.handR=-6;
+  }else if(gesture==='wave'){
+    tgt.armR  = 50;                        // 肘を体の横に上げる
+    tgt.foreR = 125 + Math.sin(t*6)*10;    // 手が顔の下(あご〜首の横)あたりでフリフリ
+    tgt.handR = Math.sin(t*6 + 0.5)*15;
+    tgt.armL=0; tgt.foreL=0; tgt.handL=0;
+  }else if(gesture==='raise'){
+    tgt.armR  = 30;
+    tgt.foreR = 125;
+    tgt.handR = 5 + Math.sin(t*1.5)*3;
+    tgt.armL=0; tgt.foreL=0; tgt.handL=0;
+  }else if(gesture==='banzai'){
+    const sway = Math.sin(t*2.2)*4;
+    tgt.armL  = 135 + sway; tgt.foreL = 30;   // 耳の横まで挙げる
+    tgt.armR  = 135 + sway; tgt.foreR = 30;
+    tgt.handL = Math.sin(t*2.2)*10;
+    tgt.handR = Math.sin(t*2.2)*10;
+  }
+  for(const k in ang) ang[k] += (tgt[k]-ang[k]) * 0.15;
+
+  // 上腕(肩ピボット)
+  boneArmL.setAttribute('transform',  `rotate(${ ang.armL} 163 248)`);
+  boneArmR.setAttribute('transform',  `rotate(${-ang.armR} 237 248)`);
+  // 前腕は肩回転を合成(FK): 肩まわり→肘まわりの順で回す
+  boneForeL.setAttribute('transform', `rotate(${ ang.armL} 163 248) rotate(${ ang.foreL} 160 298)`);
+  boneForeR.setAttribute('transform', `rotate(${-ang.armR} 237 248) rotate(${-ang.foreR} 240 298)`);
+  // 手首(前腕の子なのでローカル回転のみ)
+  boneHandL.setAttribute('transform', `rotate(${ ang.handL} 158.2 354)`);
+  boneHandR.setAttribute('transform', `rotate(${-ang.handR} 241.8 354)`);
+  // 袂: 腕に付いて移動するが、合計回転をキャンセルして常に垂直に垂らす
+  sleeveL.setAttribute('transform', `rotate(${-(ang.armL+ang.foreL)} 158 293)`);
+  sleeveR.setAttribute('transform', `rotate(${ (ang.armR+ang.foreR)} 242 293)`);
+  requestAnimationFrame(handLoop);
+}
+requestAnimationFrame(handLoop);
+
+/* ========== 手の形(グー・チョキ・パー) ========== */
+// 各指グループをピボット基準の縦スケールで折りたたむ(甲側から見た2D表現)
+const fingers = {
+  親指L:   {el:svgRoot.getElementById('親指L'),   px:147.4, py:361.4},
+  人差指L: {el:svgRoot.getElementById('人差指L'), px:150.6, py:372.2},
+  中指L:   {el:svgRoot.getElementById('中指L'),   px:155.2, py:372.2},
+  薬指L:   {el:svgRoot.getElementById('薬指L'),   px:159.8, py:372.2},
+  小指L:   {el:svgRoot.getElementById('小指L'),   px:164.4, py:372.2},
+  親指R:   {el:svgRoot.getElementById('親指R'),   px:252.6, py:361.4},
+  人差指R: {el:svgRoot.getElementById('人差指R'), px:249.4, py:372.2},
+  中指R:   {el:svgRoot.getElementById('中指R'),   px:244.8, py:372.2},
+  薬指R:   {el:svgRoot.getElementById('薬指R'),   px:240.2, py:372.2},
+  小指R:   {el:svgRoot.getElementById('小指R'),   px:235.6, py:372.2},
+};
+for(const k in fingers){
+  fingers[k].s = 1; fingers[k].t = 1;
+  fingers[k].base = fingers[k].el.getAttribute('transform') || ''; // 親指の rotate(-28…) 等を保持
+}
+
+const FOLD = 0.45, THUMB_FOLD = 0.5;  // 折った指も短い節として見える畳み具合
+const SHAPES = {
+  paper:    ()=>1,
+  rock:     k => k.startsWith('親指') ? THUMB_FOLD : FOLD,
+  scissors: k => (k.startsWith('人差指') || k.startsWith('中指')) ? 1
+                : k.startsWith('親指') ? THUMB_FOLD : FOLD,
+};
+function setHandShape(shape){
+  for(const k in fingers) fingers[k].t = SHAPES[shape](k);
+  ['hsPaper','hsRock','hsScissors'].forEach(id=>$(id).classList.remove('on'));
+  $({paper:'hsPaper', rock:'hsRock', scissors:'hsScissors'}[shape]).classList.add('on');
+}
+$('hsPaper').onclick    = ()=>setHandShape('paper');
+$('hsRock').onclick     = ()=>setHandShape('rock');
+$('hsScissors').onclick = ()=>setHandShape('scissors');
+
+function fingerLoop(){
+  for(const k in fingers){
+    const f = fingers[k];
+    f.s += (f.t - f.s) * 0.25;
+    f.el.setAttribute('transform',
+      `${f.base} translate(${f.px},${f.py}) scale(1,${f.s.toFixed(3)}) translate(${-f.px},${-f.py})`);
+  }
+  requestAnimationFrame(fingerLoop);
+}
+requestAnimationFrame(fingerLoop);
+
+/* ========== じゃんけん ========== */
+const callout = $('callout');
+let jankenBusy = false;
+function say(text, ms){
+  callout.textContent = text;
+  callout.style.opacity = 1;
+  if(ms) setTimeout(()=>{ if(callout.textContent===text) callout.style.opacity = 0; }, ms);
+}
+
+// ユーザーの手選択ボタン(ステージ下部に出す)
+const choiceBox = document.createElement('div');
+choiceBox.style.cssText = 'position:absolute; bottom:6%; left:50%; transform:translateX(-50%);'
+  + 'display:none; gap:10px;';
+['グー','チョキ','パー'].forEach((label,i)=>{
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.style.cssText = 'font-size:18px; padding:12px 22px; border-radius:12px;'
+    + 'border:2px solid #d4708f; background:#fff; color:#5a3a45; cursor:pointer; font-weight:700;';
+  b.onclick = ()=> resolveJanken(['rock','scissors','paper'][i]);
+  choiceBox.appendChild(b);
+});
+document.getElementById('stage').appendChild(choiceBox);
+
+const NAMES = {rock:'グー', scissors:'チョキ', paper:'パー'};
+const BEATS = {rock:'scissors', scissors:'paper', paper:'rock'}; // key が value に勝つ
+
+let aikoMode = false; // あいこ継続中は掛け声が「しょっ!」になる
+
+/* しょんぼり演出: うつむき+半目+への字口+腕だらん */
+const headG   = svgRoot.getElementById('頭');
+const ribbonG = svgRoot.getElementById('リボン');
+const backHairG = svgRoot.getElementById('後ろ髪');
+const eyeLHalf = svgRoot.getElementById('目L_半目');
+const eyeRHalf = svgRoot.getElementById('目R_半目');
+let blinkSuspend = false;
+
+let droopHead = 0;   // 0〜1: しょんぼりのうつむき量(揺れループが参照)
+function shonbori(ms=3200){
+  stopTalk();
+  setGesture('droop');
+  droopHead = 1;   // うつむきはアイドル揺れループ側で合成
+  // 半目+への字口+視線を落とす
+  blinkSuspend = true;
+  eyeLNorm.style.display='none'; eyeRNorm.style.display='none';
+  eyeLHalf.style.display='';     eyeRHalf.style.display='';
+  setMouth(3);
+  const prevMode = gazeMode;
+  gazeMode = 'fix'; gazeTarget = {x:0, y:1};   // 目線も下へ
+
+  setTimeout(()=>{
+    droopHead = 0;
+    eyeLHalf.style.display='none'; eyeRHalf.style.display='none';
+    eyeLNorm.style.display='';     eyeRNorm.style.display='';
+    setMouth(0);
+    blinkSuspend = false;
+    gazeTarget = {x:0, y:0};
+    setGazeMode(prevMode);
+    setGesture('none');
+  }, ms);
+}
+
+$('btnJanken').onclick = ()=>{
+  if(jankenBusy) return;
+  jankenBusy = true;
+  aikoMode = false;
+  $('btnJanken').classList.add('on');
+
+  // 手を上げてグー
+  setGesture('wave');
+  setHandShape('rock');
+  say('最初はーぐー!');
+  startTalk(0,'さいしょはーぐー');
+
+  setTimeout(()=>{
+    say('じゃんけん…');
+    startTalk(0,'じゃんけん');
+    status.textContent = '手を選んでね!';
+    choiceBox.style.display = 'flex';   // ここでユーザーの入力を待つ
+  }, 1200);
+};
+
+function resolveJanken(userHand){
+  choiceBox.style.display = 'none';
+  const yuiHand = ['rock','scissors','paper'][Math.floor(Math.random()*3)];
+  setHandShape(yuiHand);
+  say(aikoMode ? 'しょっ!' : 'ぽんっ!');
+  startTalk(0, aikoMode ? 'しょっ' : 'ぽん');
+
+  const draw = (userHand === yuiHand);
+  const userWin = (BEATS[userHand] === yuiHand);
+
+  setTimeout(()=>{
+    if(draw){
+      // あいこ → 「あいこで〜」と続けて再度入力待ち
+      aikoMode = true;
+      say('あいこで〜');
+      startTalk(0,'あいこでー');
+      status.textContent = `二人とも${NAMES[yuiHand]}! あいこ! もう一度選んでね`;
+      setTimeout(()=>{ choiceBox.style.display = 'flex'; }, 800);
+      return;
+    }
+    const result = userWin ? 'あなたの勝ち!' : 'ゆいの勝ち!';
+    if(userWin){ say('ゆいは' + NAMES[yuiHand] + '…まけたぁ…', 3000); shonbori(); }
+    else { say('ゆいは' + NAMES[yuiHand] + '! ' + result, 3000); setGesture('banzai'); startTalk(0,'やったー'); }
+    status.textContent = `あなた:${NAMES[userHand]} / ゆい:${NAMES[yuiHand]} → ${result}`;
+    aikoMode = false;
+    setTimeout(()=>{
+      jankenBusy = false;
+      $('btnJanken').classList.remove('on');
+    }, 1300);
+  }, 700);
+}
+
+
+/* ========== アイドル揺れ(頭ゆっくり+髪の遅れ追従) ========== */
+const sideHairL = svgRoot.getElementById('横髪L');
+const sideHairR = svgRoot.getElementById('横髪R');
+const sideBaseL = sideHairL.getAttribute('transform') || '';
+const sideBaseR = sideHairR.getAttribute('transform') || '';
+let droopSm = 0; // うつむきのなめらか補間値
+
+function swayLoop(ts){
+  const t = ts/1000;
+  droopSm += ((typeof droopHead!=='undefined'?droopHead:0) - droopSm) * 0.08;
+
+  // 頭: ゆっくり左右に傾く+かすかな上下
+  const headA = 1.6*Math.sin(t*0.9) + droopSm*2;         // 傾き(度)
+  const headY = 1.2*Math.sin(t*1.8) + droopSm*6;          // 上下
+  const headT = `translate(0,${headY.toFixed(2)}) rotate(${headA.toFixed(2)} 200 218)`;
+  headG.setAttribute('transform', headT);
+  ribbonG.setAttribute('transform', headT);
+
+  // 後ろ髪: 位相を遅らせ振幅を大きく=髪が遅れてついてくる
+  const hairA = 1.6*1.5*Math.sin(t*0.9 - 0.7) + droopSm*2;
+  backHairG.setAttribute('transform',
+    `translate(0,${headY.toFixed(2)}) rotate(${hairA.toFixed(2)} 200 150)`); // 髪はやや上を支点に
+
+  // 横髪: さらに遅れて根本からしなる
+  const sideA = 2.4*Math.sin(t*0.9 - 1.1);
+  sideHairL.setAttribute('transform', `${sideBaseL} rotate(${sideA.toFixed(2)} 166 105)`);
+  sideHairR.setAttribute('transform', `${sideBaseR} rotate(${sideA.toFixed(2)} 234 105)`);
+
+  requestAnimationFrame(swayLoop);
+}
+requestAnimationFrame(swayLoop);
+
+/* ========== 録画モード ========== */
+// SVGを毎フレームcanvasへ描画してMediaRecorderでwebm録画(掛け声テキストも焼き込み)
+let recorder = null, recChunks = [], recRAF = 0, recBusyFrame = false;
+const recCanvas = document.createElement('canvas');
+const recCtx = recCanvas.getContext('2d');
+
+function currentViewRect(){
+  const vb = svgRoot.getAttribute('viewBox').split(/\s+/).map(Number);
+  return {x:vb[0], y:vb[1], w:vb[2], h:vb[3]};
+}
+
+let recFrames = 0;
+function drawRecFrame(){
+  if(recBusyFrame){ recRAF = requestAnimationFrame(drawRecFrame); return; }
+  recBusyFrame = true;
+  // 現在のviewBoxのままcanvasサイズを明示して直描画(dataURL方式: file://でも動く)
+  let xml = new XMLSerializer().serializeToString(svgRoot);
+  xml = xml.replace('<svg', `<svg width="${recCanvas.width}" height="${recCanvas.height}"`);
+  const img = new Image();
+  img.onload = ()=>{
+    recCtx.fillStyle = '#ffffff';
+    recCtx.fillRect(0,0,recCanvas.width,recCanvas.height);
+    recCtx.drawImage(img, 0, 0, recCanvas.width, recCanvas.height);
+    // 掛け声を焼き込み
+    if(callout.style.opacity === '1' && callout.textContent){
+      recCtx.font = '700 '+Math.round(recCanvas.height*0.09)+'px "Hiragino Kaku Gothic ProN", sans-serif';
+      recCtx.textAlign = 'center';
+      recCtx.lineWidth = 8; recCtx.strokeStyle = '#ffffff';
+      recCtx.fillStyle = '#d4708f';
+      const ty = recCanvas.height*0.14;
+      recCtx.strokeText(callout.textContent, recCanvas.width/2, ty);
+      recCtx.fillText(callout.textContent, recCanvas.width/2, ty);
+    }
+    // 字幕テロップの焼き込み(下部・白縁取り文字)
+    if(subtitle.style.opacity === '1' && subtitle.textContent){
+      const fs = Math.round(recCanvas.height*0.06);
+      recCtx.font = '800 '+fs+'px "Hiragino Kaku Gothic ProN", sans-serif';
+      recCtx.textAlign = 'center';
+      recCtx.lineJoin = 'round';
+      const txt = subtitle.textContent;
+      const bx = recCanvas.width/2, by = recCanvas.height*0.9;
+      recCtx.lineWidth = fs*0.32; recCtx.strokeStyle = '#ffffff';
+      recCtx.strokeText(txt, bx, by);
+      recCtx.fillStyle = '#c25b7e';
+      recCtx.fillText(txt, bx, by);
+    }
+    recFrames++;
+    recBusyFrame = false;
+  };
+  img.onerror = ()=>{ recBusyFrame = false; };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+  recRAF = requestAnimationFrame(drawRecFrame);
+}
+
+function startRec(){
+  const vr = currentViewRect();
+  const isTV = Math.abs(vr.w/vr.h - 16/9) < 0.01;
+  if(isTV){ recCanvas.width = 1280; recCanvas.height = 720; }
+  else { recCanvas.width = 720; recCanvas.height = Math.round(720*vr.h/vr.w); }
+
+  // 最初のフレームを即描画してからストリーム開始
+  recCtx.fillStyle = '#ffffff';
+  recCtx.fillRect(0,0,recCanvas.width,recCanvas.height);
+
+  recChunks = [];
+  const stream = recCanvas.captureStream(30);
+  // mp4を最優先。isTypeSupportedがtrueでも実際のstartで失敗する環境があるため、
+  // MediaRecorderの生成まで含めて順に試す
+  const CANDIDATES = [
+    'video/mp4;codecs=avc1.640028',
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+  ];
+  recorder = null;
+  let usedMime = '';
+  for(const m of CANDIDATES){
+    if(!MediaRecorder.isTypeSupported(m)) continue;
+    try{
+      recorder = new MediaRecorder(stream, {mimeType:m, videoBitsPerSecond: 6_000_000});
+      usedMime = m;
+      break;
+    }catch(err){ /* 次の候補へ */ }
+  }
+  if(!recorder){
+    try{ recorder = new MediaRecorder(stream); usedMime = recorder.mimeType || 'video/webm'; }
+    catch(err){
+      status.textContent = '録画エラー: このブラウザはMediaRecorder非対応です';
+      return;
+    }
+  }
+  const isMp4 = usedMime.startsWith('video/mp4');
+
+  recorder.ondataavailable = e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
+  recorder.onerror = e=>{
+    status.textContent = '録画エラー: ' + (e.error ? e.error.name : '不明');
+    stopRec();
+  };
+  recorder.onstop = ()=>{
+    if(recChunks.length === 0){
+      status.textContent = '録画データが空でした。もう一度お試しください(フレーム描画に失敗している可能性)';
+      return;
+    }
+    const blob = new Blob(recChunks, {type: isMp4 ? 'video/mp4' : 'video/webm'});
+    const link = $('recLink');
+    link.href = URL.createObjectURL(blob);
+    link.download = isMp4 ? 'yui_anime.mp4' : 'yui_anime.webm';
+    link.textContent = isMp4 ? '↓ 動画を保存 (mp4)' : '↓ 動画を保存 (webm)';
+    link.style.display = '';
+    status.textContent = '録画完了 ('+Math.round(blob.size/1024)+'KB)! リンクから保存できます';
+  };
+  recFrames = 0;
+  recorder.start(250);   // 250msごとにチャンク回収(取りこぼし防止)
+  drawRecFrame();
+  $('btnRec').classList.add('on');
+  $('btnRec').textContent = '■ 録画停止';
+  $('recLink').style.display = 'none';
+  status.textContent = '録画中… ('+recCanvas.width+'x'+recCanvas.height+' / '+usedMime.split(';')[0]+')';
+}
+function stopRec(){
+  cancelAnimationFrame(recRAF);
+  if(recorder && recorder.state !== 'inactive') recorder.stop();
+  $('btnRec').classList.remove('on');
+  $('btnRec').textContent = '● 録画開始';
+  if(recFrames === 0){
+    status.textContent = '注意: フレームが1枚も描画できませんでした(SVG画像化に失敗)。ブラウザを変えてお試しください';
+  }
+}
+$('btnRec').onclick = ()=> (recorder && recorder.state === 'recording') ? stopRec() : startRec();
+
+/* ========== 画面切替(全身 / バストアップ) ========== */
+const VIEWS = {
+  full: '0 0 400 640',
+  bust: '10 40 380 213.75'   // 16:9(TVサイズ)で頭〜胸元を横長フレーミング
+};
+let gazeAnchorY = 0.35; // 全身時: 顔が上寄り
+function setView(v){
+  svgRoot.setAttribute('viewBox', VIEWS[v]);
+  document.getElementById('stage').classList.toggle('tv', v==='bust');
+  gazeAnchorY = (v==='bust') ? 0.45 : 0.35;
+  $('vwFull').classList.toggle('on', v==='full');
+  $('vwBust').classList.toggle('on', v==='bust');
+}
+$('vwFull').onclick = ()=>setView('full');
+$('vwBust').onclick = ()=>setView('bust');
+
+/* ========== 口パク ========== */
+// 口グループに開口シェイプを注入(閉じ/半開き/開き の3段階)
+const mouthG = svgRoot.getElementById('口');
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+// 既存(にこっと閉じ口)= shape0
+const shapeClosed = el('g',{id:'口_閉'});
+while(mouthG.firstChild) shapeClosed.appendChild(mouthG.firstChild);
+mouthG.appendChild(shapeClosed);
+
+// 半開き
+const shapeHalf = el('g',{id:'口_半開', style:'display:none'});
+shapeHalf.appendChild(el('ellipse',{cx:200, cy:184, rx:5.5, ry:3.4, fill:'#8a3a3a'}));
+shapeHalf.appendChild(el('path',{d:'M194.5,184 Q200,186.5 205.5,184', fill:'none', stroke:'#a05446','stroke-width':1.2}));
+mouthG.appendChild(shapeHalf);
+
+// 開き(あ)
+const shapeOpen = el('g',{id:'口_開', style:'display:none'});
+shapeOpen.appendChild(el('path',{d:'M193,180 Q200,178.5 207,180 Q207.5,189 200,190.5 Q192.5,189 193,180 Z', fill:'#7c2f33'}));
+shapeOpen.appendChild(el('path',{d:'M195.5,188.5 Q200,185.5 204.5,188.5 Q200,191.5 195.5,188.5 Z', fill:'#d97a76'}));
+mouthG.appendChild(shapeOpen);
+
+// への字口(しょんぼり用)
+const shapeSad = el('g',{id:'口_しょんぼり', style:'display:none'});
+shapeSad.appendChild(el('path',{d:'M193,186 Q200,180.5 207,186', fill:'none', stroke:'#a05446','stroke-width':1.8,'stroke-linecap':'round'}));
+mouthG.appendChild(shapeSad);
+
+// ---- 母音口形(あ・い・う・え・お) ----
+function makeMouth(id, children){
+  const g = el('g',{id, style:'display:none'});
+  children.forEach(c=>g.appendChild(c));
+  mouthG.appendChild(g);
+  return g;
+}
+const mA = makeMouth('口_あ', [   // 大きく縦に開く
+  el('path',{d:'M193,179.5 Q200,178 207,179.5 Q207.5,189.5 200,191 Q192.5,189.5 193,179.5 Z', fill:'#7c2f33'}),
+  el('path',{d:'M195.5,189 Q200,186 204.5,189 Q200,192 195.5,189 Z', fill:'#d97a76'})]);
+const mI = makeMouth('口_い', [   // 横に細く
+  el('path',{d:'M192.5,183.5 Q200,182 207.5,183.5 Q200,186.5 192.5,183.5 Z', fill:'#8a3a3a'}),
+  el('path',{d:'M192.5,183.5 Q200,182 207.5,183.5', fill:'none', stroke:'#a05446','stroke-width':1})]);
+const mU = makeMouth('口_う', [   // 小さくすぼめる
+  el('ellipse',{cx:200, cy:184, rx:3, ry:3.4, fill:'#8a3a3a'})]);
+const mE = makeMouth('口_え', [   // 横広めの半開き
+  el('path',{d:'M193.5,181.5 Q200,180.5 206.5,181.5 Q206.5,187 200,187.8 Q193.5,187 193.5,181.5 Z', fill:'#8a3a3a'})]);
+const mO = makeMouth('口_お', [   // 縦丸
+  el('ellipse',{cx:200, cy:184.5, rx:4.2, ry:5, fill:'#7c2f33'}),
+  el('ellipse',{cx:200, cy:186.5, rx:2.4, ry:1.6, fill:'#d97a76'})]);
+
+const mouthShapes = [shapeClosed, shapeHalf, shapeOpen, shapeSad, mA, mI, mU, mE, mO];
+const VOWEL_MOUTH = {a:4, i:5, u:6, e:7, o:8, n:0};
+function setMouth(i){ mouthShapes.forEach((s,j)=> s.style.display = (i===j?'':'none')); }
+
+// ---- 母音ごとの目の開き具合(あ=ぱっちり 〜 い=細める) ----
+const VOWEL_EYE = {a:1.0, i:0.62, u:0.8, e:0.88, o:0.96, n:1.0};
+const eyeLG = svgRoot.getElementById('目L');
+const eyeRG = svgRoot.getElementById('目R');
+const eyeBaseL = eyeLG.getAttribute('transform');
+const eyeBaseR = eyeRG.getAttribute('transform');
+let eyeOpen = 1, eyeOpenTgt = 1;
+function eyeLoop(){
+  eyeOpen += (eyeOpenTgt - eyeOpen) * 0.3;
+  const k = eyeOpen.toFixed(3);
+  eyeLG.setAttribute('transform', `${eyeBaseL} translate(183,157) scale(1,${k}) translate(-183,-157)`);
+  eyeRG.setAttribute('transform', `${eyeBaseR} translate(217,157) scale(1,${k}) translate(-217,-157)`);
+  requestAnimationFrame(eyeLoop);
+}
+requestAnimationFrame(eyeLoop);
+
+// ---- かな→母音 ----
+const KANA_V = {};
+[['aあかさたなはまやらわがざだばぱゃぁァ'],['iいきしちにひみりぎじぢびぴぃィ'],
+ ['uうくすつぬふむゆるぐずづぶぷゅっぅゥ'],['eえけせてねへめれげぜでべぺぇェ'],
+ ['oおこそとのほもよろをごぞどぼぽょぉォ']].forEach(([s])=>{
+  const v = s[0]; for(const ch of s.slice(1)) KANA_V[ch] = v;
+});
+function toHira(ch){ const c=ch.charCodeAt(0); return (c>=0x30A1&&c<=0x30F6)? String.fromCharCode(c-0x60) : ch; }
+function vowelOf(ch, prev){
+  const h = toHira(ch);
+  if(h==='ー') return prev || 'a';       // 長音は前の母音を伸ばす
+  if(h==='ん') return 'n';
+  if(KANA_V[h]) return KANA_V[h];
+  if(/[、。!?!? 　…]/.test(h)) return 'n'; // 句読点は口を閉じる
+  return 'aiueo'[Math.floor(Math.random()*5)]; // 漢字などはランダム母音
+}
+
+let talkTimer = null, talkUntil = 0, talkScript = null, talkIdx = 0, lastVowel = 'a';
+function applyVowel(v){
+  setMouth(VOWEL_MOUTH[v]);
+  eyeOpenTgt = VOWEL_EYE[v];
+  lastVowel = (v==='n') ? lastVowel : v;
+}
+function talkTick(){
+  const speed = +$('talkSpeed').value;
+  let v;
+  if(talkScript){
+    if(talkIdx >= talkScript.length){ stopTalk(); return; }
+    v = vowelOf(talkScript[talkIdx++], lastVowel);
+  }else{
+    v = 'aiueoau'[Math.floor(Math.random()*7)]; // フリートークはランダム母音(あ・う多め)
+  }
+  applyVowel(v);
+  if(talkUntil && performance.now() > talkUntil){ stopTalk(); return; }
+  talkTimer = setTimeout(talkTick, speed + Math.random()*40);
+}
+function startTalk(duration, text){
+  stopTalk();
+  talkScript = text ? [...text] : null;
+  talkIdx = 0;
+  talkUntil = duration ? performance.now()+duration : 0;
+  $('btnTalk').classList.add('on'); $('btnTalk').textContent='しゃべる停止';
+  status.textContent = '口パク中…';
+  talkTick();
+}
+function stopTalk(){
+  clearTimeout(talkTimer); talkTimer=null; talkUntil=0; talkScript=null;
+  if(typeof subtitle!=='undefined') hideSubtitle();
+  setMouth(0);
+  eyeOpenTgt = 1;
+  $('btnTalk').classList.remove('on'); $('btnTalk').textContent='しゃべる開始';
+  status.textContent = '待機中';
+}
+$('btnTalk').onclick = ()=> talkTimer ? stopTalk() : startTalk(0);
+const subtitle = $('subtitle');
+function showSubtitle(text){ subtitle.textContent = text; subtitle.style.opacity = 1; }
+function hideSubtitle(){ subtitle.style.opacity = 0; }
+
+$('btnSpeak').onclick = ()=>{
+  const t = $('talkText').value.trim();
+  if(!t) return;
+  startTalk(0, t);  // 1文字=1tick、テキストの母音どおりに口と目が動く
+  showSubtitle(t);
+  status.textContent = '「'+ t.slice(0,12) + (t.length>12?'…':'') +'」再生中';
+};
+
+/* ========== 視線 ========== */
+const pupilL = svgRoot.getElementById('瞳L');
+const pupilR = svgRoot.getElementById('瞳R');
+let gazeMode = 'mouse';           // mouse | auto | fix
+let gaze = {x:0,y:0};             // 現在値
+let gazeTarget = {x:0,y:0};       // 目標値
+let autoTimer = 0;
+
+function setGazeMode(m){
+  gazeMode = m;
+  ['gzMouse','gzAuto','gzFix'].forEach(id=>$(id).classList.remove('on'));
+  ({mouse:'gzMouse', auto:'gzAuto', fix:'gzFix'})[m] && $({mouse:'gzMouse',auto:'gzAuto',fix:'gzFix'}[m]).classList.add('on');
+  if(m==='fix') gazeTarget = {x:0,y:0};
+}
+$('gzMouse').onclick = ()=>setGazeMode('mouse');
+$('gzAuto').onclick  = ()=>setGazeMode('auto');
+$('gzFix').onclick   = ()=>setGazeMode('fix');
+
+document.getElementById('stage').addEventListener('mousemove', e=>{
+  if(gazeMode!=='mouse') return;
+  const r = svgRoot.getBoundingClientRect();
+  const nx = ((e.clientX - r.left)/r.width  - 0.5) * 2;   // -1〜1
+  const ny = ((e.clientY - r.top )/r.height - gazeAnchorY) * 2;  // ビューに応じた顔位置基準
+  gazeTarget = { x: Math.max(-1,Math.min(1,nx)), y: Math.max(-1,Math.min(1,ny)) };
+});
+
+function gazeLoop(ts){
+  // 自動モード: 1〜3秒ごとにランダムな視線先
+  if(gazeMode==='auto' && ts > autoTimer){
+    gazeTarget = { x:(Math.random()*2-1)*0.9, y:(Math.random()*2-1)*0.5 };
+    autoTimer = ts + 1000 + Math.random()*2000;
+  }
+  // なめらか補間
+  gaze.x += (gazeTarget.x - gaze.x) * 0.12;
+  gaze.y += (gazeTarget.y - gaze.y) * 0.12;
+  const R = +$('gazeRange').value;
+  const tx = gaze.x * R, ty = gaze.y * R * 0.6;
+  pupilL.setAttribute('transform', `translate(${tx},${ty})`);
+  pupilR.setAttribute('transform', `translate(${tx},${ty})`);
+  requestAnimationFrame(gazeLoop);
+}
+requestAnimationFrame(gazeLoop);
+
+/* ========== まばたき ========== */
+// 閉じ目シェイプ(下向きのゆるいカーブ=普通に目を閉じた形)を注入して一瞬切り替え
+const eyeLNorm = svgRoot.getElementById('目L_通常');
+const eyeRNorm = svgRoot.getElementById('目R_通常');
+
+const eyeLShut = el('g',{id:'目L_閉じ', style:'display:none'});
+eyeLShut.appendChild(el('path',{d:'M170,158 C176,163 190,163 195,157', fill:'none', stroke:'#4a1e22','stroke-width':3,'stroke-linecap':'round'}));
+eyeLShut.appendChild(el('path',{d:'M172,163 C178,166.5 188,166.5 193,163', fill:'none', stroke:'#e0b391','stroke-width':1.2,'stroke-linecap':'round'}));
+eyeLNorm.parentNode.insertBefore(eyeLShut, eyeLNorm.nextSibling);
+
+const eyeRShut = el('g',{id:'目R_閉じ', style:'display:none'});
+eyeRShut.appendChild(el('path',{d:'M230,158 C224,163 210,163 205,157', fill:'none', stroke:'#4a1e22','stroke-width':3,'stroke-linecap':'round'}));
+eyeRShut.appendChild(el('path',{d:'M228,163 C222,166.5 212,166.5 207,163', fill:'none', stroke:'#e0b391','stroke-width':1.2,'stroke-linecap':'round'}));
+eyeRNorm.parentNode.insertBefore(eyeRShut, eyeRNorm.nextSibling);
+
+let blinkAuto = true, blinkTimer = null;
+
+function blinkOnce(){
+  if(blinkSuspend) return;   // しょんぼり中(半目)は瞬きしない
+  eyeLNorm.style.display='none'; eyeRNorm.style.display='none';
+  eyeLShut.style.display='';     eyeRShut.style.display='';
+  setTimeout(()=>{
+    eyeLNorm.style.display='';   eyeRNorm.style.display='';
+    eyeLShut.style.display='none'; eyeRShut.style.display='none';
+  }, 130);
+}
+function scheduleBlink(){
+  blinkTimer = setTimeout(()=>{
+    if(blinkAuto){
+      blinkOnce();
+      // たまに二連まばたき
+      if(Math.random()<0.25) setTimeout(blinkOnce, 260);
+    }
+    scheduleBlink();
+  }, 2500 + Math.random()*3500);
+}
+scheduleBlink();
+$('btnBlinkOnce').onclick = blinkOnce;
+$('btnBlink').onclick = e=>{
+  blinkAuto = !blinkAuto;
+  e.target.classList.toggle('on', blinkAuto);
+  e.target.textContent = blinkAuto ? '自動まばたき ON' : '自動まばたき OFF';
+};
+</script>
+</body>
+</html>

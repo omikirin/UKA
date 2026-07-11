@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刺し縫い工房 — 刺繍データスタジオ (10×10cm枠)</title>
+<style>
+:root{
+  --bg:#141210; --panel:#1c1916; --panel2:#262119; --line:#3a3227;
+  --ink:#ece5d8; --dim:#9a8f7d; --aka:#c94f4f; --aka2:#e08a7a;
+  --kin:#d9b56a; --midori:#8fbf8f; --ai:#6fa8c9;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;font-size:13px;display:flex;flex-direction:column;user-select:none}
+button{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;transition:.12s}
+button:hover{border-color:var(--aka)}
+button.on{background:var(--aka);border-color:var(--aka);color:#1a0d0b;font-weight:700}
+input[type=range]{accent-color:var(--aka);width:100%}
+input[type=color]{width:24px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;padding:0;cursor:pointer}
+input[type=text],select{background:var(--bg);border:1px solid var(--line);border-radius:5px;color:var(--ink);padding:4px 6px;font-size:12px;width:100%}
+input[type=checkbox]{accent-color:var(--aka)}
+header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;letter-spacing:.28em;font-weight:600}
+header h1 b{color:var(--aka);font-weight:600}
+header .ver{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:2px 6px;letter-spacing:.08em}
+.spacer{flex:1}
+main{flex:1;display:flex;min-height:0}
+#tools{width:52px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px}
+.tool{width:38px;height:38px;border-radius:8px;border:1px solid transparent;background:none;color:var(--dim);font-size:15px;display:flex;align-items:center;justify-content:center}
+.tool.on{background:var(--panel2);border-color:var(--aka);color:var(--aka2)}
+.tool:hover{color:var(--ink)}
+#stage{flex:1;position:relative;background:#0f0d0b;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#board{touch-action:none;cursor:crosshair;background:
+  radial-gradient(circle at 50% 45%,#1b1815 0%,#141210 75%)}
+#hint{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--dim);font-family:var(--mono);pointer-events:none;max-width:60%}
+#warn{position:absolute;right:12px;top:10px;font-size:11px;color:var(--aka2);font-family:var(--mono);pointer-events:none;text-align:right;line-height:1.7}
+#side{width:272px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.sec{border-bottom:1px solid var(--line);padding:10px 12px}
+.sec h2{font-size:10px;letter-spacing:.24em;color:var(--dim);font-weight:600;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.row label{width:76px;flex:none;font-size:11px;color:var(--dim)}
+.row .val{width:48px;flex:none;font-family:var(--mono);font-size:11px;color:var(--kin);text-align:right}
+#shapelist{flex:1;overflow-y:auto;min-height:60px}
+.shape-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;border-left:2px solid transparent}
+.shape-item:hover{background:var(--panel2)}
+.shape-item.sel{background:var(--panel2);border-left-color:var(--aka)}
+.shape-item .sw{width:12px;height:12px;border-radius:50%;flex:none;border:1px solid var(--line)}
+.shape-item .nm{flex:1;font-family:var(--mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shape-item .kd{font-size:10px;color:var(--dim)}
+.shape-item .mv,.shape-item .del{color:var(--dim);font-size:12px;background:none;border:none;padding:0 2px}
+.shape-item .del:hover{color:var(--aka)}
+.shape-item .mv:hover{color:var(--kin)}
+footer{padding:6px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:11px;color:var(--dim);font-family:var(--mono);display:flex;gap:18px;flex-wrap:wrap}
+footer b{color:var(--kin);font-weight:600}
+.empty{padding:14px 12px;color:var(--dim);font-size:11px;line-height:1.7}
+.note{font-size:10px;color:var(--dim);line-height:1.6;margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>刺し縫い<b>工房</b></h1><span class="ver">SASHINUI v1.0 — 枠 100×100mm</span>
+  <div class="spacer"></div>
+  <button id="bUndo">↩ 元に戻す</button>
+  <button id="bClear">全消去</button>
+  <button id="bSaveJson">JSON保存</button>
+  <button id="bLoadJson">JSON読込</button>
+  <button id="bPes" class="on">PES書き出し (Brother)</button>
+  <button id="bDst">DST書き出し</button>
+  <input type="file" id="fJson" accept=".json" hidden>
+</header>
+<main>
+  <div id="tools">
+    <button class="tool on" id="tFill" title="タタミ塗り(閉じて描く)">▨</button>
+    <button class="tool" id="tSatin" title="サテン(線を描く)">〰</button>
+    <button class="tool" id="tRun" title="ランニング(線を描く)">┄</button>
+    <button class="tool" id="tSel" title="選択">➤</button>
+  </div>
+  <div id="stage">
+    <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hint"></div>
+    <div id="warn"></div>
+  </div>
+  <div id="side">
+    <div class="sec">
+      <h2>描画</h2>
+      <div class="row"><label>手ブレ補正</label><input type="range" id="rStab" min="0" max="90" value="50"><span class="val" id="vStab">50</span></div>
+      <div class="row"><label>糸色</label><input type="color" id="cThread" value="#c94f4f">
+        <select id="selThread" style="flex:1">
+          <option value="#c94f4f">赤 (804)</option>
+          <option value="#1f1f1f">黒 (900)</option>
+          <option value="#f5f0e6">生成 (010)</option>
+          <option value="#d9b56a">金茶 (214)</option>
+          <option value="#6fa8c9">浅葱 (019)</option>
+          <option value="#8fbf8f">若葉 (509)</option>
+          <option value="#e08aa8">桜 (085)</option>
+          <option value="#7a5c3e">茶 (337)</option>
+        </select></div>
+    </div>
+    <div class="sec">
+      <h2>ステッチ設定 <span id="target" style="color:var(--kin)"></span></h2>
+      <div class="row"><label>角度</label><input type="range" id="rAng" min="0" max="180" value="45"><span class="val" id="vAng">45°</span></div>
+      <div class="row"><label>糸密度</label><input type="range" id="rDen" min="30" max="80" value="40"><span class="val" id="vDen">0.40</span></div>
+      <div class="row"><label>針目長さ</label><input type="range" id="rSt" min="20" max="70" value="40"><span class="val" id="vSt">4.0</span></div>
+      <div class="row"><label>サテン幅</label><input type="range" id="rSw" min="10" max="70" value="30"><span class="val" id="vSw">3.0</span></div>
+      <div class="row"><label>縮み補正</label><input type="range" id="rPull" min="0" max="6" value="2"><span class="val" id="vPull">0.2</span></div>
+      <div class="row"><label>下打ち</label><input type="checkbox" id="chkUnder" checked><span style="font-size:11px;color:var(--dim)">輪郭ラン+粗タタミ</span></div>
+      <div class="row"><label>輪郭縫い</label><input type="checkbox" id="chkEdge" checked><span style="font-size:11px;color:var(--dim)">仕上げにラン1周</span></div>
+      <div class="note">機械制約: 針目2.0〜7.0mm / 密度0.30〜0.80mm / サテン幅1〜7mm(超過は警告) / ジャンプは12.1mm毎に分割</div>
+    </div>
+    <div class="sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding:0">
+      <h2 style="padding:10px 12px 4px">縫い順(上から縫う)</h2>
+      <div id="shapelist"><div class="empty">まだオブジェクトがありません。▨で閉じた形、〰/┄で線を描いてください。</div></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <span>針数 <b id="stCount">0</b></span>
+  <span>色替え <b id="stColors">0</b></span>
+  <span>糸切り/ジャンプ <b id="stJumps">0</b></span>
+  <span>目安時間 <b id="stTime">0分</b> @600spm</span>
+  <span>サイズ <b id="stSize">-</b></span>
+</footer>
+
+<script>
+"use strict";
+/* ===== units: all geometry in mm. hoop = 100×100mm. ===== */
+const HOOP=100, MARGIN=5;           // sewable safe area 90×90
+const PX=6;                          // px per mm on screen
+const LIMIT={stMin:2.0,stMax:7.0,denMin:0.30,denMax:0.80,satMax:7.0,satMin:1.0,jump:12.1};
+
+const S={shapes:[],sel:null,tool:'fill',history:[]};
+let uid=1;
+const board=document.getElementById('board');
+const $=id=>document.getElementById(id);
+
+const defaults={angle:45,density:0.40,stitch:4.0,satW:3.0,pull:0.2,underlay:true,edge:true,color:'#c94f4f'};
+
+/* ===== geometry ===== */
+function rdp(pts,eps){if(pts.length<3)return pts;
+  const dl=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy;
+    if(!L)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+    let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L;t=Math.max(0,Math.min(1,t));
+    return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));};
+  let mi=0,md=0;
+  for(let i=1;i<pts.length-1;i++){const d=dl(pts[i],pts[0],pts.at(-1));if(d>md){md=d;mi=i;}}
+  if(md>eps){const l=rdp(pts.slice(0,mi+1),eps),r=rdp(pts.slice(mi),eps);return l.slice(0,-1).concat(r);}
+  return[pts[0],pts.at(-1)];}
+function inPoly(pt,P){let ins=false;const[x,y]=pt;
+  for(let i=0,j=P.length-1;i<P.length;j=i++){const[xi,yi]=P[i],[xj,yj]=P[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;}return ins;}
+function segClip(a,b,P){const ts=[0,1];
+  for(let i=0,j=P.length-1;i<P.length;j=i++){
+    const[x1,y1]=P[j],[x2,y2]=P[i];
+    const d1x=b[0]-a[0],d1y=b[1]-a[1],d2x=x2-x1,d2y=y2-y1;
+    const den=d1x*d2y-d1y*d2x;if(Math.abs(den)<1e-12)continue;
+    const t=((x1-a[0])*d2y-(y1-a[1])*d2x)/den,u=((x1-a[0])*d1y-(y1-a[1])*d1x)/den;
+    if(t>0&&t<1&&u>=0&&u<=1)ts.push(t);}
+  ts.sort((p,q)=>p-q);const out=[];
+  for(let i=0;i<ts.length-1;i++){
+    const tm=(ts[i]+ts[i+1])/2,m=[a[0]+(b[0]-a[0])*tm,a[1]+(b[1]-a[1])*tm];
+    if(inPoly(m,P))out.push([[a[0]+(b[0]-a[0])*ts[i],a[1]+(b[1]-a[1])*ts[i]],
+                             [a[0]+(b[0]-a[0])*ts[i+1],a[1]+(b[1]-a[1])*ts[i+1]]]);}
+  return out;}
+function pathLen(P,closed){let L=0;for(let i=1;i<P.length;i++)L+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+  if(closed)L+=Math.hypot(P[0][0]-P.at(-1)[0],P[0][1]-P.at(-1)[1]);return L;}
+function resample(P,step,closed){ // returns points spaced ~step along path
+  const pts=closed?P.concat([P[0]]):P;
+  const out=[pts[0].slice()];let acc=0;
+  for(let i=1;i<pts.length;i++){
+    let[ax,ay]=pts[i-1];const[bx,by]=pts[i];
+    let seg=Math.hypot(bx-ax,by-ay);
+    while(acc+seg>=step){
+      const t=(step-acc)/seg;
+      ax=ax+(bx-ax)*t;ay=ay+(by-ay)*t;
+      out.push([ax,ay]);seg=Math.hypot(bx-ax,by-ay);acc=0;}
+    acc+=seg;}
+  if(!closed)out.push(pts.at(-1).slice());else out.push(P[0].slice());
+  return out;}
+function splitLong(a,b,maxLen){ // needle points between a→b so no gap > maxLen
+  const d=Math.hypot(b[0]-a[0],b[1]-a[1]);const n=Math.ceil(d/maxLen);
+  const out=[];for(let i=1;i<=n;i++)out.push([a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n]);
+  return out;}
+
+/* ===== stitch generation. output: [{x,y,jump:bool}] per shape ===== */
+function genRunning(P,closed,stLen){
+  const pts=resample(P,Math.min(Math.max(stLen,LIMIT.stMin),LIMIT.stMax),closed);
+  return pts.map(p=>({x:p[0],y:p[1],jump:false}));}
+function genSatin(P,p){ // open path, zigzag perpendicular
+  const w=Math.min(p.satW+p.pull,LIMIT.satMax);
+  const step=Math.max(p.density,LIMIT.denMin);
+  const pts=resample(P,step,false);
+  const st=[];
+  for(let i=0;i<pts.length;i++){
+    const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+    let nx=-(b[1]-a[1]),ny=b[0]-a[0];const L=Math.hypot(nx,ny)||1;nx/=L;ny/=L;
+    const side=i%2?1:-1;
+    st.push({x:pts[i][0]+nx*(w/2)*side,y:pts[i][1]+ny*(w/2)*side,jump:false});}
+  return st;}
+function genTatami(P,p,sparse){ // closed poly. sparse=true → underlay
+  const gap=sparse?2.0:Math.min(Math.max(p.density,LIMIT.denMin),LIMIT.denMax);
+  const stLen=sparse?4.0:Math.min(Math.max(p.stitch,LIMIT.stMin),LIMIT.stMax);
+  const ang=(p.angle+(sparse?90:0))*Math.PI/180;
+  const ux=Math.cos(ang),uy=Math.sin(ang),nx=-uy,ny=ux;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const[a,b]of P){x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,a);y1=Math.max(y1,b);}
+  const cx=(x0+x1)/2,cy=(y0+y1)/2,R=Math.hypot(x1-x0,y1-y0)/2+gap;
+  const rows=[];
+  for(let o=-R;o<=R;o+=gap){
+    const c=[cx+nx*o,cy+ny*o];
+    const segs=segClip([c[0]-ux*R,c[1]-uy*R],[c[0]+ux*R,c[1]+uy*R],P)
+      .filter(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])>0.4);
+    if(segs.length)rows.push(segs);}
+  const st=[];let rowIdx=0,pen=null;
+  for(const segs of rows){
+    // serpentine: order segments along row dir, flip on odd rows
+    segs.sort((s,t)=>((s[0][0]+s[1][0])*ux+(s[0][1]+s[1][1])*uy)-((t[0][0]+t[1][0])*ux+(t[0][1]+t[1][1])*uy));
+    const ordered=rowIdx%2?segs.slice().reverse().map(([a,b])=>[b,a]):segs;
+    for(const[a,b]of ordered){
+      // travel from pen to a
+      if(pen){
+        const mid=[(pen.x+a[0])/2,(pen.y+a[1])/2];
+        const d=Math.hypot(a[0]-pen.x,a[1]-pen.y);
+        const walk=inPoly(mid,P)&&d<stLen*2.5;
+        for(const q of splitLong([pen.x,pen.y],a,walk?stLen:LIMIT.jump))
+          st.push({x:q[0],y:q[1],jump:!walk});
+      }else st.push({x:a[0],y:a[1],jump:false});
+      // stitches along segment with half-stitch offset per row (tatami pattern)
+      const L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+      const off=(rowIdx%2)*stLen/2;
+      let t=off%stLen||stLen;
+      const dir=[(b[0]-a[0])/L,(b[1]-a[1])/L];
+      while(t<L){st.push({x:a[0]+dir[0]*t,y:a[1]+dir[1]*t,jump:false});t+=stLen;}
+      st.push({x:b[0],y:b[1],jump:false});
+      pen=st.at(-1);}
+    rowIdx++;}
+  return st;}
+
+function genShape(sh){
+  const p=sh.params,st=[];
+  const add=arr=>{if(!arr.length)return;
+    if(st.length){ // connect with jump if far
+      const a=st.at(-1),b=arr[0],d=Math.hypot(b.x-a.x,b.y-a.y);
+      if(d>1.0)for(const q of splitLong([a.x,a.y],[b.x,b.y],LIMIT.jump))st.push({x:q[0],y:q[1],jump:true});}
+    st.push(...arr);};
+  if(sh.kind==='fill'){
+    if(p.underlay){add(genRunning(sh.pts,true,4.0));add(genTatami(sh.pts,p,true));}
+    add(genTatami(sh.pts,p,false));
+    if(p.edge)add(genRunning(sh.pts,true,p.stitch>3?3.0:p.stitch));
+  }else if(sh.kind==='satin'){
+    if(p.underlay)add(genRunning(sh.pts,false,3.0)); // center walk
+    add(genSatin(sh.pts,p));
+  }else add(genRunning(sh.pts,false,p.stitch));
+  return st;}
+
+/* ===== full plan (all shapes + inter-shape jumps + color changes) ===== */
+function buildPlan(){
+  const plan=[];let pen=null,curColor=null,jumps=0,colors=0;
+  for(const sh of S.shapes){
+    const st=genShape(sh);if(!st.length)continue;
+    if(curColor!==null&&sh.color!==curColor){plan.push({color:true,x:pen.x,y:pen.y});colors++;}
+    if(curColor===null)colors++;
+    curColor=sh.color;
+    if(pen){const d=Math.hypot(st[0].x-pen.x,st[0].y-pen.y);
+      if(d>1.0){for(const q of splitLong([pen.x,pen.y],[st[0].x,st[0].y],LIMIT.jump))plan.push({x:q[0],y:q[1],jump:true});jumps++;}}
+    for(const s of plan.length?st:st)plan.push(s);
+    sh._stitches=st;
+    pen=st.at(-1);}
+  jumps+=S.shapes.reduce((n,sh)=>n+(sh._stitches||[]).filter(s=>s.jump).length?1:0,0);
+  return{plan,colors,jumps};}
+
+/* ===== DST export ===== */
+function encodeDst(dx,dy){ // dx,dy in 0.1mm units, |v|<=121
+  let b0=0,b1=0,b2=0x03,x=dx,y=dy;
+  if(x>40){b2|=0x04;x-=81}if(x<-40){b2|=0x08;x+=81}
+  if(y>40){b2|=0x20;y-=81}if(y<-40){b2|=0x10;y+=81}
+  if(x>13){b1|=0x04;x-=27}if(x<-13){b1|=0x08;x+=27}
+  if(y>13){b1|=0x20;y-=27}if(y<-13){b1|=0x10;y+=27}
+  if(x>4){b0|=0x04;x-=9}if(x<-4){b0|=0x08;x+=9}
+  if(y>4){b0|=0x20;y-=9}if(y<-4){b0|=0x10;y+=9}
+  if(x>1){b1|=0x01;x-=3}if(x<-1){b1|=0x02;x+=3}
+  if(y>1){b2|=0x80&0;b2|=0;b1|=0x80;y-=3}if(y<-1){b1|=0x40;y+=3}
+  if(x===1){b0|=0x01;x=0}if(x===-1){b0|=0x02;x=0}
+  if(y===1){b0|=0x80;y=0}if(y===-1){b0|=0x40;y=0}
+  return[b0,b1,b2];}
+function exportDst(){
+  const{plan}=buildPlan();
+  if(!plan.length){alert('縫うデータがありません');return;}
+  // convert to 0.1mm ints, origin at design center, DST y-axis up
+  const xs=plan.filter(p=>!p.color).map(p=>p.x),ys=plan.filter(p=>!p.color).map(p=>p.y);
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+  const recs=[];
+  let px=0,py=0,maxX=0,minX=0,maxY=0,minY=0,stitches=0,colorCount=1;
+  for(const p of plan){
+    if(p.color){const r=encodeDst(0,0);r[2]|=0xC3;recs.push(r);colorCount++;continue;}
+    const tx=Math.round((p.x-cx)*10),ty=Math.round(-(p.y-cy)*10);
+    let dx=tx-px,dy=ty-py;
+    while(Math.abs(dx)>121||Math.abs(dy)>121){ // safety split
+      const sx=Math.max(-121,Math.min(121,dx)),sy=Math.max(-121,Math.min(121,dy));
+      const r=encodeDst(sx,sy);r[2]|=0x80;recs.push(r);dx-=sx;dy-=sy;px+=sx;py+=sy;}
+    const r=encodeDst(dx,dy);
+    if(p.jump)r[2]|=0x80;else stitches++;
+    recs.push(r);px=tx;py=ty;
+    maxX=Math.max(maxX,tx);minX=Math.min(minX,tx);maxY=Math.max(maxY,ty);minY=Math.min(minY,ty);}
+  recs.push([0x00,0x00,0xF3]);
+  // header 512 bytes
+  const pad=(s,n)=>String(s).slice(0,n).padStart(n,' ');
+  let h='LA:'+('sashinui').padEnd(16,' ')+'\r'
+    +'ST:'+pad(recs.length-1,7)+'\r'
+    +'CO:'+pad(colorCount-1,3)+'\r'
+    +'+X:'+pad(maxX,5)+'\r'+'-X:'+pad(Math.abs(minX),5)+'\r'
+    +'+Y:'+pad(maxY,5)+'\r'+'-Y:'+pad(Math.abs(minY),5)+'\r'
+    +'AX:+'+pad(px,5)+'\r'+'AY:+'+pad(py,5)+'\r'
+    +'MX:+'+pad(0,5)+'\r'+'MY:+'+pad(0,5)+'\r'+'PD:******\r';
+  const buf=new Uint8Array(512+recs.length*3);
+  buf.fill(0x20,0,512);
+  for(let i=0;i<h.length;i++)buf[i]=h.charCodeAt(i);
+  buf[511]=0x1A;for(let i=h.length;i<511;i++)buf[i]=0x20;
+  buf[h.length]=0x1A;
+  recs.forEach((r,i)=>{buf[512+i*3]=r[0];buf[512+i*3+1]=r[1];buf[512+i*3+2]=r[2];});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/octet-stream'}));
+  a.download='sashinui.dst';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+/* ===== PES (Brother) export: #PES0001 truncated + PEC block ===== */
+const PEC_PALETTE=[ // Brother PEC 64色パレット(近似RGB) index 1..64
+ '#1a0a94','#0f75ff','#00934c','#babdfe','#ec0000','#e4995a','#cc48ab','#fdc4fa',
+ '#dd84cd','#6bd38a','#e4a945','#ffbd42','#ffe600','#6cd900','#c1a941','#b5ad97',
+ '#ba9c5f','#faf59e','#808080','#000000','#001cdf','#df00b8','#626262','#69260d',
+ '#ff0060','#bf8200','#f39178','#ff6805','#f0f0f0','#c832cd','#b0bf9b','#65bfeb',
+ '#ffba04','#fff06c','#feca15','#f38101','#37a923','#23465f','#a6a695','#cebfa6',
+ '#96aa02','#ffe3c6','#ff99d7','#007004','#edccfb','#5cd1d4','#ed9151','#915291',
+ '#9b5b40','#ebeb00','#e4c9a1','#00c800','#009c9c','#b58787','#c8c8c8','#960033',
+ '#e2e2e2','#009cff','#c85200','#c8ff00','#785000','#6b5a5a','#b0b0b0','#5f0d26'];
+function nearestPec(hex){
+  const h=parseInt(hex.slice(1),16),r=h>>16,g=(h>>8)&255,b=h&255;
+  let bi=0,bd=1e18;
+  PEC_PALETTE.forEach((c,i)=>{const v=parseInt(c.slice(1),16);
+    const dr=r-(v>>16),dg=g-((v>>8)&255),db=b-(v&255);
+    const d=dr*dr+dg*dg+db*db;if(d<bd){bd=d;bi=i;}});
+  return bi+1;} // palette index is 1-based
+function exportPes(){
+  const{plan}=buildPlan();
+  if(!plan.length){alert('縫うデータがありません');return;}
+  // absolute coords in 0.1mm, translated so min = (0,0)
+  const real=plan.filter(p=>!p.color);
+  const minX=Math.min(...real.map(p=>p.x)),minY=Math.min(...real.map(p=>p.y));
+  const W=Math.round((Math.max(...real.map(p=>p.x))-minX)*10);
+  const H=Math.round((Math.max(...real.map(p=>p.y))-minY)*10);
+  // colors in sew order
+  const colorSeq=[];
+  for(const sh of S.shapes){if((sh._stitches||[]).length){
+    if(!colorSeq.length||colorSeq.at(-1)!==sh.color)colorSeq.push(sh.color);}}
+  const palIdx=colorSeq.map(nearestPec);
+  // ---- PEC stitch bytes ----
+  const st=[];let px=0,py=0,colorToggle=2,firstOfSection=true;
+  const put=(dx,dy,jump)=>{
+    if(!jump&&!firstOfSection&&dx>=-64&&dx<=63&&dy>=-64&&dy<=63){st.push(dx&0x7f,dy&0x7f);}
+    else{const f=jump?0x10:0x00,x=dx&0x0fff,y=dy&0x0fff;
+      st.push(0x80|f|(x>>8),x&0xff,0x80|f|(y>>8),y&0xff);}
+    firstOfSection=false;};
+  for(const p of plan){
+    if(p.color){st.push(0xfe,0xb0,colorToggle);colorToggle=colorToggle===2?1:2;firstOfSection=true;continue;}
+    const tx=Math.round((p.x-minX)*10),ty=Math.round((p.y-minY)*10);
+    let dx=tx-px,dy=ty-py;
+    while(Math.abs(dx)>2047||Math.abs(dy)>2047){
+      const sx=Math.max(-2047,Math.min(2047,dx)),sy=Math.max(-2047,Math.min(2047,dy));
+      put(sx,sy,true);dx-=sx;dy-=sy;}
+    put(dx,dy,p.jump||firstOfSection);
+    px=tx;py=ty;}
+  st.push(0xff);
+  // ---- assemble ----
+  const nCol=palIdx.length;
+  const pecHead=new Uint8Array(512).fill(0x20);
+  const label='LA:'+'sashinui'.padEnd(16,' ')+'\r';
+  for(let i=0;i<label.length;i++)pecHead[i]=label.charCodeAt(i);
+  pecHead[32]=0xff;pecHead[33]=0x00;pecHead[34]=0x06;pecHead[35]=0x26;
+  pecHead[48]=nCol-1;
+  palIdx.forEach((v,i)=>pecHead[49+i]=v);
+  const mid=new Uint8Array(20);
+  mid[0]=0;mid[1]=0;
+  const gOff=st.length+20;
+  mid[2]=gOff&0xff;mid[3]=(gOff>>8)&0xff;mid[4]=(gOff>>16)&0xff;
+  mid[5]=0x31;mid[6]=0xff;mid[7]=0xf0;
+  mid[8]=W&0xff;mid[9]=(W>>8)&0xff;mid[10]=H&0xff;mid[11]=(H>>8)&0xff;
+  mid[12]=0xe0;mid[13]=0x01;mid[14]=0xb0;mid[15]=0x01;
+  mid[16]=0x90;mid[17]=0x00;mid[18]=0x90;mid[19]=0x00;
+  const thumbs=new Uint8Array(228*(nCol+1)); // blank thumbnails
+  const pesHead=new Uint8Array(20);
+  const magic='#PES0001';for(let i=0;i<8;i++)pesHead[i]=magic.charCodeAt(i);
+  pesHead[8]=20;pesHead[9]=0;pesHead[10]=0;pesHead[11]=0; // PEC offset LE32 = 20
+  const buf=new Uint8Array(20+512+20+st.length+thumbs.length);
+  buf.set(pesHead,0);buf.set(pecHead,20);buf.set(mid,532);
+  buf.set(st,552);buf.set(thumbs,552+st.length);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/octet-stream'}));
+  a.download='sashinui.pes';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+/* ===== render ===== */
+function mm2px(v){return v*PX;}
+function render(){
+  const size=HOOP*PX;
+  board.setAttribute('width',size);board.setAttribute('height',size);
+  board.setAttribute('viewBox',`0 0 ${size} ${size}`);
+  let g=`<rect x="0" y="0" width="${size}" height="${size}" fill="none" stroke="#4a4034" stroke-width="3" rx="10"/>`;
+  // grid 10mm
+  for(let m=10;m<HOOP;m+=10){
+    g+=`<line x1="${mm2px(m)}" y1="0" x2="${mm2px(m)}" y2="${size}" stroke="#241f19" stroke-width="1"/>`;
+    g+=`<line x1="0" y1="${mm2px(m)}" x2="${size}" y2="${mm2px(m)}" stroke="#241f19" stroke-width="1"/>`;}
+  // safe area
+  g+=`<rect x="${mm2px(MARGIN)}" y="${mm2px(MARGIN)}" width="${mm2px(HOOP-2*MARGIN)}" height="${mm2px(HOOP-2*MARGIN)}" fill="none" stroke="#3a5a3a" stroke-dasharray="6 5" stroke-width="1"/>`;
+  let warns=[];
+  const{plan,colors,jumps}=buildPlan();
+  for(const sh of S.shapes){
+    const st=sh._stitches||[];
+    let d='',pen=false;
+    for(const s of st){
+      const cmd=(!pen)?'M':(s.jump?'M':'L');
+      d+=` ${cmd} ${(s.x*PX).toFixed(1)} ${(s.y*PX).toFixed(1)}`;pen=true;}
+    g+=`<path d="${d}" fill="none" stroke="${sh.color}" stroke-width="${sh.kind==='satin'?1.4:1.1}" stroke-linecap="round" opacity="${sh.id===S.sel||S.sel===null?1:.35}" data-id="${sh.id}" class="shp" pointer-events="stroke" style="cursor:pointer"/>`;
+    // needle points faint for selected
+    if(sh.id===S.sel){
+      g+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="0.4" opacity=".35" pointer-events="none"/>`;}
+    // constraint checks
+    for(const p of sh.pts){
+      if(p[0]<MARGIN||p[1]<MARGIN||p[0]>HOOP-MARGIN||p[1]>HOOP-MARGIN){warns.push(`⚠ ${sh.name}: 縫製可能範囲(緑枠)を超えています`);break;}}
+    if(sh.kind==='satin'&&sh.params.satW+sh.params.pull>LIMIT.satMax)warns.push(`⚠ ${sh.name}: サテン幅が7mm超 → タタミ推奨`);
+  }
+  g+=`<path id="live" fill="none" stroke="var(--aka2)" stroke-width="1.5" stroke-linecap="round"/>`;
+  board.innerHTML=g;
+  $('warn').innerHTML=[...new Set(warns)].join('<br>');
+  const nSt=plan.filter(p=>!p.jump&&!p.color).length;
+  $('stCount').textContent=nSt;
+  $('stColors').textContent=Math.max(0,colors);
+  $('stJumps').textContent=plan.filter(p=>p.jump).length;
+  $('stTime').textContent=Math.max(1,Math.round(nSt/600))+'分';
+  if(plan.length){
+    const xs=plan.filter(p=>!p.color).map(p=>p.x),ys=plan.filter(p=>!p.color).map(p=>p.y);
+    $('stSize').textContent=`${(Math.max(...xs)-Math.min(...xs)).toFixed(0)}×${(Math.max(...ys)-Math.min(...ys)).toFixed(0)}mm`;
+  }else $('stSize').textContent='-';
+  renderList();renderPanel();}
+function renderList(){
+  const el=$('shapelist');
+  if(!S.shapes.length){el.innerHTML='<div class="empty">まだオブジェクトがありません。▨で閉じた形、〰/┄で線を描いてください。</div>';return;}
+  const KD={fill:'タタミ',satin:'サテン',run:'ラン'};
+  el.innerHTML=S.shapes.map((sh,i)=>`
+    <div class="shape-item ${sh.id===S.sel?'sel':''}" data-id="${sh.id}">
+      <span class="sw" style="background:${sh.color}"></span>
+      <span class="nm">${sh.name}</span><span class="kd">${KD[sh.kind]}</span>
+      <button class="mv" data-up="${i}" title="先に縫う">▲</button>
+      <button class="mv" data-dn="${i}" title="後に縫う">▼</button>
+      <button class="del" data-del="${sh.id}">✕</button>
+    </div>`).join('');}
+function renderPanel(){
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  $('target').textContent=sh?`→ ${sh.name}`:'(新規描画に適用)';
+  const p=sh?sh.params:defaults;
+  $('rAng').value=p.angle;$('vAng').textContent=p.angle+'°';
+  $('rDen').value=p.density*100;$('vDen').textContent=p.density.toFixed(2);
+  $('rSt').value=p.stitch*10;$('vSt').textContent=p.stitch.toFixed(1);
+  $('rSw').value=p.satW*10;$('vSw').textContent=p.satW.toFixed(1);
+  $('rPull').value=p.pull*10;$('vPull').textContent=p.pull.toFixed(1);
+  $('chkUnder').checked=p.underlay;$('chkEdge').checked=p.edge;
+  $('cThread').value=sh?sh.color:defaults.color;}
+
+/* ===== param binding ===== */
+function pushHistory(){S.history.push(JSON.stringify(S.shapes.map(({_stitches,...r})=>r)));if(S.history.length>60)S.history.shift();}
+function undo(){if(!S.history.length)return;S.shapes=JSON.parse(S.history.pop());S.sel=S.shapes.at(-1)?.id??null;render();}
+function onParam(mut){const sh=S.shapes.find(s=>s.id===S.sel);
+  if(sh){pushHistory();mut(sh.params);render();}else{mut(defaults);renderPanel();}}
+$('rAng').addEventListener('input',e=>onParam(p=>p.angle=+e.target.value));
+$('rDen').addEventListener('input',e=>onParam(p=>p.density=e.target.value/100));
+$('rSt').addEventListener('input',e=>onParam(p=>p.stitch=e.target.value/10));
+$('rSw').addEventListener('input',e=>onParam(p=>p.satW=e.target.value/10));
+$('rPull').addEventListener('input',e=>onParam(p=>p.pull=e.target.value/10));
+$('chkUnder').addEventListener('change',e=>onParam(p=>p.underlay=e.target.checked));
+$('chkEdge').addEventListener('change',e=>onParam(p=>p.edge=e.target.checked));
+$('rStab').addEventListener('input',e=>$('vStab').textContent=e.target.value);
+function setColor(c){const sh=S.shapes.find(s=>s.id===S.sel);
+  if(sh){pushHistory();sh.color=c;render();}else{defaults.color=c;renderPanel();}}
+$('cThread').addEventListener('input',e=>setColor(e.target.value));
+$('selThread').addEventListener('change',e=>{$('cThread').value=e.target.value;setColor(e.target.value);});
+
+/* ===== tools & drawing ===== */
+const HINTS={fill:'▨ 閉じた形をドラッグで描く → タタミ縫いで充填(下打ち・輪郭ラン付き)',
+  satin:'〰 線をドラッグで描く → 中心線サテン(幅は右パネル / 最大7mm)',
+  run:'┄ 線をドラッグで描く → ランニングステッチ',
+  sel:'➤ ステッチをクリックで選択 / ▲▼で縫い順を変更'};
+function setTool(t){S.tool=t;
+  const map={fill:'tFill',satin:'tSatin',run:'tRun',sel:'tSel'};
+  Object.entries(map).forEach(([k,id])=>$(id).classList.toggle('on',k===t));
+  $('hint').textContent=HINTS[t];}
+['fill','satin','run','sel'].forEach(t=>$('t'+t[0].toUpperCase()+t.slice(1)).onclick=()=>setTool(t));
+setTool('fill');
+
+let drawing=false,raw=[],sp=null;
+function xyMM(e){const r=board.getBoundingClientRect();return[(e.clientX-r.left)/PX,(e.clientY-r.top)/PX];}
+board.addEventListener('pointerdown',e=>{
+  if(S.tool==='sel'){const id=+(e.target.dataset?.id||0);S.sel=id||null;render();return;}
+  drawing=true;raw=[xyMM(e)];sp=raw[0].slice();board.setPointerCapture(e.pointerId);});
+board.addEventListener('pointermove',e=>{
+  if(!drawing)return;const p=xyMM(e);
+  const k=1-($('rStab').value/100)*0.95;
+  sp=[sp[0]+(p[0]-sp[0])*k,sp[1]+(p[1]-sp[1])*k];
+  const last=raw.at(-1);
+  if(Math.hypot(sp[0]-last[0],sp[1]-last[1])>0.25)raw.push(sp.slice());
+  const lv=$('live');
+  if(lv)lv.setAttribute('d','M '+raw.map(q=>`${(q[0]*PX).toFixed(1)} ${(q[1]*PX).toFixed(1)}`).join(' L '));});
+board.addEventListener('pointerup',()=>{
+  if(!drawing)return;drawing=false;
+  if(raw.length<4){render();return;}
+  let pts=rdp(raw,0.25);
+  const closed=S.tool==='fill';
+  if(closed&&Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<3)pts.pop();
+  if(pts.length<(closed?3:2)){render();return;}
+  if(closed&&pathLen(pts,true)<6){render();return;}
+  pushHistory();
+  const sh={id:uid++,kind:S.tool,pts,color:defaults.color,
+    name:(S.tool==='fill'?'nuri_':S.tool==='satin'?'satin_':'run_')+uid,
+    params:{...defaults}};
+  S.shapes.push(sh);S.sel=sh.id;render();});
+
+$('shapelist').addEventListener('click',e=>{
+  const d=e.target.dataset;
+  if(d?.del){pushHistory();S.shapes=S.shapes.filter(s=>s.id!=+d.del);if(S.sel==+d.del)S.sel=null;render();return;}
+  if(d?.up!==undefined){const i=+d.up;if(i>0){pushHistory();[S.shapes[i-1],S.shapes[i]]=[S.shapes[i],S.shapes[i-1]];render();}return;}
+  if(d?.dn!==undefined){const i=+d.dn;if(i<S.shapes.length-1){pushHistory();[S.shapes[i+1],S.shapes[i]]=[S.shapes[i],S.shapes[i+1]];render();}return;}
+  const it=e.target.closest('.shape-item');if(it){S.sel=+it.dataset.id;render();}});
+
+/* ===== header ===== */
+$('bUndo').onclick=undo;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+$('bClear').onclick=()=>{if(!S.shapes.length)return;pushHistory();S.shapes=[];S.sel=null;render();};
+$('bDst').onclick=exportDst;
+$('bPes').onclick=exportPes;
+$('bSaveJson').onclick=()=>{
+  const data={version:1,tool:'sashinui',hoop:HOOP,shapes:S.shapes.map(({_stitches,...r})=>r)};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}));
+  a.download='sashinui_project.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);};
+$('bLoadJson').onclick=()=>$('fJson').click();
+$('fJson').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const data=JSON.parse(await f.text());
+    if(!Array.isArray(data.shapes))throw 0;
+    pushHistory();S.shapes=data.shapes;
+    uid=Math.max(1,...S.shapes.map(s=>s.id+1));
+    S.sel=S.shapes.at(-1)?.id??null;render();
+  }catch{alert('JSONの形式が読み取れませんでした');}
+  e.target.value='';});
+
+render();
+</script>
+</body>
+</html>

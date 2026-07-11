@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一筆塗り工房 — ベクター塗り生成スタジオ Ver.1</title>
+<style>
+:root{
+  --bg:#101418; --panel:#171d24; --panel2:#1f2731; --line:#2c3742;
+  --ink:#e7e3d8; --dim:#8b95a0; --shu:#e05a3a; --shu2:#f0937b;
+  --ai:#5aa8c4; --kin:#d9b56a; --ok:#7fc48f;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;font-size:13px;display:flex;flex-direction:column;user-select:none}
+button{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;transition:.12s}
+button:hover{border-color:var(--shu)}
+button.on{background:var(--shu);border-color:var(--shu);color:#180c08;font-weight:700}
+button:disabled{opacity:.35;cursor:default}
+input[type=range]{accent-color:var(--shu);width:100%;vertical-align:middle}
+input[type=color]{width:24px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;padding:0;cursor:pointer}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:5px;color:var(--ink);padding:4px 6px;font-size:12px;width:100%}
+select{cursor:pointer}
+header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;letter-spacing:.28em;font-weight:600}
+header h1 b{color:var(--shu);font-weight:600}
+header .ver{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;border:1px solid var(--line);border-radius:4px;padding:2px 6px}
+.spacer{flex:1}
+main{flex:1;display:flex;min-height:0}
+#tools{width:52px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px}
+.tool{width:38px;height:38px;border-radius:8px;border:1px solid transparent;background:none;color:var(--dim);font-size:17px;display:flex;align-items:center;justify-content:center}
+.tool.on{background:var(--panel2);border-color:var(--shu);color:var(--shu2)}
+.tool:hover{color:var(--ink)}
+#stage{flex:1;position:relative;background:
+  radial-gradient(circle at 50% 40%,#151b22 0%,#101418 70%);overflow:hidden}
+#board{position:absolute;inset:0;touch-action:none;cursor:crosshair}
+#board.pivotmode{cursor:cell}
+#hint{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--dim);font-family:var(--mono);pointer-events:none}
+#side{width:264px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.sec{border-bottom:1px solid var(--line);padding:10px 12px}
+.sec h2{font-size:10px;letter-spacing:.24em;color:var(--dim);font-weight:600;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.row label{width:64px;flex:none;font-size:11px;color:var(--dim)}
+.row .val{width:36px;flex:none;font-family:var(--mono);font-size:11px;color:var(--kin);text-align:right}
+#shapelist{flex:1;overflow-y:auto;min-height:60px}
+.shape-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;border-left:2px solid transparent}
+.shape-item:hover{background:var(--panel2)}
+.shape-item.sel{background:var(--panel2);border-left-color:var(--shu)}
+.shape-item .sw{width:12px;height:12px;border-radius:3px;flex:none;border:1px solid var(--line)}
+.shape-item .nm{flex:1;font-family:var(--mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shape-item .pv{font-size:10px;color:var(--kin)}
+.shape-item .del{color:var(--dim);font-size:13px;background:none;border:none;padding:0 2px}
+.shape-item .del:hover{color:var(--shu)}
+.filltypes{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+footer{padding:6px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:11px;color:var(--dim);font-family:var(--mono);display:flex;gap:16px}
+.empty{padding:14px 12px;color:var(--dim);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<header>
+  <h1>一筆塗り<b>工房</b></h1><span class="ver">HITOFUDE v1.0</span>
+  <div class="spacer"></div>
+  <button id="bUndo">↩ 元に戻す</button>
+  <button id="bClear">全消去</button>
+  <button id="bSvgIn">SVG読込</button>
+  <button id="bSaveJson">JSON保存</button>
+  <button id="bLoadJson">JSON読込</button>
+  <button id="bExport" class="on">SVG書き出し</button>
+  <input type="file" id="fJson" accept=".json" hidden>
+  <input type="file" id="fSvg" accept=".svg,image/svg+xml" hidden>
+</header>
+<main>
+  <div id="tools">
+    <button class="tool on" id="tPen" title="ペン(一筆書き)">✒</button>
+    <button class="tool" id="tSel" title="選択">➤</button>
+    <button class="tool" id="tPivot" title="ピボット設定">⊕</button>
+  </div>
+  <div id="stage">
+    <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hint">✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます</div>
+  </div>
+  <div id="side">
+    <div class="sec">
+      <h2>描画</h2>
+      <div class="row"><label>手ブレ補正</label><input type="range" id="rStab" min="0" max="90" value="45"><span class="val" id="vStab">45</span></div>
+      <div class="row"><label>単純化</label><input type="range" id="rSimp" min="0" max="60" value="18"><span class="val" id="vSimp">1.8</span></div>
+      <div class="row"><label>線の色</label><input type="color" id="cOutline" value="#e7e3d8"><label style="width:auto">太さ</label><input type="range" id="rOutW" min="1" max="12" value="3" style="width:70px"><span class="val" id="vOutW">3</span></div>
+    </div>
+    <div class="sec">
+      <h2>塗り生成 <span id="fillTarget" style="color:var(--kin)"></span></h2>
+      <div class="filltypes">
+        <button data-ft="hatch" class="on">ハッチ</button>
+        <button data-ft="cross">クロス</button>
+        <button data-ft="zigzag">ジグザグ</button>
+        <button data-ft="spiral">渦巻き</button>
+        <button data-ft="none">塗りなし</button>
+      </div>
+      <div class="row"><label>間隔</label><input type="range" id="rGap" min="3" max="40" value="9"><span class="val" id="vGap">9</span></div>
+      <div class="row"><label>角度</label><input type="range" id="rAng" min="0" max="180" value="35"><span class="val" id="vAng">35</span></div>
+      <div class="row"><label>線幅</label><input type="range" id="rFw" min="1" max="10" value="2"><span class="val" id="vFw">2</span></div>
+      <div class="row"><label>揺らぎ</label><input type="range" id="rJit" min="0" max="10" value="2"><span class="val" id="vJit">2</span></div>
+      <div class="row"><label>塗り色</label><input type="color" id="cFill" value="#e05a3a">
+        <button id="bSeed" style="margin-left:auto">乱数更新</button></div>
+    </div>
+    <div class="sec">
+      <h2>リグ情報</h2>
+      <div class="row"><label>パーツ名</label><input type="text" id="iName" placeholder="hairF_01"></div>
+      <div class="row"><label>親パーツ</label><input type="text" id="iParent" placeholder="head"></div>
+      <div class="row"><label>ピボット</label><span id="pvInfo" style="font-family:var(--mono);font-size:11px;color:var(--dim)">未設定 — ⊕ツールでクリック</span></div>
+    </div>
+    <div class="sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding:0">
+      <h2 style="padding:10px 12px 4px">パーツ一覧</h2>
+      <div id="shapelist"><div class="empty">まだパーツがありません。キャンバスに一筆書きしてみてください。</div></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <span id="stAnchors">anchors: 0</span>
+  <span id="stShapes">parts: 0</span>
+  <span style="margin-left:auto">preview: clipPath / export: materialized</span>
+</footer>
+
+<script>
+"use strict";
+/* ============ state ============ */
+const S = {
+  shapes: [],          // {id, pts:[[x,y]..], outline:{color,width}, fill:{type,gap,angle,width,jitter,color,seed}, rig:{name,parent,pivot:[x,y]|null}}
+  sel: null,
+  tool: 'pen',
+  history: [],
+};
+let uid = 1;
+const board = document.getElementById('board');
+const $ = id => document.getElementById(id);
+
+/* ============ helpers ============ */
+const rnd = seed => { let s = seed>>>0 || 1; return () => (s = (s*1664525+1013904223)>>>0) / 4294967296; };
+function pushHistory(){ S.history.push(JSON.stringify(S.shapes)); if(S.history.length>60) S.history.shift(); }
+function undo(){ if(!S.history.length) return; S.shapes = JSON.parse(S.history.pop()); S.sel = S.shapes.at(-1)?.id ?? null; render(); }
+
+function rdp(pts, eps){
+  if(pts.length<3) return pts;
+  const d2line=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy;
+    if(!L)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+    let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L; t=Math.max(0,Math.min(1,t));
+    return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));};
+  let mi=0,md=0;
+  for(let i=1;i<pts.length-1;i++){const d=d2line(pts[i],pts[0],pts.at(-1));if(d>md){md=d;mi=i;}}
+  if(md>eps){const l=rdp(pts.slice(0,mi+1),eps),r=rdp(pts.slice(mi),eps);return l.slice(0,-1).concat(r);}
+  return [pts[0],pts.at(-1)];
+}
+function smoothPathD(pts){ // Catmull-Rom → cubic bezier, closed
+  const n=pts.length; if(n<3) return '';
+  let d=`M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=0;i<n;i++){
+    const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6];
+    const c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=` C ${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d+' Z';
+}
+function bbox(pts){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[p,q]of pts){x0=Math.min(x0,p);y0=Math.min(y0,q);x1=Math.max(x1,p);y1=Math.max(y1,q);}return{x0,y0,x1,y1,cx:(x0+x1)/2,cy:(y0+y1)/2,w:x1-x0,h:y1-y0};}
+function inPoly(pt,pts){let inside=false;const[x,y]=pt;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const[xi,yi]=pts[i],[xj,yj]=pts[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}
+  return inside;}
+
+/* ============ fill generators (preview: full lines, clipped by clipPath) ============ */
+function hatchLines(shape, angOffset=0){
+  const f=shape.fill, b=bbox(shape.pts);
+  const ang=(f.angle+angOffset)*Math.PI/180;
+  const ux=Math.cos(ang),uy=Math.sin(ang);      // line direction
+  const nx=-uy,ny=ux;                            // normal
+  const R=Math.hypot(b.w,b.h)/2+f.gap;
+  const r=rnd(f.seed);
+  const lines=[];
+  for(let o=-R;o<=R;o+=f.gap){
+    const jx=(r()-.5)*f.jitter, jy=(r()-.5)*f.jitter;
+    const cx=b.cx+nx*o+jx, cy=b.cy+ny*o+jy;
+    lines.push([[cx-ux*R,cy-uy*R],[cx+ux*R,cy+uy*R]]);
+  }
+  return lines;
+}
+function previewFillD(shape){
+  const f=shape.fill;
+  if(f.type==='none') return '';
+  if(f.type==='hatch'||f.type==='cross'){
+    let ls=hatchLines(shape);
+    if(f.type==='cross') ls=ls.concat(hatchLines(shape,90));
+    return ls.map(([a,b])=>`M ${a[0].toFixed(1)} ${a[1].toFixed(1)} L ${b[0].toFixed(1)} ${b[1].toFixed(1)}`).join(' ');
+  }
+  if(f.type==='zigzag'){
+    const ls=hatchLines(shape);
+    let d='';
+    ls.forEach(([a,b],i)=>{ const s=i%2?[b,a]:[a,b];
+      d+=(i===0?`M ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`:` L ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`)+` L ${s[1][0].toFixed(1)} ${s[1][1].toFixed(1)}`;});
+    return d;
+  }
+  if(f.type==='spiral'){
+    const b=bbox(shape.pts), R=Math.hypot(b.w,b.h)/2+f.gap;
+    const bStep=f.gap/(2*Math.PI); const r=rnd(f.seed);
+    let d='',first=true;
+    for(let th=0;;th+=0.22){
+      const rad=bStep*th; if(rad>R)break;
+      const j=(r()-.5)*f.jitter;
+      const x=b.cx+(rad+j)*Math.cos(th), y=b.cy+(rad+j)*Math.sin(th);
+      d+=(first?`M ${x.toFixed(1)} ${y.toFixed(1)}`:` L ${x.toFixed(1)} ${y.toFixed(1)}`); first=false;
+    }
+    return d;
+  }
+  return '';
+}
+
+/* ============ materialization (export only) ============ */
+function segInPoly(a,b,pts){ // clip segment to polygon → array of [p,q]
+  // collect intersection params with all edges
+  const ts=[0,1];
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const[x1,y1]=pts[j],[x2,y2]=pts[i];
+    const d1x=b[0]-a[0],d1y=b[1]-a[1],d2x=x2-x1,d2y=y2-y1;
+    const den=d1x*d2y-d1y*d2x; if(Math.abs(den)<1e-9)continue;
+    const t=((x1-a[0])*d2y-(y1-a[1])*d2x)/den;
+    const u=((x1-a[0])*d1y-(y1-a[1])*d1x)/den;
+    if(t>0&&t<1&&u>=0&&u<=1)ts.push(t);
+  }
+  ts.sort((p,q)=>p-q);
+  const out=[];
+  for(let i=0;i<ts.length-1;i++){
+    const tm=(ts[i]+ts[i+1])/2;
+    const m=[a[0]+(b[0]-a[0])*tm,a[1]+(b[1]-a[1])*tm];
+    if(inPoly(m,pts)){
+      out.push([[a[0]+(b[0]-a[0])*ts[i],a[1]+(b[1]-a[1])*ts[i]],
+                [a[0]+(b[0]-a[0])*ts[i+1],a[1]+(b[1]-a[1])*ts[i+1]]]);
+    }
+  }
+  return out;
+}
+function materializeFill(shape){
+  const f=shape.fill;
+  if(f.type==='none') return '';
+  const P=shape.pts;
+  const fmt=p=>`${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+  if(f.type==='hatch'||f.type==='cross'){
+    let ls=hatchLines(shape); if(f.type==='cross')ls=ls.concat(hatchLines(shape,90));
+    const segs=ls.flatMap(([a,b])=>segInPoly(a,b,P)).filter(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])>1.5);
+    return segs.map(([a,b])=>`M ${fmt(a)} L ${fmt(b)}`).join(' ');
+  }
+  if(f.type==='zigzag'){
+    const ls=hatchLines(shape);
+    const rows=ls.map(([a,b])=>segInPoly(a,b,P)).map(r=>r.filter(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])>1.5));
+    let d='',pen=null;
+    rows.forEach((row,i)=>{
+      if(row.length===1){
+        let[a,b]=row[0]; if(i%2)[a,b]=[b,a];
+        if(pen){ const mid=[(pen[0]+a[0])/2,(pen[1]+a[1])/2];
+          d+= inPoly(mid,P) ? ` L ${fmt(a)}` : ` M ${fmt(a)}`; }
+        else d+=`M ${fmt(a)}`;
+        d+=` L ${fmt(b)}`; pen=b;
+      }else{ // concave split: emit as separate segments
+        row.forEach(([a,b])=>{d+=` M ${fmt(a)} L ${fmt(b)}`;}); pen=null;
+      }
+    });
+    return d.trim();
+  }
+  if(f.type==='spiral'){
+    const b=bbox(P),R=Math.hypot(b.w,b.h)/2+f.gap;
+    const bStep=f.gap/(2*Math.PI);const r=rnd(f.seed);
+    const samples=[];
+    for(let th=0;;th+=0.18){const rad=bStep*th;if(rad>R)break;
+      const j=(r()-.5)*f.jitter;
+      samples.push([b.cx+(rad+j)*Math.cos(th),b.cy+(rad+j)*Math.sin(th)]);}
+    let d='',run=false;
+    for(const p of samples){
+      if(inPoly(p,P)){ d+=(run?` L`:` M`)+` ${fmt(p)}`; run=true; }
+      else run=false;
+    }
+    return d.trim();
+  }
+  return '';
+}
+
+/* ============ render ============ */
+function render(){
+  const W=board.clientWidth,H=board.clientHeight;
+  board.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  let defs='',body='';
+  for(const sh of S.shapes){
+    const d=smoothPathD(sh.pts);
+    const fd=previewFillD(sh);
+    const selMark = sh.id===S.sel ? `stroke-dasharray="none"` : '';
+    if(fd){
+      defs+=`<clipPath id="clip${sh.id}"><path d="${d}"/></clipPath>`;
+      body+=`<path d="${fd}" clip-path="url(#clip${sh.id})" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round" pointer-events="none"/>`;
+    }
+    body+=`<path d="${d}" fill="rgba(255,255,255,0.01)" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" data-id="${sh.id}" class="shp" ${selMark}/>`;
+    if(sh.id===S.sel){
+      body+=`<path d="${d}" fill="none" stroke="var(--kin)" stroke-width="1" stroke-dasharray="4 4" pointer-events="none"/>`;
+    }
+    if(sh.rig.pivot){
+      const[px,py]=sh.rig.pivot, c=sh.id===S.sel?'#d9b56a':'#5aa8c4';
+      body+=`<g pointer-events="none"><circle cx="${px}" cy="${py}" r="5" fill="none" stroke="${c}" stroke-width="1.5"/><line x1="${px-9}" y1="${py}" x2="${px+9}" y2="${py}" stroke="${c}"/><line x1="${px}" y1="${py-9}" x2="${px}" y2="${py+9}" stroke="${c}"/></g>`;
+    }
+  }
+  board.innerHTML=`<defs>${defs}</defs>${body}<path id="live" fill="none" stroke="var(--shu2)" stroke-width="2.5" stroke-linecap="round"/>`;
+  renderList(); renderPanel(); renderStats();
+}
+function renderList(){
+  const el=$('shapelist');
+  if(!S.shapes.length){el.innerHTML='<div class="empty">まだパーツがありません。キャンバスに一筆書きしてみてください。</div>';return;}
+  el.innerHTML=S.shapes.map(sh=>`
+    <div class="shape-item ${sh.id===S.sel?'sel':''}" data-id="${sh.id}">
+      <span class="sw" style="background:${sh.fill.type==='none'?'transparent':sh.fill.color}"></span>
+      <span class="nm">${sh.rig.name||('part_'+sh.id)}</span>
+      ${sh.rig.pivot?'<span class="pv">⊕</span>':''}
+      <button class="del" data-del="${sh.id}">✕</button>
+    </div>`).join('');
+}
+function renderPanel(){
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  $('fillTarget').textContent = sh ? `→ ${sh.rig.name||'part_'+sh.id}` : '(新規描画に適用)';
+  document.querySelectorAll('.filltypes button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.ft === (sh?sh.fill.type:defaults.fill.type));
+  });
+  const f = sh?sh.fill:defaults.fill;
+  $('rGap').value=f.gap; $('vGap').textContent=f.gap;
+  $('rAng').value=f.angle; $('vAng').textContent=f.angle;
+  $('rFw').value=f.width; $('vFw').textContent=f.width;
+  $('rJit').value=f.jitter; $('vJit').textContent=f.jitter;
+  $('cFill').value=f.color;
+  $('iName').value=sh?sh.rig.name:'';
+  $('iParent').value=sh?sh.rig.parent:'';
+  $('pvInfo').textContent = sh&&sh.rig.pivot ? `(${sh.rig.pivot[0].toFixed(0)}, ${sh.rig.pivot[1].toFixed(0)})` : '未設定 — ⊕ツールでクリック';
+}
+function renderStats(){
+  let a=0;S.shapes.forEach(s=>a+=s.pts.length);
+  $('stAnchors').textContent=`anchors: ${a}`;
+  $('stShapes').textContent=`parts: ${S.shapes.length}`;
+}
+
+/* ============ defaults & panel binding ============ */
+const defaults={ outline:{color:'#e7e3d8',width:3},
+  fill:{type:'hatch',gap:9,angle:35,width:2,jitter:2,color:'#e05a3a',seed:1234} };
+
+function curFill(){ const sh=S.shapes.find(s=>s.id===S.sel); return sh?sh.fill:defaults.fill; }
+function onFillChange(mut){
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  if(sh){pushHistory(); mut(sh.fill); render();}
+  else {mut(defaults.fill); renderPanel();}
+}
+[['rGap','gap',v=>+v],['rAng','angle',v=>+v],['rFw','width',v=>+v],['rJit','jitter',v=>+v]].forEach(([id,key,cv])=>{
+  $(id).addEventListener('input',e=>onFillChange(f=>f[key]=cv(e.target.value)));
+});
+$('cFill').addEventListener('input',e=>onFillChange(f=>f.color=e.target.value));
+$('bSeed').addEventListener('click',()=>onFillChange(f=>f.seed=(Math.random()*1e9)|0));
+document.querySelectorAll('.filltypes button').forEach(b=>{
+  b.addEventListener('click',()=>onFillChange(f=>f.type=b.dataset.ft));
+});
+$('rStab').addEventListener('input',e=>$('vStab').textContent=e.target.value);
+$('rSimp').addEventListener('input',e=>$('vSimp').textContent=(e.target.value/10).toFixed(1));
+$('rOutW').addEventListener('input',e=>{$('vOutW').textContent=e.target.value;
+  const sh=S.shapes.find(s=>s.id===S.sel); if(sh){sh.outline.width=+e.target.value;render();} else defaults.outline.width=+e.target.value;});
+$('cOutline').addEventListener('input',e=>{
+  const sh=S.shapes.find(s=>s.id===S.sel); if(sh){sh.outline.color=e.target.value;render();} else defaults.outline.color=e.target.value;});
+$('iName').addEventListener('change',e=>{const sh=S.shapes.find(s=>s.id===S.sel);if(sh){sh.rig.name=e.target.value.trim();renderList();}});
+$('iParent').addEventListener('change',e=>{const sh=S.shapes.find(s=>s.id===S.sel);if(sh){sh.rig.parent=e.target.value.trim();}});
+
+/* ============ tools ============ */
+function setTool(t){S.tool=t;
+  ['tPen','tSel','tPivot'].forEach(id=>$(id).classList.toggle('on',id==='t'+t[0].toUpperCase()+t.slice(1)));
+  board.classList.toggle('pivotmode',t==='pivot');
+  $('hint').textContent = t==='pen' ? '✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます'
+    : t==='sel' ? '➤ パーツをクリックして選択 / 右パネルで塗り・リグ情報を編集'
+    : '⊕ 選択中パーツのピボット位置をクリックで設定(肩・生え際・結び目など接続点に)';
+}
+$('tPen').onclick=()=>setTool('pen');
+$('tSel').onclick=()=>setTool('sel');
+$('tPivot').onclick=()=>setTool('pivot');
+
+/* ============ drawing ============ */
+let drawing=false, raw=[], smoothPt=null;
+function boardXY(e){const r=board.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];}
+board.addEventListener('pointerdown',e=>{
+  const p=boardXY(e);
+  if(S.tool==='pivot'){
+    const sh=S.shapes.find(s=>s.id===S.sel);
+    if(sh){pushHistory();sh.rig.pivot=p;render();}
+    return;
+  }
+  if(S.tool==='sel'){
+    const t=e.target.closest?.('.shp')||e.target;
+    const id=+ (t.dataset?.id||0);
+    S.sel=id||null; render(); return;
+  }
+  drawing=true; raw=[p]; smoothPt=p.slice();
+  board.setPointerCapture(e.pointerId);
+});
+board.addEventListener('pointermove',e=>{
+  if(!drawing)return;
+  const p=boardXY(e);
+  const k=1-($('rStab').value/100)*0.95;   // stabilizer: exponential follow
+  smoothPt=[smoothPt[0]+(p[0]-smoothPt[0])*k, smoothPt[1]+(p[1]-smoothPt[1])*k];
+  const last=raw.at(-1);
+  if(Math.hypot(smoothPt[0]-last[0],smoothPt[1]-last[1])>1.2) raw.push(smoothPt.slice());
+  const live=$('live');
+  if(live) live.setAttribute('d','M '+raw.map(q=>`${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' L '));
+});
+board.addEventListener('pointerup',()=>{
+  if(!drawing)return; drawing=false;
+  if(raw.length<8){render();return;}
+  const eps=$('rSimp').value/10;
+  let pts=rdp(raw,Math.max(0.4,eps));
+  if(pts.length<3){render();return;}
+  // drop duplicate closing point if start≈end
+  if(Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<8) pts.pop();
+  pushHistory();
+  const sh={id:uid++,pts,
+    outline:{...defaults.outline},
+    fill:{...defaults.fill,seed:(Math.random()*1e9)|0},
+    rig:{name:'part_'+(uid-1),parent:'',pivot:null}};
+  S.shapes.push(sh); S.sel=sh.id;
+  render();
+});
+
+/* shape list interactions */
+$('shapelist').addEventListener('click',e=>{
+  const del=e.target.dataset?.del;
+  if(del){pushHistory();S.shapes=S.shapes.filter(s=>s.id!=+del);if(S.sel==+del)S.sel=null;render();return;}
+  const it=e.target.closest('.shape-item'); if(it){S.sel=+it.dataset.id;render();}
+});
+
+/* ============ header actions ============ */
+$('bUndo').onclick=undo;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+$('bClear').onclick=()=>{if(!S.shapes.length)return;pushHistory();S.shapes=[];S.sel=null;render();};
+
+$('bSaveJson').onclick=()=>{
+  const data={version:1,tool:'hitofude',shapes:S.shapes};
+  dl(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}),'hitofude_project.json');
+};
+$('bLoadJson').onclick=()=>$('fJson').click();
+$('fJson').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    if(!Array.isArray(data.shapes))throw 0;
+    pushHistory(); S.shapes=data.shapes;
+    uid=Math.max(1,...S.shapes.map(s=>s.id+1));
+    S.sel=S.shapes.at(-1)?.id??null; render();
+  }catch{alert('JSONの形式が読み取れませんでした');}
+  e.target.value='';
+});
+
+$('bExport').onclick=()=>{
+  if(!S.shapes.length){alert('書き出すパーツがありません');return;}
+  const W=board.clientWidth,H=board.clientHeight;
+  let out=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">\n`;
+  for(const sh of S.shapes){
+    const nm=(sh.rig.name||('part_'+sh.id)).replace(/[^\w\-]/g,'_');
+    const pivotAttr=sh.rig.pivot?` data-pivot="${sh.rig.pivot[0].toFixed(1)},${sh.rig.pivot[1].toFixed(1)}"`:'';
+    const parentAttr=sh.rig.parent?` data-parent="${sh.rig.parent}"`:'';
+    out+=`  <g id="${nm}"${pivotAttr}${parentAttr}>\n`;
+    const fd=materializeFill(sh);
+    if(fd) out+=`    <path class="fill" d="${fd}" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round"/>\n`;
+    out+=`    <path class="outline" d="${smoothPathD(sh.pts)}" fill="none" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" stroke-linejoin="round"/>\n`;
+    out+=`  </g>\n`;
+  }
+  out+=`</svg>\n`;
+  dl(new Blob([out],{type:'image/svg+xml'}),'hitofude_parts.svg');
+};
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+/* ============ SVG import ============ */
+$('bSvgIn').onclick=()=>$('fSvg').click();
+$('fSvg').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{importSvg(await f.text());}catch(err){alert('SVGを読み込めませんでした: '+err.message);}
+  e.target.value='';});
+
+function importSvg(text){
+  const doc=new DOMParser().parseFromString(text,'image/svg+xml');
+  const src=doc.querySelector('svg');
+  if(!src)throw new Error('svg要素がありません');
+  // mount hidden so geometry APIs (getTotalLength/getCTM) work
+  const holder=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  holder.style.cssText='position:absolute;left:-99999px;top:0;width:800px;height:800px';
+  holder.appendChild(document.importNode(src,true));
+  document.body.appendChild(holder);
+  const mounted=holder.querySelector('svg');
+  const rootCTM=mounted.getCTM();
+  const geoms=[...mounted.querySelectorAll('path,polygon,polyline,rect,circle,ellipse,line')];
+  const parts=[];
+  for(const el of geoms){
+    if(typeof el.getTotalLength!=='function')continue;
+    let L=0;try{L=el.getTotalLength();}catch{continue;}
+    if(!L||!isFinite(L))continue;
+    // transform: element CTM relative to the imported svg root
+    let M=null;
+    try{const c=el.getCTM();if(c&&rootCTM)M=rootCTM.inverse().multiply(c);}catch{}
+    const n=Math.max(16,Math.min(360,Math.round(L/2)));
+    const pts=[];
+    for(let i=0;i<n;i++){
+      let p=el.getPointAtLength(L*i/n);
+      if(M){const q=new DOMPoint(p.x,p.y).matrixTransform(M);p=q;}
+      pts.push([p.x,p.y]);}
+    const cs=getComputedStyle(el);
+    const fill=cs.fill&&cs.fill!=='none'?rgb2hex(cs.fill):null;
+    const stroke=cs.stroke&&cs.stroke!=='none'?rgb2hex(cs.stroke):null;
+    // closed if fillable or endpoints meet
+    const closed=fill!==null||Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<L*0.02;
+    // inherit group name if any ancestor <g id>
+    let g=el.closest('g[id]');
+    parts.push({pts,fill,stroke,closed,name:(el.id||g?.id||'')});}
+  holder.remove();
+  if(!parts.length)throw new Error('取り込める図形がありません');
+  // fit all into board with margin
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  parts.forEach(p=>p.pts.forEach(([x,y])=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}));
+  const W=board.clientWidth,H=board.clientHeight,m=40;
+  const sc=Math.min((W-2*m)/Math.max(1,x1-x0),(H-2*m)/Math.max(1,y1-y0),1e6);
+  const ox=(W-(x1-x0)*sc)/2,oy=(H-(y1-y0)*sc)/2;
+  pushHistory();
+  let ci=0;
+  for(const p of parts){
+    let pts=p.pts.map(([x,y])=>[ox+(x-x0)*sc,oy+(y-y0)*sc]);
+    pts=rdp(pts,1.2);
+    if(pts.length<3)continue;
+    if(p.closed&&Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<8)pts.pop();
+    S.shapes.push({id:uid++,pts,
+      outline:{color:p.stroke||defaults.outline.color,width:defaults.outline.width},
+      fill:{...defaults.fill,color:p.fill||defaults.fill.color,
+        type:p.fill?defaults.fill.type:'none',seed:(Math.random()*1e9)|0},
+      rig:{name:p.name?p.name+'_'+(++ci):('svg_'+(++ci)),parent:'',pivot:null}});}
+  S.sel=S.shapes.at(-1)?.id??null;
+  render();}
+function rgb2hex(s){
+  const m=s.match(/rgba?\(([^)]+)\)/);
+  if(!m)return s.startsWith('#')?s:'#888888';
+  const[r,g,b]=m[1].split(',').map(v=>Math.round(parseFloat(v)));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+
+/* ============ init ============ */
+new ResizeObserver(()=>render()).observe(board);
+render();
+</script>
+</body>
+</html>
