@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVGリグエディタ</title>
+<style>
+:root{
+  --bg:#14161c; --panel:#1c1f28; --panel2:#232734; --line:#2e3342;
+  --ink:#e8eaf2; --dim:#8b92a8; --accent:#7ec4ff; --accent2:#ffb86b;
+  --sel:#ffd76b; --bone:#8be9c3; --warn:#ff8b8b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:15px;font-weight:700;letter-spacing:.06em}
+header .sub{color:var(--dim);font-size:11px}
+main{flex:1;display:flex;min-height:0}
+#side{width:280px;min-width:280px;border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:10px}
+.card h2{font-size:12px;color:var(--dim);font-weight:600;margin-bottom:8px;letter-spacing:.05em}
+button{background:var(--line);color:var(--ink);border:none;border-radius:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-family:inherit}
+button:hover{background:#3a4156}
+button.primary{background:var(--accent);color:#0c1017;font-weight:700}
+button.primary:hover{background:#9ed3ff}
+button.on{background:var(--accent2);color:#0c1017;font-weight:700}
+button:disabled{opacity:.4;cursor:default}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}
+.hint{font-size:11px;color:var(--dim);line-height:1.6}
+#tree{display:flex;flex-direction:column;gap:2px;max-height:320px;overflow-y:auto}
+.node{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+.node:hover{background:var(--line)}
+.node.sel{border-color:var(--sel);background:rgba(255,215,107,.08)}
+.node .pv{width:8px;height:8px;border-radius:50%;background:var(--line);flex-shrink:0}
+.node.haspv .pv{background:var(--bone)}
+.node .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node .pr{color:var(--dim);font-size:10px}
+.row{display:flex;align-items:center;gap:8px;margin:7px 0}
+.row label{width:70px;color:var(--dim);font-size:11px;flex-shrink:0}
+.row input[type=range]{flex:1;accent-color:var(--accent)}
+.row .val{width:42px;text-align:right;font-variant-numeric:tabular-nums;color:var(--accent);font-size:11px}
+.row select{flex:1;background:var(--line);color:var(--ink);border:none;border-radius:5px;padding:4px}
+#center{flex:1;display:flex;flex-direction:column;min-width:0}
+#toolbar{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);align-items:center;background:var(--panel)}
+#stage{flex:1;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1d25 0 25%, #20242f 0 50%) 0 0/24px 24px}
+#world{position:absolute;top:0;left:0;transform-origin:0 0}
+#artHost svg{display:block}
+#overlay{position:absolute;top:0;left:0;pointer-events:none}
+#overlay .pivot{pointer-events:auto;cursor:grab}
+#drop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+#drop.hidden{display:none}
+#drop .box{border:2px dashed var(--line);border-radius:14px;padding:44px 60px;text-align:center;background:rgba(20,22,28,.85)}
+#zoominfo{position:absolute;right:10px;bottom:10px;background:rgba(20,22,28,.85);padding:4px 10px;border-radius:6px;color:var(--dim);font-size:11px;pointer-events:none}
+#modebadge{position:absolute;left:10px;top:10px;background:rgba(20,22,28,.9);border:1px solid var(--accent2);color:var(--accent2);padding:4px 12px;border-radius:6px;font-size:11px;display:none}
+[data-part]{cursor:pointer}
+[data-part].dim{opacity:.35}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 16px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>SVGリグエディタ</h1>
+  <span class="sub">パーツ選択 → ピボット打ち → 親子付け → 回転テスト → rig.json / リグ入りSVG出力</span>
+</header>
+<main>
+<div id="side">
+  <div class="card">
+    <h2>ファイル</h2>
+    <input type="file" id="file" accept=".svg,image/svg+xml" style="display:none">
+    <div class="btnrow">
+      <button class="primary" onclick="file.click()">SVGを開く</button>
+      <button onclick="loadSample()">サンプル狐娘</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>パーツツリー</h2>
+    <div id="tree"><div class="hint">SVGを読み込むとトップレベルのグループ/要素がパーツとして並びます。</div></div>
+  </div>
+
+  <div class="card" id="inspector" style="display:none">
+    <h2>選択パーツ: <span id="selName" style="color:var(--sel)">-</span></h2>
+    <div class="row"><label>親ボーン</label><select id="parentSel"></select></div>
+    <div class="btnrow" style="margin:6px 0">
+      <button id="btnPivotCenter" class="mini">ピボット=中心</button>
+      <button id="btnPivotTop" class="mini">上端中央</button>
+      <button id="btnPivotBottom" class="mini">下端中央</button>
+    </div>
+    <div class="hint">ピボット(緑の十字)はキャンバス上でドラッグ移動できます。</div>
+    <div class="row" style="margin-top:10px"><label>回転テスト</label><input type="range" id="testRot" min="-60" max="60" value="0"><span class="val" id="vRot">0°</span></div>
+    <div class="btnrow"><button id="btnResetTest">全テストリセット</button><button id="btnIsolate">単独表示</button></div>
+  </div>
+
+  <div class="card">
+    <h2>出力</h2>
+    <div class="btnrow">
+      <button class="primary" id="btnExportSvg">リグ入りSVG</button>
+      <button id="btnExportJson">rig.json</button>
+    </div>
+    <div class="hint" style="margin-top:8px">リグ入りSVGは各パーツに data-pivot / data-parent / data-z を埋め込みます。rig.jsonは同内容の外部ファイル版です。</div>
+  </div>
+</div>
+
+<div id="center">
+  <div id="toolbar">
+    <button id="modeSelect" class="on">選択</button>
+    <button id="modeParent">親付けモード</button>
+    <span class="hint" style="margin-left:8px">親付けモード: 子→親の順にクリック</span>
+    <div style="flex:1"></div>
+    <span class="hint">ホイール:ズーム / 空白ドラッグ:パン</span>
+  </div>
+  <div id="stage">
+    <div id="world">
+      <div id="artHost"></div>
+      <svg id="overlay"></svg>
+    </div>
+    <div id="drop"><div class="box"><div style="font-size:15px;font-weight:600;margin-bottom:6px">パーツ分けSVGをドロップ</div><div>またはサンプルで動作確認</div></div></div>
+    <div id="modebadge">親付けモード: 子 → 親 の順にクリック</div>
+    <div id="zoominfo">100%</div>
+  </div>
+</div>
+</main>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);};
+const S={
+  svgEl:null, vbW:0, vbH:0,
+  parts:[],           // [{id, el, pivot:[x,y]|null, parent:null|id, z, testRot:0}]
+  byId:new Map(),
+  sel:null,           // part id
+  mode:'select',      // select | parent
+  parentChild:null,   // 親付けモードで先にクリックした子
+  zoom:1, panX:20, panY:20,
+  isolated:false,
+};
+
+// ---------- pan/zoom ----------
+const stage=$('stage'),world=$('world');
+stage.addEventListener('wheel',e=>{e.preventDefault();
+  const r=stage.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const f=e.deltaY<0?1.15:1/1.15,nz=Math.min(16,Math.max(.05,S.zoom*f));
+  S.panX=mx-(mx-S.panX)*(nz/S.zoom);S.panY=my-(my-S.panY)*(nz/S.zoom);S.zoom=nz;applyT();
+},{passive:false});
+let drag=null;
+stage.addEventListener('pointerdown',e=>{
+  if(e.target.closest('[data-part]')||e.target.closest('.pivot'))return;
+  drag={x:e.clientX,y:e.clientY,px:S.panX,py:S.panY};stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{if(!drag)return;S.panX=drag.px+e.clientX-drag.x;S.panY=drag.py+e.clientY-drag.y;applyT();});
+stage.addEventListener('pointerup',()=>drag=null);
+function applyT(){world.style.transform=`translate(${S.panX}px,${S.panY}px) scale(${S.zoom})`;$('zoominfo').textContent=Math.round(S.zoom*100)+'%';}
+function toLocal(clientX,clientY){
+  const r=stage.getBoundingClientRect();
+  return [(clientX-r.left-S.panX)/S.zoom,(clientY-r.top-S.panY)/S.zoom];
+}
+
+// ---------- load ----------
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=()=>loadSVGText(rd.result);rd.readAsText(f);};
+stage.addEventListener('dragover',e=>e.preventDefault());
+stage.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];
+  if(f){const rd=new FileReader();rd.onload=()=>loadSVGText(rd.result);rd.readAsText(f);}});
+
+function loadSVGText(text){
+  const doc=new DOMParser().parseFromString(text,'image/svg+xml');
+  const svg=doc.querySelector('svg');
+  if(!svg||doc.querySelector('parsererror'))return toast('SVGの解析に失敗しました');
+  // viewBox正規化
+  let vb=svg.getAttribute('viewBox');
+  if(!vb){
+    const w=parseFloat(svg.getAttribute('width'))||800,h=parseFloat(svg.getAttribute('height'))||600;
+    vb=`0 0 ${w} ${h}`;svg.setAttribute('viewBox',vb);
+  }
+  const [,,vw,vh]=vb.split(/[\s,]+/).map(Number);
+  S.vbW=vw;S.vbH=vh;
+  svg.setAttribute('width',vw);svg.setAttribute('height',vh);
+  $('artHost').innerHTML='';$('artHost').appendChild(document.importNode(svg,true));
+  S.svgEl=$('artHost').querySelector('svg');
+  buildParts();
+  $('drop').classList.add('hidden');
+  const r=stage.getBoundingClientRect();S.zoom=Math.min((r.width-40)/vw,(r.height-40)/vh,1.5);
+  S.panX=(r.width-vw*S.zoom)/2;S.panY=(r.height-vh*S.zoom)/2;applyT();
+  syncOverlay();
+  toast(`${S.parts.length}パーツを検出`);
+}
+function buildParts(){
+  S.parts=[];S.byId.clear();S.sel=null;S.isolated=false;
+  const kids=[...S.svgEl.children].filter(el=>
+    !['defs','title','desc','metadata','style'].includes(el.tagName.toLowerCase()));
+  kids.forEach((el,i)=>{
+    let id=el.getAttribute('id');
+    if(!id){id=`part_${i}`;el.setAttribute('id',id);}
+    el.setAttribute('data-part',id);
+    // 既存のリグ属性があれば取り込む
+    let pivot=null;
+    const pv=el.getAttribute('data-pivot');
+    if(pv){const [x,y]=pv.split(',').map(Number);if(isFinite(x)&&isFinite(y))pivot=[x,y];}
+    const parent=el.getAttribute('data-parent')||null;
+    const part={id,el,pivot,parent,z:i,testRot:0};
+    S.parts.push(part);S.byId.set(id,part);
+    el.addEventListener('click',e=>{e.stopPropagation();onPartClick(id);});
+  });
+  // 親の実在チェック
+  for(const p of S.parts)if(p.parent&&!S.byId.has(p.parent))p.parent=null;
+  renderTree();updateInspector();
+}
+
+// ---------- part interaction ----------
+function onPartClick(id){
+  if(S.mode==='parent'){
+    if(!S.parentChild){S.parentChild=id;toast(`子: ${id} → 親をクリック`);highlight(id);return;}
+    if(S.parentChild===id){toast('自分自身は親にできません');return;}
+    if(isDescendant(id,S.parentChild))return toast('循環参照になるため設定できません');
+    S.byId.get(S.parentChild).parent=id;
+    toast(`${S.parentChild} の親を ${id} に設定`);
+    S.parentChild=null;
+    renderTree();updateInspector();syncOverlay();applyRig();
+    return;
+  }
+  select(id);
+}
+function select(id){
+  S.sel=id;renderTree();updateInspector();syncOverlay();
+}
+function highlight(id){
+  const p=S.byId.get(id);if(!p)return;
+  p.el.animate([{filter:'brightness(1.8)'},{filter:'none'}],{duration:400});
+}
+function isDescendant(maybeDesc,ancestor){
+  let cur=S.byId.get(maybeDesc);
+  const seen=new Set();
+  while(cur&&cur.parent){
+    if(seen.has(cur.id))return true;seen.add(cur.id);
+    if(cur.parent===ancestor)return true;
+    cur=S.byId.get(cur.parent);
+  }
+  return false;
+}
+
+// ---------- tree UI ----------
+function renderTree(){
+  const t=$('tree');t.innerHTML='';
+  const roots=S.parts.filter(p=>!p.parent);
+  const add=(p,depth)=>{
+    const d=document.createElement('div');
+    d.className='node'+(p.pivot?' haspv':'')+(p.id===S.sel?' sel':'');
+    d.style.paddingLeft=(8+depth*14)+'px';
+    d.innerHTML=`<span class="pv"></span><span class="nm">${p.id}</span><span class="pr">${p.parent?'← '+p.parent:''}</span>`;
+    d.onclick=()=>select(p.id);
+    t.appendChild(d);
+    S.parts.filter(c=>c.parent===p.id).forEach(c=>add(c,depth+1));
+  };
+  roots.forEach(p=>add(p,0));
+  // 循環でrootsから辿れない孤児(理論上isDescendantで防止済みだが保険)
+  const listed=new Set([...t.querySelectorAll('.nm')].map(n=>n.textContent));
+  S.parts.filter(p=>!listed.has(p.id)).forEach(p=>add(p,0));
+}
+function updateInspector(){
+  const ins=$('inspector');
+  if(!S.sel){ins.style.display='none';return;}
+  ins.style.display='block';
+  const p=S.byId.get(S.sel);
+  $('selName').textContent=p.id;
+  const sel=$('parentSel');sel.innerHTML='<option value="">(なし=ルート)</option>';
+  S.parts.forEach(q=>{
+    if(q.id===p.id||isDescendant(q.id,p.id))return;
+    const o=document.createElement('option');o.value=q.id;o.textContent=q.id;
+    if(q.id===p.parent)o.selected=true;
+    sel.appendChild(o);
+  });
+  $('testRot').value=p.testRot;$('vRot').textContent=p.testRot+'°';
+}
+$('parentSel').onchange=()=>{
+  const p=S.byId.get(S.sel);if(!p)return;
+  p.parent=$('parentSel').value||null;
+  renderTree();syncOverlay();applyRig();
+};
+
+// pivot presets
+function bboxOf(p){
+  // テスト回転の影響を受けない元形状のbbox
+  const old=p.el.getAttribute('transform');
+  p.el.removeAttribute('transform');
+  const b=p.el.getBBox();
+  if(old)p.el.setAttribute('transform',old);
+  return b;
+}
+$('btnPivotCenter').onclick=()=>setPivotPreset((b)=>[b.x+b.width/2,b.y+b.height/2]);
+$('btnPivotTop').onclick=()=>setPivotPreset((b)=>[b.x+b.width/2,b.y]);
+$('btnPivotBottom').onclick=()=>setPivotPreset((b)=>[b.x+b.width/2,b.y+b.height]);
+function setPivotPreset(fn){
+  const p=S.byId.get(S.sel);if(!p)return;
+  resetTests(false);
+  p.pivot=fn(bboxOf(p)).map(v=>Math.round(v*10)/10);
+  renderTree();syncOverlay();applyRig();
+}
+// test rotation
+$('testRot').oninput=()=>{
+  const p=S.byId.get(S.sel);if(!p)return;
+  if(!p.pivot){toast('先にピボットを設定してください');$('testRot').value=0;return;}
+  p.testRot=+$('testRot').value;$('vRot').textContent=p.testRot+'°';
+  applyRig();syncOverlay();
+};
+$('btnResetTest').onclick=()=>resetTests(true);
+function resetTests(refresh){
+  S.parts.forEach(p=>p.testRot=0);
+  $('testRot').value=0;$('vRot').textContent='0°';
+  if(refresh){applyRig();syncOverlay();}
+}
+$('btnIsolate').onclick=()=>{
+  S.isolated=!S.isolated;
+  $('btnIsolate').classList.toggle('on',S.isolated);
+  S.parts.forEach(p=>p.el.classList.toggle('dim',S.isolated&&p.id!==S.sel));
+};
+
+// mode buttons
+$('modeSelect').onclick=()=>setMode('select');
+$('modeParent').onclick=()=>setMode(S.mode==='parent'?'select':'parent');
+function setMode(m){
+  S.mode=m;S.parentChild=null;
+  $('modeSelect').classList.toggle('on',m==='select');
+  $('modeParent').classList.toggle('on',m==='parent');
+  $('modebadge').style.display=m==='parent'?'block':'none';
+}
+
+// ---------- FK apply ----------
+function localMatrix(p){
+  const m=new DOMMatrix();
+  if(!p.pivot||!p.testRot)return m;
+  return m.translate(p.pivot[0],p.pivot[1]).rotate(p.testRot).translate(-p.pivot[0],-p.pivot[1]);
+}
+function worldMatrix(p,depth=0){
+  if(depth>64)return new DOMMatrix(); // 循環保険
+  const local=localMatrix(p);
+  if(!p.parent)return local;
+  const par=S.byId.get(p.parent);
+  if(!par)return local;
+  return worldMatrix(par,depth+1).multiply(local);
+}
+function applyRig(){
+  for(const p of S.parts){
+    const m=worldMatrix(p);
+    if(m.isIdentity)p.el.removeAttribute('transform');
+    else p.el.setAttribute('transform',`matrix(${m.a} ${m.b} ${m.c} ${m.d} ${m.e} ${m.f})`);
+  }
+}
+
+// ---------- overlay (pivots + bone lines) ----------
+function syncOverlay(){
+  const ov=$('overlay');
+  if(!S.svgEl){ov.innerHTML='';return;}
+  ov.setAttribute('width',S.vbW);ov.setAttribute('height',S.vbH);
+  ov.setAttribute('viewBox',`0 0 ${S.vbW} ${S.vbH}`);
+  let out='';
+  // bone lines: 親pivot→子pivot(ワールド座標)
+  for(const p of S.parts){
+    if(!p.parent||!p.pivot)continue;
+    const par=S.byId.get(p.parent);
+    if(!par||!par.pivot)continue;
+    const a=worldMatrix(par).transformPoint(new DOMPoint(par.pivot[0],par.pivot[1]));
+    const b=worldMatrix(p).transformPoint(new DOMPoint(p.pivot[0],p.pivot[1]));
+    out+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--bone)" stroke-width="1.5" stroke-dasharray="4 3" opacity=".8"/>`;
+  }
+  // pivots
+  for(const p of S.parts){
+    if(!p.pivot)continue;
+    const w=worldMatrix(p).transformPoint(new DOMPoint(p.pivot[0],p.pivot[1]));
+    const sel=p.id===S.sel;
+    const r=sel?9:6,c=sel?'var(--sel)':'var(--bone)';
+    out+=`<g class="pivot" data-pid="${p.id}">
+      <circle cx="${w.x}" cy="${w.y}" r="${r}" fill="rgba(20,22,28,.7)" stroke="${c}" stroke-width="2"/>
+      <line x1="${w.x-r-3}" y1="${w.y}" x2="${w.x+r+3}" y2="${w.y}" stroke="${c}" stroke-width="1.2"/>
+      <line x1="${w.x}" y1="${w.y-r-3}" x2="${w.x}" y2="${w.y+r+3}" stroke="${c}" stroke-width="1.2"/>
+    </g>`;
+  }
+  ov.innerHTML=out;
+  ov.querySelectorAll('.pivot').forEach(g=>{
+    g.addEventListener('pointerdown',e=>{
+      e.stopPropagation();e.preventDefault();
+      const pid=g.dataset.pid;select(pid);
+      resetTests(true); // ピボット編集は無変形状態で
+      const move=ev=>{
+        const [x,y]=toLocal(ev.clientX,ev.clientY);
+        const p=S.byId.get(pid);
+        p.pivot=[Math.round(x*10)/10,Math.round(y*10)/10];
+        syncOverlay();
+      };
+      const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);renderTree();};
+      window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+    });
+  });
+}
+// キャンバス空クリックでピボット新規設置(選択パーツがピボット未設定のとき)
+stage.addEventListener('click',e=>{
+  if(S.mode!=='select'||!S.sel)return;
+  if(e.target.closest('[data-part]')||e.target.closest('.pivot'))return;
+  const p=S.byId.get(S.sel);
+  if(p.pivot)return; // 既存はドラッグで
+  const [x,y]=toLocal(e.clientX,e.clientY);
+  if(x<0||y<0||x>S.vbW||y>S.vbH)return;
+  p.pivot=[Math.round(x*10)/10,Math.round(y*10)/10];
+  renderTree();syncOverlay();
+  toast(`${p.id} にピボットを設置`);
+});
+
+// ---------- export ----------
+function rigData(){
+  return {
+    version:1,
+    canvas:{width:S.vbW,height:S.vbH},
+    parts:S.parts.map(p=>({id:p.id,pivot:p.pivot,parent:p.parent,z:p.z}))
+  };
+}
+$('btnExportJson').onclick=()=>{
+  if(!S.svgEl)return toast('SVGを読み込んでください');
+  const missing=S.parts.filter(p=>!p.pivot).map(p=>p.id);
+  if(missing.length)toast(`注意: ピボット未設定 ${missing.length}件 (${missing.slice(0,3).join(', ')}…)`);
+  dl(new Blob([JSON.stringify(rigData(),null,2)],{type:'application/json'}),'rig.json');
+};
+$('btnExportSvg').onclick=()=>{
+  if(!S.svgEl)return toast('SVGを読み込んでください');
+  resetTests(true);
+  const clone=S.svgEl.cloneNode(true);
+  clone.querySelectorAll('[data-part]').forEach(el=>{
+    const p=S.byId.get(el.getAttribute('data-part'));
+    if(!p)return;
+    el.removeAttribute('data-part');
+    el.removeAttribute('class');
+    if(p.pivot)el.setAttribute('data-pivot',`${p.pivot[0]},${p.pivot[1]}`);
+    if(p.parent)el.setAttribute('data-parent',p.parent);
+    el.setAttribute('data-z',p.z);
+  });
+  const txt='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(clone)+'\n';
+  dl(new Blob([txt],{type:'image/svg+xml'}),'rigged.svg');
+  toast('リグ入りSVGを書き出しました');
+};
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);}
+
+// ---------- sample ----------
+function loadSample(){
+  loadSVGText(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480">
+  <g id="tail"><path d="M255 300 C330 290 360 340 340 400 C325 360 300 345 265 340 C285 330 290 315 255 300Z" fill="#c9a06a"/><path d="M340 400 C338 382 330 368 318 358 C332 362 342 374 344 392Z" fill="#f3e7d3"/></g>
+  <g id="body"><path d="M160 250 L240 250 L255 400 L145 400 Z" fill="#f3efe6"/><path d="M150 320 L250 320 L255 400 L145 400Z" fill="#d24b3f"/></g>
+  <g id="arm_L"><path d="M158 260 C130 280 120 310 125 340 C140 335 155 315 165 290Z" fill="#f3efe6"/></g>
+  <g id="arm_R"><path d="M242 260 C270 280 280 310 275 340 C260 335 245 315 235 290Z" fill="#f3efe6"/></g>
+  <g id="head"><circle cx="200" cy="180" r="75" fill="#fbe8d8"/><path d="M135 175 C130 90 270 90 265 175 C240 140 160 140 135 175Z" fill="#c9a06a"/></g>
+  <g id="ear_L"><path d="M145 120 L120 55 L175 95 Z" fill="#c9a06a"/><path d="M143 108 L130 72 L160 94Z" fill="#e8b7c2"/></g>
+  <g id="ear_R"><path d="M255 120 L280 55 L225 95 Z" fill="#c9a06a"/><path d="M257 108 L270 72 L240 94Z" fill="#e8b7c2"/></g>
+  <g id="eye_L"><circle cx="172" cy="190" r="9" fill="#5a4632"/></g>
+  <g id="eye_R"><circle cx="228" cy="190" r="9" fill="#5a4632"/></g>
+  <g id="mouth"><path d="M190 218 Q200 226 210 218" fill="none" stroke="#a05a4a" stroke-width="3" stroke-linecap="round"/></g>
+  </svg>`);
+  // サンプル用の初期リグ
+  const rig={head:['body',[200,255]],ear_L:['head',[150,112]],ear_R:['head',[250,112]],
+    eye_L:['head',null],eye_R:['head',null],mouth:['head',null],
+    arm_L:['body',[160,262]],arm_R:['body',[240,262]],tail:['body',[258,305]],body:[null,[200,400]]};
+  for(const p of S.parts){
+    const r=rig[p.id];if(!r)continue;
+    p.parent=r[0];if(r[1])p.pivot=r[1];
+  }
+  renderTree();updateInspector();syncOverlay();applyRig();
+  toast('サンプル読み込み完了。headを選んで回転テストしてみてください');
+}
+</script>
+</body>
+</html>
