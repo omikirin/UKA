@@ -134,17 +134,49 @@ footer{padding:6px 14px;background:var(--panel);border-top:1px solid var(--line)
 #recentPal{display:flex;gap:3px;margin-bottom:6px;min-height:16px}
 #recentPal span{width:16px;height:16px;border-radius:4px;border:1px solid var(--line);cursor:pointer}
 body.sidehide #side{display:none}
+#posepanel{position:fixed;inset:0;background:rgba(10,12,16,.35);display:none;z-index:49}
+#posepanel.open{display:flex;justify-content:flex-end;pointer-events:none}
+#posebox{width:min(320px,85vw);height:100%;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;pointer-events:auto;box-shadow:-12px 0 40px rgba(0,0,0,.4)}
+#posehead{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+#posehead h3{font-size:12px;font-weight:600}
+#posehead button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px}
+#posehead button.on{border-color:var(--kin);color:var(--kin)}
+#poselist{flex:1;overflow-y:auto;padding:10px 14px}
+.pose-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pose-row label{width:86px;flex:none;font-size:11px;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.pose-row input{flex:1}
+.pose-row .pv2{width:36px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--kin)}
+.stchip{font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim);cursor:pointer}
+.stchip:hover{color:var(--kin);border-color:var(--kin)}
+#stateSwitch{margin-top:6px}
+.stsw{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.stsw .base{font-family:var(--mono);font-size:10px;color:var(--dim);width:64px;flex:none;overflow:hidden;text-overflow:ellipsis}
+.stsw button{font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.stsw button.on{border-color:var(--shu);color:var(--shu)}
+#bStateDup{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:2px 8px;cursor:pointer}
+#bStateDup:hover{border-color:var(--kin);color:var(--kin)}
+#morphList{margin-top:4px}
+.morph-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.morph-row .mn{font-family:var(--mono);font-size:10px;width:70px;flex:none;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.morph-row input{flex:1}
+.morph-row .mw{width:32px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--kin)}
+.morph-row button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:11px;padding:0 2px}
+.morph-row button:hover{color:var(--shu)}
+#bMorphAdd{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:2px 8px;cursor:pointer}
+#bMorphAdd:hover{border-color:var(--kin);color:var(--kin)}
 </style>
 </head>
 <body>
 <header>
-  <h1>一筆塗り<b>工房</b></h1><span class="ver">HITOFUDE v1.1 folders</span>
+  <h1>一筆塗り<b>工房</b></h1><span class="ver">HITOFUDE v1.4 folder-rig</span>
   <div class="spacer"></div>
   <button id="bUndo">↩ 元に戻す</button>
   <button id="bClear">全消去</button>
   <button id="bSvgIn">SVG読込</button>
   <button onclick="document.body.classList.toggle('sidehide');requestAnimationFrame(fitView)" title="サイドバー表示切替 [Tab] — キャンバスを最大化">◧ 全画面</button>
+  <button onclick="openPose()">🦴 ポーズ</button>
   <button onclick="openOrganizer()">🗂 整理</button>
+  <button onclick="exportManifest()" title="layer-studio互換のmanifest.jsonを書き出し">manifest</button>
   <button id="bSaveJson">JSON保存</button>
   <button id="bLoadJson">JSON読込</button>
   <button id="bExport" class="on">SVG書き出し</button>
@@ -156,11 +188,17 @@ body.sidehide #side{display:none}
     <button class="tool on" id="tPen" title="ペン(一筆書き) [B]">✒</button>
     <button class="tool" id="tSel" title="選択 [V]">➤</button>
     <button class="tool" id="tPivot" title="ピボット設定 [P]">⊕</button>
-    <button class="tool" id="tMirror" title="左右対称モード [M] — 縦中心軸でミラー描画">⇋</button>
+    <button class="tool" id="tEye" title="スポイト [I] — パーツをクリックで色を拾う">💧</button>
+    <button class="tool" id="tMirror" title="左右対称モード [M] / Shift+クリック=選択パーツをミラー複製">⇋</button>
   </div>
   <div id="stage">
     <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
-    <div id="hint">✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます</div>
+    <div id="morphbar" style="display:none;position:absolute;top:44px;left:50%;transform:translateX(-50%);gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--shu);border-radius:8px;padding:6px 12px;z-index:6">
+    <span id="morphmsg" style="font-size:11px;color:var(--shu)"></span>
+    <button onclick="morphCommit()" style="background:var(--shu);color:#fff;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px">確定</button>
+    <button onclick="morphCancel()" style="background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px">キャンセル</button>
+  </div>
+  <div id="hint">✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます</div>
     <div id="zoomctl">
       <button id="zOut">−</button><span id="zPct">100%</span><button id="zIn">＋</button>
       <button id="zFit">フィット</button>
@@ -186,6 +224,7 @@ body.sidehide #side{display:none}
       <h2>塗り生成 <span id="fillTarget" style="color:var(--kin)"></span></h2>
       <div class="filltypes">
         <button data-ft="solid" class="on">ベタ</button>
+        <button data-ft="grad">グラデ</button>
         <button data-ft="hatch">ハッチ</button>
         <button data-ft="cross">クロス</button>
         <button data-ft="zigzag">ジグザグ</button>
@@ -199,6 +238,7 @@ body.sidehide #side{display:none}
       <div class="row"><label>塗り色</label><input type="color" id="cFill" value="#e05a3a">
         <button id="bSeed" style="margin-left:auto">乱数更新</button></div>
       <div class="pal" id="palFill"></div>
+      <div class="row" id="rowGrad" style="display:none"><label>グラデ2色目</label><input type="color" id="cFill2" value="#ffd9c2"></div>
       <div class="row"><label>最近の色</label><div id="recentPal"></div></div>
     </div>
     <div class="sec">
@@ -242,6 +282,15 @@ body.sidehide #side{display:none}
       <div class="row"><label>パーツ名</label><input type="text" id="iName" placeholder="hairF_01"></div>
       <div class="row"><label>親パーツ</label><input type="text" id="iParent" placeholder="head"></div>
       <div class="row"><label>ピボット</label><span id="pvInfo" style="font-family:var(--mono);font-size:11px;color:var(--dim)">未設定 — ⊕ツールでクリック</span></div>
+      <div class="row"><label>ステート</label><input type="text" id="iState" placeholder="開 / 閉 / 半目 …" style="flex:1"></div>
+      <div class="row" style="gap:4px">
+        <span class="stchip" data-st="開">開</span><span class="stchip" data-st="閉">閉</span><span class="stchip" data-st="半目">半目</span><span class="stchip" data-st="笑">笑</span>
+        <button id="bStateDup" style="margin-left:auto;font-size:10px" title="選択パーツを別ステートとして複製">＋差分複製</button>
+      </div>
+      <div id="stateSwitch"></div>
+      <div class="row" style="margin-top:6px"><label>モーフ</label>
+        <button id="bMorphAdd" style="font-size:10px">＋モーフ追加</button></div>
+      <div id="morphList"></div>
       <h2 style="margin-top:10px">リグテンプレ <span id="tplState" style="color:var(--kin)"></span></h2>
       <div class="tplgrid" id="tplGrid"></div>
       <div class="note" style="font-size:10px;color:var(--dim);line-height:1.6;margin-top:5px">パーツ選択中にクリック→命名+親子付け。未選択でクリック→次に描く/読み込むパーツに適用。</div>
@@ -266,6 +315,18 @@ body.sidehide #side{display:none}
   <span style="margin-left:auto">preview: clipPath / export: materialized</span>
 </footer>
 
+<div id="posepanel">
+  <div id="posebox">
+    <div id="posehead">
+      <h3>🦴 ポーズプレビュー — data-pivot/親子で回転テスト</h3>
+      <div style="flex:1"></div>
+      <button onclick="resetPose()">リセット</button>
+      <button class="on" onclick="closePose()">閉じる</button>
+    </div>
+    <div id="poselist"></div>
+    <div style="padding:8px 14px;font-size:10px;color:var(--dim);border-top:1px solid var(--line)">回して破綻したらピボット位置(⊕)や親子付けを直してから書き出すと安全です。プレビューのみでデータは変更しません。</div>
+  </div>
+</div>
 <div id="organizer">
   <div id="orgbox">
     <div id="orghead">
@@ -306,7 +367,9 @@ const S = {
   art:{w:1024,h:1024},
 };
 let uid = 1;
-let activeFolder=null; // 描画先フォルダ(クリックで選択)
+let activeFolder=null;
+let xform=null; // 選択ツールの変形状態
+let pendingFolderPivot=null; // フォルダpivot設定待ち // 描画先フォルダ(クリックで選択)
 const board = document.getElementById('board');
 const $ = id => document.getElementById(id);
 
@@ -342,6 +405,19 @@ function blocks(){
   }
   return bs;
 }
+
+function moveFolderBlock(fname,dir){ // dir:+1=手前(上), -1=奥(下)
+  const bs=blocks();
+  const bi=bs.findIndex(b=>b.folder===fname);
+  if(bi>=0)moveBlock(bi,dir);
+}
+function moveShapeZ(id,dir){ // フォルダ内制約付き1段移動
+  const i=S.shapes.findIndex(x=>x.id===id); if(i<0)return;
+  const j=i+dir;
+  if(j<0||j>=S.shapes.length)return;
+  if((S.shapes[i].folder||null)!==(S.shapes[j].folder||null))return;
+  pushHistory();[S.shapes[i],S.shapes[j]]=[S.shapes[j],S.shapes[i]];render();
+}
 function moveBlock(bi,dir){ // dir:+1=手前, -1=奥
   const bs=blocks(); const ti=bi+dir;
   if(ti<0||ti>=bs.length)return;
@@ -355,7 +431,7 @@ function moveBlock(bi,dir){ // dir:+1=手前, -1=奥
 function addFolder(name){
   name=(name||'').trim();
   if(!name||folderMeta(name))return;
-  S.folders.push({name,collapsed:false,visible:true});
+  S.folders.push({name,collapsed:false,visible:true,parent:'',pivot:null});
   renderList();
 }
 function assignToFolder(shId,fname){
@@ -397,7 +473,7 @@ function toFront(id){
   }
   ensureContiguous(); render();
 }
-function shapeHidden(sh){ const m=sh.folder&&folderMeta(sh.folder); return m? m.visible===false : false; }
+function shapeHidden(sh){ const m=sh.folder&&folderMeta(sh.folder); if(m&&m.visible===false)return true; return (typeof shapeStateHidden==='function')&&shapeStateHidden(sh); }
 
 function rdp(pts, eps){
   if(pts.length<3) return pts;
@@ -680,11 +756,20 @@ function render(){
   let defs='',body='';
   for(const sh of S.shapes){
     if(shapeHidden(sh))continue; // 非表示フォルダ
-    const d=shapePathD(sh);
-    const fd=sh.fill.type==='solid'?'':previewFillD(sh);
+    const poseT=poseTransformFor(sh);
+    if(poseT)body+=`<g${poseT}>`;
+    const shv = morphActive(sh) ? Object.assign({},sh,morphedGeom(sh)) : sh;
+    const d=shapePathD(shv);
+    const fd=(shv.fill.type==='solid'||shv.fill.type==='grad')?'':previewFillD(shv);
     const selMark = sh.id===S.sel ? `stroke-dasharray="none"` : '';
     if(sh.fill.type==='solid'){
       body+=`<path d="${d}" fill="${sh.fill.color}" stroke="none" pointer-events="none"/>`;
+    }
+    if(sh.fill.type==='grad'){
+      const a=(sh.fill.angle||0)*Math.PI/180;
+      const gx=Math.cos(a)/2, gy=Math.sin(a)/2;
+      defs+=`<linearGradient id="grad${sh.id}" x1="${.5-gx}" y1="${.5-gy}" x2="${.5+gx}" y2="${.5+gy}"><stop offset="0" stop-color="${sh.fill.color}"/><stop offset="1" stop-color="${sh.fill.color2||'#fff'}"/></linearGradient>`;
+      body+=`<path d="${d}" fill="url(#grad${sh.id})" stroke="none" pointer-events="none"/>`;
     }
     if(fd){
       defs+=`<clipPath id="clip${sh.id}"><path d="${d}"/></clipPath>`;
@@ -693,11 +778,29 @@ function render(){
     body+=`<path d="${d}" fill="rgba(255,255,255,0.01)" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" data-id="${sh.id}" class="shp" ${selMark}/>`;
     if(sh.id===S.sel){
       body+=`<path d="${d}" fill="none" stroke="var(--kin)" stroke-width="${1/z}" stroke-dasharray="${4/z} ${4/z}" pointer-events="none"/>`;
+      if(S.tool==='sel'){
+        const b=bbox(sh.pts), hs=5/z;
+        body+=`<rect x="${b.x0}" y="${b.y0}" width="${b.w}" height="${b.h}" fill="none" stroke="#5b8bd9" stroke-width="${1/z}" pointer-events="none"/>`;
+        for(const[hx,hy]of[[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]])
+          body+=`<rect x="${hx-hs}" y="${hy-hs}" width="${hs*2}" height="${hs*2}" fill="#fff" stroke="#5b8bd9" stroke-width="${1/z}" pointer-events="none"/>`;
+        const ry=b.y0-24/z;
+        body+=`<line x1="${b.cx}" y1="${b.y0}" x2="${b.cx}" y2="${ry}" stroke="#5b8bd9" stroke-width="${1/z}" pointer-events="none"/>
+               <circle cx="${b.cx}" cy="${ry}" r="${5/z}" fill="#fff" stroke="#5b8bd9" stroke-width="${1/z}" pointer-events="none"/>`;
+        if(sh.bez)for(const seg of sh.bez)
+          body+=`<circle cx="${seg[0][0]}" cy="${seg[0][1]}" r="${3.5/z}" fill="var(--kin)" stroke="#fff" stroke-width="${1/z}" pointer-events="none"/>`;
+      }
     }
     if(sh.rig.pivot){
       const[px,py]=sh.rig.pivot, c=sh.id===S.sel?'#d9b56a':'#5aa8c4', r=5/z;
       body+=`<g pointer-events="none" stroke-width="${1.5/z}"><circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="${c}"/><line x1="${px-r*1.8}" y1="${py}" x2="${px+r*1.8}" y2="${py}" stroke="${c}"/><line x1="${px}" y1="${py-r*1.8}" x2="${px}" y2="${py+r*1.8}" stroke="${c}"/></g>`;
     }
+    if(poseT)body+='</g>';
+  }
+  // フォルダpivotマーカー
+  for(const f of S.folders){
+    if(!f.pivot||f.visible===false)continue;
+    const[px,py]=f.pivot,c='#8a5ac4',r=6/z;
+    body+=`<g pointer-events="none" stroke-width="${1.5/z}"><rect x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" fill="none" stroke="${c}" transform="rotate(45 ${px} ${py})"/><line x1="${px-r*1.8}" y1="${py}" x2="${px+r*1.8}" y2="${py}" stroke="${c}"/><line x1="${px}" y1="${py-r*1.8}" x2="${px}" y2="${py+r*1.8}" stroke="${c}"/></g>`;
   }
   // artboard: grid + frame + label
   let art=`<rect x="0" y="0" width="${S.art.w}" height="${S.art.h}" fill="#ffffff"/>`;
@@ -706,10 +809,12 @@ function render(){
   for(let gy=gstep;gy<S.art.h;gy+=gstep)art+=`<line x1="0" y1="${gy}" x2="${S.art.w}" y2="${gy}" stroke="#e9e6df" stroke-width="${1/z}"/>`;
   art+=`<rect x="0" y="0" width="${S.art.w}" height="${S.art.h}" fill="none" stroke="var(--kin)" stroke-width="${1.5/z}" opacity=".55"/>`;
   art+=`<text x="0" y="${-8/z}" fill="var(--dim)" font-size="${12/z}" font-family="var(--mono)">${S.art.w}×${S.art.h}</text>`;
-    if(mirrorOn){art+=`<line x1="${S.art.w/2}" y1="0" x2="${S.art.w/2}" y2="${S.art.h}" stroke="#5cc8ff" stroke-width="${1/z}" stroke-dasharray="${6/z} ${5/z}" opacity=".7"/>`;}
+    if(mirrorOn){art+=`<line x1="${AX()}" y1="0" x2="${AX()}" y2="${S.art.h}" stroke="#5cc8ff" stroke-width="${1/z}" stroke-dasharray="${6/z} ${5/z}" opacity=".7"/>`;}
   board.innerHTML=`<g transform="translate(${vx} ${vy}) scale(${z})">${art}<defs>${defs}</defs>${body}<path id="live" fill="none" stroke="#c0392b" stroke-width="${2.5/z}" stroke-linecap="round"/><path id="liveM" fill="none" stroke="#5b8bd9" stroke-width="${2.5/z}" stroke-linecap="round" opacity=".75"/></g>`;
   $('zPct').textContent=Math.round(z*100)+'%';
   renderList(); renderPanel(); renderStats();
+  const org=document.getElementById('organizer');
+  if(org&&org.classList.contains('open'))renderOrganizer();
 }
 function renderList(){
   const el=$('shapelist');
@@ -721,8 +826,10 @@ function renderList(){
       <span class="sw" style="background:${sh.fill.type==='none'?'transparent':sh.fill.color}"></span>
       <span class="nm" title="ダブルクリックで名前変更">${sh.rig.name||('part_'+sh.id)}</span>
       ${sh.rig.parent?`<span style="font-size:9px;color:var(--dim)">›${sh.rig.parent}</span>`:''}
+      ${sh.rig.state?`<span style="font-size:9px;color:var(--shu);border:1px solid var(--shu);border-radius:99px;padding:0 5px">${sh.rig.state}</span>`:''}
       ${sh.rig.pivot?'<span class="pv">⊕</span>':''}
       ${inFolder?`<button class="mv" data-out="${sh.id}" title="フォルダから出す">⇱</button>`:''}
+      <button class="mv" data-fmenu="${sh.id}" title="フォルダに入れる">📂</button>
       <button class="mv" data-fr="${sh.id}" title="手前へ">▲</button>
       <button class="mv" data-bk="${sh.id}" title="奥へ">▼</button>
       <button class="mv" data-top="${sh.id}" title="一番上(最前面)へ">⇈</button>
@@ -744,6 +851,8 @@ function renderList(){
         <span class="mv" data-fcol="${b.folder}" style="width:12px">${m.collapsed?'▸':'▾'}</span>
         <span class="mv" data-fvis="${b.folder}" title="表示/非表示" style="color:${m.visible===false?'var(--dim)':'var(--kin)'}">${m.visible===false?'◌':'●'}</span>
         <span class="fnm">📁 ${b.folder}</span><span class="fct">${members.length}</span>
+        <button class="mv" data-fpivot="${b.folder}" title="フォルダのピボット設定(次のキャンバスクリック)" style="color:${m.pivot?'var(--kin)':'var(--dim)'}">⊕</button>
+        <button class="mv" data-fparent="${b.folder}" title="フォルダの親ボーン設定${m.parent?' (現在:'+m.parent+')':''}" style="color:${m.parent?'var(--kin)':'var(--dim)'}">›</button>
         ${selSh&&selSh.folder!==b.folder?`<button class="mv" data-fassign="${b.folder}" title="選択パーツをここへ">⤓</button>`:''}
         <button class="mv" data-fmv-fr="${bi}" title="フォルダごと手前へ">▲</button>
         <button class="mv" data-fmv-bk="${bi}" title="フォルダごと奥へ">▼</button>
@@ -769,6 +878,11 @@ function renderList(){
 function renderPanel(){
   const sh=S.shapes.find(s=>s.id===S.sel);
   $('fillTarget').textContent = sh ? `→ ${sh.rig.name||'part_'+sh.id}` : '(新規描画に適用)';
+  {const sh=S.shapes.find(x=>x.id===S.sel);$('iState')&&($('iState').value=sh?(sh.rig.state||''):'');}
+  renderStateSwitch&&renderStateSwitch();
+  renderMorphList&&renderMorphList();
+  document.getElementById('rowGrad').style.display = curFill().type==='grad' ? '' : 'none';
+  const _f=curFill(); if(_f.color2)document.getElementById('cFill2').value=_f.color2;
   document.querySelectorAll('.filltypes button').forEach(b=>{
     b.classList.toggle('on', b.dataset.ft === (sh?sh.fill.type:defaults.fill.type));
   });
@@ -790,7 +904,7 @@ function renderStats(){
 
 /* ============ defaults & panel binding ============ */
 const defaults={ outline:{color:'#3a3330',width:3},
-  fill:{type:'solid',gap:9,angle:35,width:2,jitter:2,color:'#e05a3a',seed:1234} };
+  fill:{type:'solid',gap:9,angle:35,width:2,jitter:2,color:'#e05a3a',color2:'#ffd9c2',seed:1234} };
 
 function curFill(){ const sh=S.shapes.find(s=>s.id===S.sel); return sh?sh.fill:defaults.fill; }
 function onFillChange(mut){
@@ -802,6 +916,7 @@ function onFillChange(mut){
   $(id).addEventListener('input',e=>onFillChange(f=>f[key]=cv(e.target.value)));
 });
 $('cFill').addEventListener('input',e=>onFillChange(f=>f.color=e.target.value));
+$('cFill2').addEventListener('input',e=>onFillChange(f=>f.color2=e.target.value));
 $('bSeed').addEventListener('click',()=>onFillChange(f=>f.seed=(Math.random()*1e9)|0));
 document.querySelectorAll('.filltypes button').forEach(b=>{
   b.addEventListener('click',()=>onFillChange(f=>f.type=b.dataset.ft));
@@ -846,7 +961,7 @@ $('selRole').addEventListener('change',e=>{
 
 /* ============ tools ============ */
 function setTool(t){S.tool=t;
-  ['tPen','tSel','tPivot'].forEach(id=>$(id).classList.toggle('on',id==='t'+t[0].toUpperCase()+t.slice(1)));
+  ['tPen','tSel','tPivot','tEye'].forEach(id=>$(id).classList.toggle('on',{tPen:'pen',tSel:'sel',tPivot:'pivot',tEye:'eye'}[id]===t));
   board.classList.toggle('pivotmode',t==='pivot');
   updateHint(t);
 }
@@ -854,6 +969,7 @@ function updateHint(t){
   t=t||S.tool;
   const base = t==='pen' ? '✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます'
     : t==='sel' ? '➤ パーツをクリックして選択 / 右パネルで塗り・リグ情報を編集'
+    : t==='eye' ? '💧 パーツをクリックすると線と塗りの色を拾います'
     : '⊕ 選択中パーツのピボット位置をクリックで設定(肩・生え際・結び目など接続点に)';
   const fld = activeFolder ? ` 〔描画先: 📁${activeFolder}〕` : '';
   $('hint').textContent = base + (t==='pen'?fld:'');
@@ -861,6 +977,9 @@ function updateHint(t){
 $('tPen').onclick=()=>setTool('pen');
 $('tSel').onclick=()=>setTool('sel');
 $('tPivot').onclick=()=>setTool('pivot');
+/* ============ eyedropper ============ */
+$('tEye').addEventListener('click',()=>setTool('eye'));
+
 
 /* ============ drawing ============ */
 let drawing=false, raw=[], smoothPt=null;
@@ -899,15 +1018,74 @@ board.addEventListener('pointerdown',e=>{
     e.preventDefault();return;
   }
   const p=boardXY(e);
+  if(mirrorOn && Math.abs(p[0]-AX())<8/S.view.z && S.tool!=='pen'){
+    xform={mode:'axis'};
+    board.setPointerCapture(e.pointerId);return;
+  }
+  if(pendingFolderPivot){
+    const m=folderMeta(pendingFolderPivot);
+    if(m){pushHistory();m.pivot=[p[0],p[1]];}
+    pendingFolderPivot=null;updateHint();renderList();render();
+    return;
+  }
+  if(S.tool==='eye'){
+    const t=e.target.closest?.('.shp');
+    if(t){
+      const sh=S.shapes.find(x=>x.id===+t.dataset.id);
+      if(sh){
+        $('cOutline').value=sh.outline.color;$('cOutline').dispatchEvent(new Event('input'));
+        if(sh.fill.type!=='none'){$('cFill').value=sh.fill.color;$('cFill').dispatchEvent(new Event('input'));}
+        pushRecent(sh.fill.color);
+        updateHint&&$('hint')&&($('hint').textContent=`💧 拾いました: 線${sh.outline.color} / 塗${sh.fill.color}`);
+      }
+    }
+    return;
+  }
   if(S.tool==='pivot'){
     const sh=S.shapes.find(s=>s.id===S.sel);
     if(sh){pushHistory();sh.rig.pivot=p;render();}
     return;
   }
   if(S.tool==='sel'){
+    // ハンドル判定(選択中パーツの四隅=拡縮 / 上部=回転)
+    if(S.sel!=null){
+      const sh=S.shapes.find(x=>x.id===S.sel);
+      if(sh){
+        const b=shapeBBox(sh), hs=10/S.view.z;
+        const corners=[[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]];
+        for(const[cx,cy]of corners){
+          if(Math.hypot(p[0]-cx,p[1]-cy)<hs){
+            xform={mode:'scale',sh,cx:b.cx,cy:b.cy,d0:Math.hypot(p[0]-b.cx,p[1]-b.cy)||1};
+            pushHistory();board.setPointerCapture(e.pointerId);return;
+          }
+        }
+        const rx=b.cx, ry=b.y0-24/S.view.z;
+        if(Math.hypot(p[0]-rx,p[1]-ry)<hs){
+          xform={mode:'rot',sh,cx:b.cx,cy:b.cy,a0:Math.atan2(p[1]-b.cy,p[0]-b.cx)};
+          pushHistory();board.setPointerCapture(e.pointerId);return;
+        }
+        // 頂点編集: ベジェアンカーに近ければ掴む
+        if(sh.bez){
+          for(let si2=0;si2<sh.bez.length;si2++){
+            const a=sh.bez[si2][0];
+            if(Math.hypot(p[0]-a[0],p[1]-a[1])<hs){
+              xform={mode:'vtx',sh,seg:si2};
+              pushHistory();board.setPointerCapture(e.pointerId);return;
+            }
+          }
+        }
+      }
+    }
     const t=e.target.closest?.('.shp')||e.target;
     const id=+ (t.dataset?.id||0);
-    S.sel=id||null; render(); return;
+    if(id){
+      S.sel=id;
+      const sh=S.shapes.find(x=>x.id===id);
+      xform={mode:'move',sh,last:p.slice(),moved:false};
+      board.setPointerCapture(e.pointerId);
+      render();
+    }else{S.sel=null;render();}
+    return;
   }
   drawing=true; raw=[p]; smoothPt=p.slice();
   board.setPointerCapture(e.pointerId);
@@ -916,6 +1094,37 @@ board.addEventListener('pointermove',e=>{
   if(panning){
     S.view.x=panStart.vx+e.clientX-panStart.mx;
     S.view.y=panStart.vy+e.clientY-panStart.my;
+    render();return;
+  }
+  if(xform){
+    const p=boardXY(e);
+    if(xform.mode==='move'){
+      if(!xform.moved){pushHistory();xform.moved=true;}
+      translateShape(xform.sh,p[0]-xform.last[0],p[1]-xform.last[1]);
+      xform.last=p.slice();
+    }else if(xform.mode==='axis'){
+      mirrorAxis=p[0];
+    }else if(xform.mode==='scale'){
+      const d=Math.hypot(p[0]-xform.cx,p[1]-xform.cy)||1;
+      scaleRotShape(xform.sh,xform.cx,xform.cy,d/xform.d0,0);
+      xform.d0=d;
+    }else if(xform.mode==='rot'){
+      const a=Math.atan2(p[1]-xform.cy,p[0]-xform.cx);
+      scaleRotShape(xform.sh,xform.cx,xform.cy,1,a-xform.a0);
+      xform.a0=a;
+    }else if(xform.mode==='vtx'){
+      const bez=xform.sh.bez, i=xform.seg;
+      const a=bez[i][0], dx=p[0]-a[0], dy=p[1]-a[1];
+      // アンカーと両側の制御点を一緒に動かす(滑らかさ維持)
+      a[0]+=dx;a[1]+=dy;
+      bez[i][1][0]+=dx;bez[i][1][1]+=dy;
+      const prev=bez[(i-1+bez.length)%bez.length];
+      prev[3][0]+=dx;prev[3][1]+=dy;
+      prev[2][0]+=dx;prev[2][1]+=dy;
+      // ptsも近い点を追従(bbox用)
+      let bi=0,bd=1e9;xform.sh.pts.forEach((q,k)=>{const d=Math.hypot(q[0]-a[0]+dx,q[1]-a[1]+dy);if(d<bd){bd=d;bi=k;}});
+      xform.sh.pts[bi][0]+=dx;xform.sh.pts[bi][1]+=dy;
+    }
     render();return;
   }
   if(!drawing)return;
@@ -929,9 +1138,13 @@ board.addEventListener('pointermove',e=>{
   const dStr='M '+raw.map(q=>`${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' L ');
   if(live) live.setAttribute('d',dStr);
   const liveM=$('liveM');
-  if(liveM) liveM.setAttribute('d', mirrorOn ? 'M '+raw.map(q=>`${(S.art.w-q[0]).toFixed(1)} ${q[1].toFixed(1)}`).join(' L ') : '');
+  if(liveM) liveM.setAttribute('d', mirrorOn ? 'M '+raw.map(q=>`${(2*AX()-q[0]).toFixed(1)} ${q[1].toFixed(1)}`).join(' L ') : '');
+});
+board.addEventListener('dblclick',e=>{
+  if(mirrorOn&&Math.abs(boardXY(e)[0]-AX())<10/S.view.z){mirrorAxis=null;render();}
 });
 board.addEventListener('pointerup',()=>{
+  if(xform){xform=null;return;}
   if(panning){panning=false;board.style.cursor=spaceDown?'grab':'';return;}
   if(!drawing)return; drawing=false;
   if(raw.length<8){render();return;}
@@ -952,15 +1165,15 @@ board.addEventListener('pointerup',()=>{
   // ---- 対称モード: 軸に触れていたら左右を繋げて1つの絵に ----
   let mirrored=false, merged=false;
   if(mirrorOn){
-    const AX=S.art.w/2, TOL=14;
-    const nearS=Math.abs(pts[0][0]-AX)<TOL, nearE=Math.abs(pts.at(-1)[0]-AX)<TOL;
-    const crosses=pts.some((p,i)=>i>0&&(pts[i-1][0]-AX)*(p[0]-AX)<0);
+    const AXV=AX(), TOL=14;
+    const nearS=Math.abs(pts[0][0]-AXV)<TOL, nearE=Math.abs(pts.at(-1)[0]-AXV)<TOL;
+    const crosses=pts.some((p,i)=>i>0&&(pts[i-1][0]-AXV)*(p[0]-AXV)<0);
     if(nearS||nearE||crosses){
       merged=true;
       // 軸付近の端点は軸にスナップ(継ぎ目の段差防止)
-      if(nearS)pts[0][0]=AX;
-      if(nearE)pts.at(-1)[0]=AX;
-      const mir=pts.map(([x,y])=>[2*AX-x,y]);
+      if(nearS)pts[0][0]=AXV;
+      if(nearE)pts.at(-1)[0]=AXV;
+      const mir=pts.map(([x,y])=>[2*AXV-x,y]);
       if(nearE||(!nearS&&!nearE)){        // 継ぎ目=終点側
         pts=pts.concat(mir.slice(0,-1).reverse());
       }else{                               // 継ぎ目=始点側
@@ -998,11 +1211,21 @@ $('shapelist').addEventListener('click',e=>{
     if(i>0&&(S.shapes[i].folder||null)===(S.shapes[i-1].folder||null)){
       pushHistory();[S.shapes[i],S.shapes[i-1]]=[S.shapes[i-1],S.shapes[i]];render();}return;}
   if(ds.out){assignToFolder(+ds.out,null);return;}
+  if(ds.fmenu){openFolderMenu(+ds.fmenu,e.clientX,e.clientY);return;}
   if(ds.top){toFront(+ds.top);return;}
   if(ds.btm){toBack(+ds.btm);return;}
   if(ds.fassign){if(S.sel!=null)assignToFolder(S.sel,ds.fassign);return;}
   if(ds.fmvFr!==undefined){moveBlock(+ds.fmvFr,+1);return;}
   if(ds.fmvBk!==undefined){moveBlock(+ds.fmvBk,-1);return;}
+  if(ds.fpivot){
+    pendingFolderPivot=ds.fpivot;
+    $('hint').textContent=`⊕ 📁${ds.fpivot} のピボット位置をキャンバスでクリック`;
+    return;}
+  if(ds.fparent){
+    const m=folderMeta(ds.fparent);if(!m)return;
+    const p=prompt(`📁${ds.fparent} の親ボーン名(body/head等。空で解除)`,m.parent||'');
+    if(p!==null){m.parent=p.trim();renderList();}
+    return;}
   if(ds.fcol){const m=folderMeta(ds.fcol);if(m){m.collapsed=!m.collapsed;renderList();}return;}
   if(ds.fvis){const m=folderMeta(ds.fvis);if(m){m.visible=m.visible===false;render();}return;}
   if(ds.fdel){deleteFolder(ds.fdel);return;}
@@ -1023,7 +1246,18 @@ $('shapelist').addEventListener('dblclick',e=>{
 
 /* ============ header actions ============ */
 $('bUndo').onclick=undo;
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='d'||e.key==='D')){
+    e.preventDefault();
+    const sh=S.shapes.find(x=>x.id===S.sel); if(!sh)return;
+    pushHistory();
+    const cp=JSON.parse(JSON.stringify(sh));
+    cp.id=uid++; cp.rig.name=uniqueName(sh.rig.name+'_cp');
+    translateShape(cp,24,24);
+    S.shapes.push(cp); S.sel=cp.id; ensureContiguous(); render();
+  }
+});
 $('bClear').onclick=()=>{if(!S.shapes.length)return;pushHistory();S.shapes=[];S.sel=null;render();};
 
 $('bSaveJson').onclick=()=>{
@@ -1033,6 +1267,10 @@ $('bSaveJson').onclick=()=>{
 $('bLoadJson').onclick=()=>$('fJson').click();
 $('fJson').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
+  await loadJsonFile(f);
+  e.target.value='';
+});
+async function loadJsonFile(f){
   try{
     const data=JSON.parse(await f.text());
     if(!Array.isArray(data.shapes))throw 0;
@@ -1043,8 +1281,7 @@ $('fJson').addEventListener('change',async e=>{
     $('selArt').value=`${S.art.w},${S.art.h}`;
     fitView();
   }catch{alert('JSONの形式が読み取れませんでした');}
-  e.target.value='';
-});
+}
 
 $('bExport').onclick=()=>{
   if(!S.shapes.length){alert('書き出すパーツがありません');return;}
@@ -1053,21 +1290,35 @@ $('bExport').onclick=()=>{
   const shapeG=(sh,ind)=>{
     const sp=' '.repeat(ind);
     const nm=(sh.rig.name||('part_'+sh.id)).replace(/[^\p{L}\p{N}_\-]/gu,'_');
+    const st=(sh.rig.state||'').replace(/[^\p{L}\p{N}_\-]/gu,'_');
     const pivotAttr=sh.rig.pivot?` data-pivot="${sh.rig.pivot[0].toFixed(1)},${sh.rig.pivot[1].toFixed(1)}"`:'';
     const parentAttr=sh.rig.parent?` data-parent="${sh.rig.parent}"`:'';
-    let o=`${sp}<g id="${nm}"${pivotAttr}${parentAttr}>\n`;
-    const fd=sh.fill.type==='solid'?'':materializeFill(sh);
+    const stateAttr=st?` data-state="${st}" style="display:${(stateSel[sh.rig.name]??firstStateOf(sh.rig.name))===sh.rig.state?'inline':'none'}"`:'';
+    let o=`${sp}<g id="${st?nm+'__'+st:nm}"${st?` data-part="${nm}"`:''}${stateAttr}${pivotAttr}${parentAttr}>\n`;
+    const fd=(sh.fill.type==='solid'||sh.fill.type==='grad')?'':materializeFill(sh);
     if(sh.fill.type==='solid')
       o+=`${sp}  <path class="fill" d="${shapePathD(sh)}" fill="${sh.fill.color}" stroke="none"/>\n`;
+    if(sh.fill.type==='grad'){
+      const a=(sh.fill.angle||0)*Math.PI/180, gx=Math.cos(a)/2, gy=Math.sin(a)/2;
+      o+=`${sp}  <linearGradient id="g${sh.id}" x1="${(.5-gx).toFixed(3)}" y1="${(.5-gy).toFixed(3)}" x2="${(.5+gx).toFixed(3)}" y2="${(.5+gy).toFixed(3)}"><stop offset="0" stop-color="${sh.fill.color}"/><stop offset="1" stop-color="${sh.fill.color2||'#fff'}"/></linearGradient>\n`;
+      o+=`${sp}  <path class="fill" d="${shapePathD(sh)}" fill="url(#g${sh.id})" stroke="none"/>\n`;
+    }
     if(fd) o+=`${sp}  <path class="fill" d="${fd}" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round"/>\n`;
     o+=`${sp}  <path class="outline" d="${shapePathD(sh)}" fill="none" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" stroke-linejoin="round"/>\n`;
+    for(const m of sh.morphs||[]){
+      const mn=m.name.replace(/[^\p{L}\p{N}_\-]/gu,'_');
+      o+=`${sp}  <path class="morph" data-morph="${mn}" d="${shapePathD({pts:m.target.pts,bez:m.target.bez})}" fill="none" stroke="none" style="display:none"/>\n`;
+    }
     o+=`${sp}</g>\n`;
     return o;
   };
   for(const b of blocks()){
     if(b.folder){
       const fnm=b.folder.replace(/[^\p{L}\p{N}_\-]/gu,'_');
-      out+=`  <g id="${fnm}" data-folder="${fnm}">\n`;
+      const fm=folderMeta(b.folder)||{};
+      const fpv=fm.pivot?` data-pivot="${fm.pivot[0].toFixed(1)},${fm.pivot[1].toFixed(1)}"`:'';
+      const fpr=fm.parent?` data-parent="${fm.parent}"`:'';
+      out+=`  <g id="${fnm}" data-folder="${fnm}"${fpv}${fpr}>\n`;
       for(let i=b.start;i<b.end;i++)out+=shapeG(S.shapes[i],4);
       out+=`  </g>\n`;
     }else{
@@ -1089,7 +1340,7 @@ const RIG_TPL=[
   {n:'legL',p:'body',j:'脚L'},{n:'legR',p:'body',j:'脚R'},{n:'tail',p:'body',j:'尻尾'},{n:'acc',p:'head',j:'飾り'}];
 let pendingTpl=null;
 function uniqueName(base){
-  if(!S.shapes.some(s=>s.rig.name===base))return base;
+  if(!S.shapes.some(s=>s.rig.name===base&&!s.rig.state))return base;
   let k=2;while(S.shapes.some(s=>s.rig.name===base+'_'+k))k++;
   return base+'_'+k;}
 function applyTpl(sh,tpl){sh.rig.name=uniqueName(tpl.n);sh.rig.parent=tpl.p;}
@@ -1280,6 +1531,8 @@ function renderOrganizer(){
       html+=`<div class="org-folder" draggable="true" data-fd="${blk.folder}">
         <span>📁 ${blk.folder}</span><span class="fct">${blk.ids.length}</span>
         <div style="flex:1"></div>
+        <button data-ofup="${blk.folder}" title="フォルダごと上(手前)へ">▲</button>
+        <button data-ofdn="${blk.folder}" title="フォルダごと下(奥)へ">▼</button>
         <button data-fvis2="${blk.folder}" style="color:${m.visible===false?'var(--dim)':'var(--kin)'}">${m.visible===false?'◌':'●'}</button>
         <button data-fdel2="${blk.folder}">✕</button>
       </div>`;
@@ -1316,10 +1569,17 @@ function renderOrganizer(){
   });
   el.onclick=e=>{
     const ds=e.target.dataset||{};
-    if(ds.fvis2){const m=folderMeta(ds.fvis2);if(m){m.visible=m.visible===false;render();renderOrganizer();}return;}
-    if(ds.fdel2){deleteFolder(ds.fdel2);renderOrganizer();return;}
+    if(ds.fvis2){const m=folderMeta(ds.fvis2);if(m){m.visible=m.visible===false;render();}return;}
+    if(ds.fdel2){deleteFolder(ds.fdel2);return;}
+    if(ds.ofmenu){openFolderMenu(+ds.ofmenu,e.clientX,e.clientY);return;}
+    if(ds.oup){moveShapeZ(+ds.oup,+1);return;}
+    if(ds.odn){moveShapeZ(+ds.odn,-1);return;}
+    if(ds.otop){toFront(+ds.otop);return;}
+    if(ds.obtm){toBack(+ds.obtm);return;}
+    if(ds.ofup){moveFolderBlock(ds.ofup,+1);return;}
+    if(ds.ofdn){moveFolderBlock(ds.ofdn,-1);return;}
     const row=e.target.closest('[data-sh]');
-    if(row){S.sel=+row.dataset.sh;render();renderOrganizer();}
+    if(row){S.sel=+row.dataset.sh;render();}
   };
 }
 function orgShapeRow(sh,child){
@@ -1327,8 +1587,14 @@ function orgShapeRow(sh,child){
   return `<div class="org-item ${child?'child':''} ${sh.id===S.sel?'sel':''}" draggable="true" data-sh="${sh.id}">
     <span class="sw" style="background:${sh.fill.type==='none'?'transparent':sh.fill.color}"></span>
     <span class="nm">${sh.rig.name||('part_'+sh.id)}</span>
+    ${sh.rig.state?`<span style="font-size:9px;color:var(--shu)">${sh.rig.state}</span>`:''}
     ${sh.rig.parent?`<span style="font-size:9px;color:var(--dim)">›${sh.rig.parent}</span>`:''}
     ${sh.rig.pivot?'<span style="color:var(--kin);font-size:10px">⊕</span>':''}
+    <button data-ofmenu="${sh.id}" title="フォルダに入れる">📂</button>
+    <button data-oup="${sh.id}" title="上(手前)へ">▲</button>
+    <button data-odn="${sh.id}" title="下(奥)へ">▼</button>
+    <button data-otop="${sh.id}" title="一番上へ">⇈</button>
+    <button data-obtm="${sh.id}" title="一番下へ">⇊</button>
   </div>`;
 }
 function orgRemoveDragged(model){
@@ -1425,9 +1691,36 @@ document.getElementById('recentPal').addEventListener('click',e=>{
 
 
 
+
+/* ============ transform utils ============ */
+function shapeAllPts(sh){ // 参照配列のリスト(直接書き換え用)
+  const arr=[];
+  sh.pts.forEach(p=>arr.push(p));
+  if(sh.bez)sh.bez.forEach(seg=>seg.forEach(p=>arr.push(p)));
+  if(sh.rig.pivot)arr.push(sh.rig.pivot);
+  return arr;
+}
+function translateShape(sh,dx,dy){ shapeAllPts(sh).forEach(p=>{p[0]+=dx;p[1]+=dy;}); }
+function scaleRotShape(sh,cx,cy,scale,rot){
+  const c=Math.cos(rot),si=Math.sin(rot);
+  shapeAllPts(sh).forEach(p=>{
+    let x=(p[0]-cx)*scale, y=(p[1]-cy)*scale;
+    p[0]=cx + x*c - y*si; p[1]=cy + x*si + y*c;
+  });
+}
+function shapeBBox(sh){ return bbox(sh.pts); }
+
 /* ============ symmetry (左右対称) ============ */
 let mirrorOn=false;
-$('tMirror').addEventListener('click',()=>{
+let mirrorAxis=null; // null=中央。数値=任意位置
+$('tMirror').addEventListener('click',e=>{
+  const sh=S.shapes.find(x=>x.id===S.sel);
+  if(e.shiftKey&&sh){ // Shift+⇋ = 選択パーツのミラー複製
+    pushHistory();
+    const m=makeMirrorShape(sh);
+    S.shapes.push(m);S.sel=m.id;ensureContiguous();render();
+    return;
+  }
   mirrorOn=!mirrorOn;
   $('tMirror').classList.toggle('on',mirrorOn);
   render();
@@ -1436,7 +1729,8 @@ document.addEventListener('keydown',e=>{
   if(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   if((e.key==='m'||e.key==='M')&&!e.ctrlKey&&!e.metaKey)$('tMirror').click();
 });
-function mirrorX(x){return S.art.w-x;}
+function AX(){return mirrorAxis==null?S.art.w/2:mirrorAxis;}
+function mirrorX(x){return 2*AX()-x;}
 function mirrorPts(pts){return pts.map(([x,y])=>[mirrorX(x),y]);}
 function mirrorBez(bez){return bez?bez.map(seg=>seg.map(([x,y])=>[mirrorX(x),y])):null;}
 function mirrorName(n){
@@ -1474,8 +1768,310 @@ document.addEventListener('keydown',e=>{
     if(S.sel!=null){pushHistory();S.shapes=S.shapes.filter(x=>x.id!==S.sel);S.sel=null;render();e.preventDefault();}
   }
   else if(e.key==='f'||e.key==='F'){openOrganizer();}
+  else if(e.key==='i'||e.key==='I'){setTool('eye');}
   else if(e.key==='Tab'){e.preventDefault();document.body.classList.toggle('sidehide');requestAnimationFrame(fitView);}
 });
+
+
+
+
+function exportManifest(){
+  const groups=[];
+  for(const b of blocks()){
+    if(b.folder){
+      const fm2=folderMeta(b.folder)||{};
+      groups.push({name:b.folder,file:b.folder+'.svg',
+        boneParent:fm2.parent||null,
+        pivot:fm2.pivot?[+fm2.pivot[0].toFixed(1),+fm2.pivot[1].toFixed(1)]:null,
+        parts:S.shapes.slice(b.start,b.end).map(sh=>({
+          name:sh.rig.name,parent:sh.rig.parent||null,
+          pivot:sh.rig.pivot?[+sh.rig.pivot[0].toFixed(1),+sh.rig.pivot[1].toFixed(1)]:null}))});
+    }else{
+      const sh=S.shapes[b.start];
+      groups.push({name:sh.rig.name,file:sh.rig.name+'.svg',
+        parts:[{name:sh.rig.name,parent:sh.rig.parent||null,
+          pivot:sh.rig.pivot?[+sh.rig.pivot[0].toFixed(1),+sh.rig.pivot[1].toFixed(1)]:null}]});
+    }
+  }
+  const m={viewBox:`0 0 ${S.art.w} ${S.art.h}`,tool:'hitofude',groups};
+  dl(new Blob([JSON.stringify(m,null,2)],{type:'application/json'}),'manifest.json');
+}
+
+/* ============ state variants (口・目差分) ============ */
+let stateSel={}; // rig.name(base) -> 表示するstate
+function shapeStateHidden(sh){
+  const st=sh.rig.state;
+  if(!st)return false;
+  const cur=stateSel[sh.rig.name];
+  if(cur===undefined){ // 未選択なら最初に登場するstateを既定に
+    stateSel[sh.rig.name]=firstStateOf(sh.rig.name);
+    return sh.rig.state!==stateSel[sh.rig.name];
+  }
+  return st!==cur;
+}
+function firstStateOf(base){
+  const sh=S.shapes.find(x=>x.rig.name===base&&x.rig.state);
+  return sh?sh.rig.state:'';
+}
+function stateGroups(){
+  const m=new Map();
+  for(const sh of S.shapes){
+    if(!sh.rig.state)continue;
+    if(!m.has(sh.rig.name))m.set(sh.rig.name,new Set());
+    m.get(sh.rig.name).add(sh.rig.state);
+  }
+  return m;
+}
+function renderStateSwitch(){
+  const el=$('stateSwitch'); if(!el)return;
+  const m=stateGroups();
+  if(!m.size){el.innerHTML='';return;}
+  let html='<div style="font-size:10px;color:var(--dim);margin:4px 0 3px">ステート切替(表示差分)</div>';
+  for(const[base,sts]of m){
+    const cur=stateSel[base]??firstStateOf(base);
+    html+=`<div class="stsw"><span class="base" title="${base}">${base}</span>`+
+      [...sts].map(st=>`<button class="${st===cur?'on':''}" data-stsel="${base}::${st}">${st}</button>`).join('')+`</div>`;
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('[data-stsel]').forEach(b=>b.addEventListener('click',()=>{
+    const[base,st]=b.dataset.stsel.split('::');
+    stateSel[base]=st; render();
+  }));
+}
+$('iState').addEventListener('change',e=>{
+  const sh=S.shapes.find(x=>x.id===S.sel); if(!sh)return;
+  pushHistory(); sh.rig.state=e.target.value.trim(); render();
+});
+document.querySelectorAll('.stchip').forEach(c=>c.addEventListener('click',()=>{
+  const sh=S.shapes.find(x=>x.id===S.sel); if(!sh){$('iState').value=c.dataset.st;return;}
+  pushHistory(); sh.rig.state=c.dataset.st; $('iState').value=c.dataset.st; render();
+}));
+$('bStateDup').addEventListener('click',()=>{
+  const sh=S.shapes.find(x=>x.id===S.sel);
+  if(!sh){alert('パーツを選択してください');return;}
+  const st=prompt('新しいステート名(例: 閉)', sh.rig.state==='開'?'閉':'開');
+  if(!st)return;
+  pushHistory();
+  if(!sh.rig.state)sh.rig.state='開'; // 元も差分化
+  const cp=JSON.parse(JSON.stringify(sh));
+  cp.id=uid++; cp.rig.state=st.trim(); // 同名・別ステート
+  S.shapes.push(cp); S.sel=cp.id;
+  stateSel[sh.rig.name]=cp.rig.state; // 新差分を表示して編集しやすく
+  ensureContiguous(); render();
+});
+
+
+/* ============ morph targets (変形モーフ) ============ */
+let morphEdit=null; // {shId,name,base:{pts,bez}}
+let morphW={};      // `${shId}::${name}` -> 0..1
+const geomCopy=sh=>({pts:JSON.parse(JSON.stringify(sh.pts)),bez:sh.bez?JSON.parse(JSON.stringify(sh.bez)):null});
+function geomSet(sh,g){sh.pts=JSON.parse(JSON.stringify(g.pts));sh.bez=g.bez?JSON.parse(JSON.stringify(g.bez)):null;}
+
+$('bMorphAdd').addEventListener('click',()=>{
+  const sh=S.shapes.find(x=>x.id===S.sel);
+  if(!sh){alert('パーツを選択してください');return;}
+  const name=prompt('モーフ名(例: 目とじ / 口あけ / 髪ゆれ)');
+  if(!name)return;
+  morphEdit={shId:sh.id,name:name.trim(),base:geomCopy(sh)};
+  setTool('sel');
+  $('morphbar').style.display='flex';
+  $('morphmsg').textContent=`モーフ「${morphEdit.name}」編集中 — 変形ツールで形を作って確定`;
+});
+function morphCommit(){
+  if(!morphEdit)return;
+  const sh=S.shapes.find(x=>x.id===morphEdit.shId);
+  if(sh){
+    sh.morphs=sh.morphs||[];
+    // 同名は上書き
+    sh.morphs=sh.morphs.filter(m=>m.name!==morphEdit.name);
+    sh.morphs.push({name:morphEdit.name,target:geomCopy(sh)});
+    geomSet(sh,morphEdit.base); // ベース形状に戻す
+    morphW[`${sh.id}::${morphEdit.name}`]=1; // 直後は100%プレビュー
+  }
+  morphEdit=null;$('morphbar').style.display='none';render();
+}
+function morphCancel(){
+  if(!morphEdit)return;
+  const sh=S.shapes.find(x=>x.id===morphEdit.shId);
+  if(sh)geomSet(sh,morphEdit.base);
+  morphEdit=null;$('morphbar').style.display='none';render();
+}
+function morphActive(sh){
+  if(morphEdit&&morphEdit.shId===sh.id)return false; // 編集中は生形状
+  return (sh.morphs||[]).some(m=>(morphW[`${sh.id}::${m.name}`]||0)>0.001);
+}
+function morphedGeom(sh){
+  // base + Σ w*(target-base) の加算ブレンド
+  const g=geomCopy(sh);
+  for(const m of sh.morphs||[]){
+    const w=morphW[`${sh.id}::${m.name}`]||0;
+    if(w<=0.001)continue;
+    for(let i=0;i<g.pts.length&&i<m.target.pts.length;i++){
+      g.pts[i][0]+=w*(m.target.pts[i][0]-sh.pts[i][0]);
+      g.pts[i][1]+=w*(m.target.pts[i][1]-sh.pts[i][1]);
+    }
+    if(g.bez&&m.target.bez)
+      for(let i=0;i<g.bez.length&&i<m.target.bez.length;i++)
+        for(let j=0;j<4;j++){
+          g.bez[i][j][0]+=w*(m.target.bez[i][j][0]-sh.bez[i][j][0]);
+          g.bez[i][j][1]+=w*(m.target.bez[i][j][1]-sh.bez[i][j][1]);
+        }
+  }
+  return g;
+}
+function renderMorphList(){
+  const el=$('morphList'); if(!el)return;
+  const sh=S.shapes.find(x=>x.id===S.sel);
+  if(!sh||!(sh.morphs||[]).length){el.innerHTML='';return;}
+  el.innerHTML=sh.morphs.map(m=>{
+    const k=`${sh.id}::${m.name}`, w=Math.round((morphW[k]||0)*100);
+    return `<div class="morph-row">
+      <span class="mn" title="${m.name}">${m.name}</span>
+      <input type="range" min="0" max="100" value="${w}" data-mk="${k}">
+      <span class="mw">${w}%</span>
+      <button data-mdel="${sh.id}::${m.name}" title="削除">✕</button>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('input[data-mk]').forEach(r=>r.addEventListener('input',()=>{
+    morphW[r.dataset.mk]=+r.value/100;
+    r.nextElementSibling.textContent=r.value+'%';
+    render();
+  }));
+  el.querySelectorAll('[data-mdel]').forEach(b=>b.addEventListener('click',()=>{
+    const[id,name]=b.dataset.mdel.split('::');
+    const sh2=S.shapes.find(x=>x.id===+id); if(!sh2)return;
+    pushHistory();
+    sh2.morphs=sh2.morphs.filter(m=>m.name!==name);
+    delete morphW[b.dataset.mdel];
+    render();
+  }));
+}
+
+
+/* ============ folder quick menu ============ */
+let fmenuEl=null;
+function openFolderMenu(shId,x,y){
+  closeFolderMenu();
+  const sh=S.shapes.find(s=>s.id===shId); if(!sh)return;
+  fmenuEl=document.createElement('div');
+  fmenuEl.style.cssText=`position:fixed;left:${Math.min(x,innerWidth-180)}px;top:${Math.min(y,innerHeight-200)}px;z-index:60;background:var(--panel2);border:1px solid var(--kin);border-radius:8px;padding:6px;min-width:150px;box-shadow:0 8px 30px rgba(0,0,0,.5);max-height:50vh;overflow-y:auto`;
+  const item=(label,fn,cur)=>{
+    const d=document.createElement('div');
+    d.textContent=label;
+    d.style.cssText=`padding:6px 10px;border-radius:5px;cursor:pointer;font-size:11px;${cur?'color:var(--kin)':''}`;
+    d.onmouseenter=()=>d.style.background='var(--panel)';
+    d.onmouseleave=()=>d.style.background='';
+    d.onclick=()=>{fn();closeFolderMenu();};
+    fmenuEl.appendChild(d);
+  };
+  item('(フォルダなし)',()=>assignToFolder(shId,null),!sh.folder);
+  S.folders.forEach(f=>item('📁 '+f.name,()=>assignToFolder(shId,f.name),sh.folder===f.name));
+  item('＋ 新規フォルダ…',()=>{
+    const n=prompt('フォルダ名');
+    if(n&&n.trim()){addFolder(n.trim());assignToFolder(shId,n.trim());}
+  });
+  document.body.appendChild(fmenuEl);
+  setTimeout(()=>document.addEventListener('pointerdown',fmenuOutside,{once:true}),0);
+}
+function fmenuOutside(e){ if(fmenuEl&&!fmenuEl.contains(e.target))closeFolderMenu(); else if(fmenuEl)setTimeout(()=>document.addEventListener('pointerdown',fmenuOutside,{once:true}),0); }
+function closeFolderMenu(){ if(fmenuEl){fmenuEl.remove();fmenuEl=null;} }
+
+/* ============ pose preview ============ */
+let poseOn=false, poseAngles={}; // name -> deg
+function openPose(){poseOn=true;document.getElementById('posepanel').classList.add('open');renderPoseList();render();}
+function closePose(){poseOn=false;document.getElementById('posepanel').classList.remove('open');render();}
+function resetPose(){poseAngles={};renderPoseList();render();}
+function poseParts(){
+  const seen=new Set(),list=[];
+  for(const f of S.folders){ // フォルダボーンを先頭に
+    if(f.pivot){list.push({name:'📁'+f.name,key:'F:'+f.name,parent:f.parent||''});seen.add('F:'+f.name);}
+  }
+  for(const sh of S.shapes){
+    const n=sh.rig.name;
+    if(!n||seen.has(n))continue;
+    seen.add(n);
+    if(sh.rig.pivot)list.push({name:n,key:n,parent:sh.rig.parent||''});
+  }
+  return list;
+}
+function renderPoseList(){
+  const el=document.getElementById('poselist');
+  const parts=poseParts();
+  if(!parts.length){el.innerHTML='<div class="empty">ピボット(⊕)を設定したパーツがありません。<br>ピボット+名前を付けるとここに回転スライダーが出ます。</div>';return;}
+  el.innerHTML=parts.map(p=>`<div class="pose-row">
+    <label title="${p.name}${p.parent?' ← '+p.parent:''}">${p.name}</label>
+    <input type="range" min="-90" max="90" value="${poseAngles[p.key]||0}" data-pose="${p.key}">
+    <span class="pv2">${poseAngles[p.key]||0}°</span></div>`).join('');
+  el.querySelectorAll('input[data-pose]').forEach(r=>{
+    r.addEventListener('input',()=>{
+      poseAngles[r.dataset.pose]=+r.value;
+      r.nextElementSibling.textContent=r.value+'°';
+      render();
+    });
+  });
+}
+// 累積回転: 自分の角度を自分のpivotで、さらに祖先の角度を祖先のpivotで順に適用
+function poseTransformFor(sh){
+  if(!poseOn)return'';
+  const byName={}; S.shapes.forEach(x=>{if(x.rig.name&&!byName[x.rig.name])byName[x.rig.name]=x;});
+  let t='',cur=sh,guard=0;
+  while(cur&&guard++<12){ // パーツ親子チェーン
+    const a=poseAngles[cur.rig.name];
+    if(a&&cur.rig.pivot)t=`rotate(${a} ${cur.rig.pivot[0]} ${cur.rig.pivot[1]}) `+t;
+    cur=cur.rig.parent?byName[cur.rig.parent]:null;
+  }
+  // フォルダチェーン(外側に合成)
+  let f=sh.folder?folderMeta(sh.folder):null;guard=0;
+  while(f&&guard++<8){
+    const a=poseAngles['F:'+f.name];
+    if(a&&f.pivot)t=`rotate(${a} ${f.pivot[0]} ${f.pivot[1]}) `+t;
+    const nf=f.parent?folderMeta(f.parent):null;
+    if(nf){f=nf;continue;}
+    // 親がパーツ名ならそのパーツチェーンを外側に
+    let p=f.parent?byName[f.parent]:null;let g2=0;
+    while(p&&g2++<12){
+      const a2=poseAngles[p.rig.name];
+      if(a2&&p.rig.pivot)t=`rotate(${a2} ${p.rig.pivot[0]} ${p.rig.pivot[1]}) `+t;
+      p=p.rig.parent?byName[p.rig.parent]:null;
+    }
+    break;
+  }
+  return t?` transform="${t.trim()}"`:'';
+}
+
+
+/* ============ file drag & drop ============ */
+['dragover','drop'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
+document.addEventListener('dragover',()=>board.style.outline='3px dashed var(--kin)');
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget)board.style.outline='';});
+document.addEventListener('drop',async e=>{
+  board.style.outline='';
+  const files=[...(e.dataTransfer?.files||[])];
+  for(const f of files){
+    if(/\.svg$/i.test(f.name)){
+      try{importSvg(await f.text());}catch(err){alert(f.name+': '+err.message);}
+    }else if(/\.json$/i.test(f.name)){
+      await loadJsonFile(f);
+    }
+  }
+});
+
+/* ============ autosave ============ */
+function autosave(){
+  try{localStorage.setItem('hitofude_autosave',JSON.stringify({version:2,art:S.art,shapes:S.shapes,folders:S.folders,t:Date.now()}));}catch(e){}
+}
+setInterval(autosave,15000);
+window.addEventListener('beforeunload',autosave);
+(function restore(){
+  try{
+    const d=JSON.parse(localStorage.getItem('hitofude_autosave')||'null');
+    if(d&&d.shapes&&d.shapes.length&&confirm(`自動保存データがあります(${new Date(d.t).toLocaleString()} / ${d.shapes.length}パーツ)。復元しますか？`)){
+      S.shapes=d.shapes;S.folders=d.folders||[];S.art=d.art||S.art;
+      uid=Math.max(1,...S.shapes.map(x=>x.id+1));
+      requestAnimationFrame(()=>{fitView();render();});
+    }
+  }catch(e){}
+})();
 
 /* ============ init ============ */
 if(typeof ResizeObserver!=='undefined'){
