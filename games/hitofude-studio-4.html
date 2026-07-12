@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一筆塗り工房 — ベクター塗り生成スタジオ Ver.1</title>
+<style>
+:root{
+  --bg:#101418; --panel:#171d24; --panel2:#1f2731; --line:#2c3742;
+  --ink:#e7e3d8; --dim:#8b95a0; --shu:#e05a3a; --shu2:#f0937b;
+  --ai:#5aa8c4; --kin:#d9b56a; --ok:#7fc48f;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;font-size:13px;display:flex;flex-direction:column;user-select:none}
+button{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;transition:.12s}
+button:hover{border-color:var(--shu)}
+button.on{background:var(--shu);border-color:var(--shu);color:#180c08;font-weight:700}
+button:disabled{opacity:.35;cursor:default}
+input[type=range]{accent-color:var(--shu);width:100%;vertical-align:middle}
+input[type=color]{width:24px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;padding:0;cursor:pointer}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:5px;color:var(--ink);padding:4px 6px;font-size:12px;width:100%}
+select{cursor:pointer}
+header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;letter-spacing:.28em;font-weight:600}
+header h1 b{color:var(--shu);font-weight:600}
+header .ver{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;border:1px solid var(--line);border-radius:4px;padding:2px 6px}
+.spacer{flex:1}
+main{flex:1;display:flex;min-height:0}
+#tools{width:52px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px}
+.tool{width:38px;height:38px;border-radius:8px;border:1px solid transparent;background:none;color:var(--dim);font-size:17px;display:flex;align-items:center;justify-content:center}
+.tool.on{background:var(--panel2);border-color:var(--shu);color:var(--shu2)}
+.tool:hover{color:var(--ink)}
+#stage{flex:1;position:relative;background:
+  radial-gradient(circle at 50% 40%,#151b22 0%,#101418 70%);overflow:hidden}
+#board{position:absolute;inset:0;touch-action:none;cursor:crosshair}
+#board.pivotmode{cursor:cell}
+#hint{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--dim);font-family:var(--mono);pointer-events:none}
+#side{width:264px;flex:none;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+.sec{border-bottom:1px solid var(--line);padding:10px 12px}
+.sec h2{font-size:10px;letter-spacing:.24em;color:var(--dim);font-weight:600;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.row label{width:64px;flex:none;font-size:11px;color:var(--dim)}
+.row .val{width:36px;flex:none;font-family:var(--mono);font-size:11px;color:var(--kin);text-align:right}
+#shapelist{flex:1;overflow-y:auto;min-height:120px}
+.shape-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;border-left:2px solid transparent}
+.shape-item:hover{background:var(--panel2)}
+.shape-item.sel{background:var(--panel2);border-left-color:var(--shu)}
+.shape-item .sw{width:12px;height:12px;border-radius:3px;flex:none;border:1px solid var(--line)}
+.shape-item .nm{flex:1;font-family:var(--mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shape-item .pv{font-size:10px;color:var(--kin)}
+.shape-item .del{color:var(--dim);font-size:13px;background:none;border:none;padding:0 2px}
+.shape-item .del:hover{color:var(--shu)}
+.folder-row{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 10px;background:var(--panel2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);cursor:default}
+.folder-row .fnm{flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-row .fct{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.folder-row .mv,.folder-row .del{background:none;border:none;color:var(--dim);cursor:pointer;padding:0 2px;font-size:11px}
+.folder-row .mv:hover{color:var(--kin)}
+.folder-row .del:hover{color:var(--shu)}
+.folder-row{cursor:pointer}
+.folder-row.factive{border:1px solid var(--shu);background:linear-gradient(0deg,rgba(224,90,58,.08),rgba(224,90,58,.08)) var(--panel2)}
+.folder-row.factive .fnm::after{content:" ✒描画先";color:var(--shu);font-size:9px}
+.shape-item .mv{background:none;border:none;color:var(--dim);cursor:pointer;padding:0 2px;font-size:10px}
+.shape-item .mv:hover{color:var(--kin)}
+.fbar{display:flex;gap:5px;padding:6px 10px;border-top:1px solid var(--line)}
+.fbar input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:3px 7px;font-size:11px;min-width:0}
+.fbar button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px}
+.fbar button:hover{border-color:var(--kin);color:var(--kin)}
+.fpresets{display:flex;flex-wrap:wrap;gap:4px;padding:0 10px 8px}
+.fpresets span{font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim);cursor:pointer}
+.fpresets span:hover{color:var(--kin);border-color:var(--kin)}
+.filltypes{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+footer{padding:6px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:11px;color:var(--dim);font-family:var(--mono);display:flex;gap:16px}
+.empty{padding:14px 12px;color:var(--dim);font-size:11px;line-height:1.7}
+#zoomctl{position:absolute;right:12px;bottom:10px;display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+#zoomctl button{padding:3px 9px}
+#zoomctl #zPct{font-family:var(--mono);font-size:11px;color:var(--kin);min-width:44px;text-align:center}
+#zoomctl select{width:auto}
+.shape-item .mv{color:var(--dim);font-size:11px;background:none;border:none;padding:0 2px;cursor:pointer}
+.shape-item .mv:hover{color:var(--kin)}
+.tplgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tplgrid button{padding:4px 2px;font-size:11px}
+.tplgrid button.pend{background:var(--kin);border-color:var(--kin);color:#1b1408;font-weight:700}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50}
+#modal .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:340px;max-height:70vh;display:flex;flex-direction:column}
+#modal h3{font-size:13px;padding:12px 14px;border-bottom:1px solid var(--line);letter-spacing:.1em}
+#modal .list{flex:1;overflow-y:auto;padding:6px 0}
+#modal .u{display:flex;align-items:center;gap:8px;padding:6px 14px;cursor:pointer}
+#modal .u:hover{background:var(--panel2)}
+#modal .u .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim)}
+#modal .u .sws{display:flex;gap:2px}
+#modal .u .sws i{width:9px;height:9px;border-radius:2px;border:1px solid var(--line)}
+#modal .foot{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+/* import picker */
+#picker{position:fixed;inset:0;background:rgba(8,7,10,.72);display:none;align-items:center;justify-content:center;z-index:30}
+#picker.open{display:flex}
+#pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:380px;max-height:70vh;display:flex;flex-direction:column}
+#pickbox h3{font-size:12px;letter-spacing:.2em;color:var(--dim);padding:12px 16px;border-bottom:1px solid var(--line)}
+#picklist{flex:1;overflow-y:auto;padding:6px 0}
+.pick-item{display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer}
+.pick-item:hover{background:var(--panel2)}
+.pick-item .sw{width:14px;height:14px;border-radius:4px;border:1px solid var(--line);flex:none}
+.pick-item .nm{flex:1;font-family:var(--mono);font-size:12px}
+.pick-item .ct{font-size:11px;color:var(--dim)}
+#pickbtns{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+#pickbtns .spacer{flex:1}
+#organizer{position:fixed;inset:0;background:rgba(10,12,16,.55);display:none;z-index:50}
+#organizer.open{display:flex;justify-content:flex-end}
+#orgbox{width:min(480px,90vw);height:100%;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.5)}
+#orghead{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+#orghead h3{font-size:12px;font-weight:600}
+#orghead input{width:110px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:4px 7px;font-size:11px}
+#orghead button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px}
+#orghead button.on{border-color:var(--kin);color:var(--kin)}
+#orglist{flex:1;overflow-y:auto;padding:8px}
+.org-item{display:flex;align-items:center;gap:9px;padding:9px 10px;margin-bottom:4px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);cursor:grab;font-size:12px;user-select:none}
+.org-item:active{cursor:grabbing}
+.org-item.sel{border-color:var(--shu)}
+.org-item .sw{width:16px;height:16px;border-radius:4px;flex:none;border:1px solid var(--line)}
+.org-item .nm{flex:1;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.org-item.child{margin-left:26px}
+.org-folder{display:flex;align-items:center;gap:8px;padding:9px 10px;margin:8px 0 4px;border:1px solid var(--kin);border-radius:8px;background:linear-gradient(0deg,rgba(217,181,106,.06),rgba(217,181,106,.06)) var(--panel2);cursor:grab;font-size:12px;font-weight:600;user-select:none}
+.org-folder .fct{font-family:var(--mono);font-size:10px;color:var(--dim);font-weight:400}
+.org-folder button,.org-item button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:0 3px}
+.org-folder button:hover,.org-item button:hover{color:var(--kin)}
+.org-drop{height:0;border-top:2px solid transparent;margin:0;transition:border-color .1s}
+.org-drop.over{border-top-color:var(--shu)}
+.org-folder.dropinto{outline:2px dashed var(--shu);outline-offset:2px}
+.pal{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:2px 0 8px}
+.pal span{aspect-ratio:1;border-radius:4px;border:1px solid var(--line);cursor:pointer}
+.pal span:hover{transform:scale(1.15);border-color:var(--kin)}
+.pal span.w{border:1px solid #999}
+#recentPal{display:flex;gap:3px;margin-bottom:6px;min-height:16px}
+#recentPal span{width:16px;height:16px;border-radius:4px;border:1px solid var(--line);cursor:pointer}
+body.sidehide #side{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>一筆塗り<b>工房</b></h1><span class="ver">HITOFUDE v1.1 folders</span>
+  <div class="spacer"></div>
+  <button id="bUndo">↩ 元に戻す</button>
+  <button id="bClear">全消去</button>
+  <button id="bSvgIn">SVG読込</button>
+  <button onclick="document.body.classList.toggle('sidehide');requestAnimationFrame(fitView)" title="サイドバー表示切替 [Tab] — キャンバスを最大化">◧ 全画面</button>
+  <button onclick="openOrganizer()">🗂 整理</button>
+  <button id="bSaveJson">JSON保存</button>
+  <button id="bLoadJson">JSON読込</button>
+  <button id="bExport" class="on">SVG書き出し</button>
+  <input type="file" id="fJson" accept=".json" hidden>
+  <input type="file" id="fSvg" accept=".svg,image/svg+xml" hidden>
+</header>
+<main>
+  <div id="tools">
+    <button class="tool on" id="tPen" title="ペン(一筆書き) [B]">✒</button>
+    <button class="tool" id="tSel" title="選択 [V]">➤</button>
+    <button class="tool" id="tPivot" title="ピボット設定 [P]">⊕</button>
+    <button class="tool" id="tMirror" title="左右対称モード [M] — 縦中心軸でミラー描画">⇋</button>
+  </div>
+  <div id="stage">
+    <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hint">✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます</div>
+    <div id="zoomctl">
+      <button id="zOut">−</button><span id="zPct">100%</span><button id="zIn">＋</button>
+      <button id="zFit">フィット</button>
+      <select id="selArt">
+        <option value="1024,1024">1024×1024</option>
+        <option value="1280,720">1280×720</option>
+        <option value="720,1280">720×1280</option>
+        <option value="2048,2048">2048×2048</option>
+      </select>
+    </div>
+  </div>
+  <div id="side">
+    <div class="sec">
+      <h2>描画</h2>
+      <div class="row"><label>手ブレ補正</label><input type="range" id="rStab" min="0" max="98" value="65"><span class="val" id="vStab">65</span></div>
+      <div class="row"><label>単純化</label><input type="range" id="rSimp" min="0" max="60" value="18"><span class="val" id="vSimp">1.8</span></div>
+      <div class="row"><label>角検出</label><input type="range" id="rCorn" min="30" max="120" value="60"><span class="val" id="vCorn">60°</span></div>
+      <div class="row"><label>曲線誤差</label><input type="range" id="rErr" min="5" max="40" value="15"><span class="val" id="vErr">1.5</span></div>
+      <div class="row"><label>線の色</label><input type="color" id="cOutline" value="#3a3330"><label style="width:auto">太さ</label><input type="range" id="rOutW" min="1" max="12" value="3" style="width:70px"><span class="val" id="vOutW">3</span></div>
+      <div class="pal" id="palOutline"></div>
+    </div>
+    <div class="sec">
+      <h2>塗り生成 <span id="fillTarget" style="color:var(--kin)"></span></h2>
+      <div class="filltypes">
+        <button data-ft="solid" class="on">ベタ</button>
+        <button data-ft="hatch">ハッチ</button>
+        <button data-ft="cross">クロス</button>
+        <button data-ft="zigzag">ジグザグ</button>
+        <button data-ft="spiral">渦巻き</button>
+        <button data-ft="none">塗りなし</button>
+      </div>
+      <div class="row"><label>間隔</label><input type="range" id="rGap" min="3" max="40" value="9"><span class="val" id="vGap">9</span></div>
+      <div class="row"><label>角度</label><input type="range" id="rAng" min="0" max="180" value="35"><span class="val" id="vAng">35</span></div>
+      <div class="row"><label>線幅</label><input type="range" id="rFw" min="1" max="10" value="2"><span class="val" id="vFw">2</span></div>
+      <div class="row"><label>揺らぎ</label><input type="range" id="rJit" min="0" max="10" value="2"><span class="val" id="vJit">2</span></div>
+      <div class="row"><label>塗り色</label><input type="color" id="cFill" value="#e05a3a">
+        <button id="bSeed" style="margin-left:auto">乱数更新</button></div>
+      <div class="pal" id="palFill"></div>
+      <div class="row"><label>最近の色</label><div id="recentPal"></div></div>
+    </div>
+    <div class="sec">
+      <h2>リグ情報</h2>
+      <div class="row"><label>テンプレ</label>
+        <select id="selRole">
+          <option value="">— 役割を選択 —</option>
+          <optgroup label="体幹">
+            <option value="body">体(ルート)</option>
+            <option value="head">頭 → body</option>
+            <option value="face">顔 → head</option>
+          </optgroup>
+          <optgroup label="顔パーツ">
+            <option value="eyeL">左目 → face</option>
+            <option value="eyeR">右目 → face</option>
+            <option value="browL">左眉 → face</option>
+            <option value="browR">右眉 → face</option>
+            <option value="mouth">口 → face</option>
+            <option value="nose">鼻 → face</option>
+          </optgroup>
+          <optgroup label="髪・耳">
+            <option value="hairF">前髪 → head</option>
+            <option value="hairB">後髪 → head</option>
+            <option value="hairSideL">左横髪 → head</option>
+            <option value="hairSideR">右横髪 → head</option>
+            <option value="earL">左耳 → head</option>
+            <option value="earR">右耳 → head</option>
+          </optgroup>
+          <optgroup label="手足ほか">
+            <option value="armL">左腕 → body</option>
+            <option value="armR">右腕 → body</option>
+            <option value="handL">左手 → armL</option>
+            <option value="handR">右手 → armR</option>
+            <option value="legL">左脚 → body</option>
+            <option value="legR">右脚 → body</option>
+            <option value="skirt">スカート → body</option>
+            <option value="tail">尻尾 → body</option>
+            <option value="acc">飾り → head</option>
+          </optgroup>
+        </select></div>
+      <div class="row"><label>パーツ名</label><input type="text" id="iName" placeholder="hairF_01"></div>
+      <div class="row"><label>親パーツ</label><input type="text" id="iParent" placeholder="head"></div>
+      <div class="row"><label>ピボット</label><span id="pvInfo" style="font-family:var(--mono);font-size:11px;color:var(--dim)">未設定 — ⊕ツールでクリック</span></div>
+      <h2 style="margin-top:10px">リグテンプレ <span id="tplState" style="color:var(--kin)"></span></h2>
+      <div class="tplgrid" id="tplGrid"></div>
+      <div class="note" style="font-size:10px;color:var(--dim);line-height:1.6;margin-top:5px">パーツ選択中にクリック→命名+親子付け。未選択でクリック→次に描く/読み込むパーツに適用。</div>
+    </div>
+    <div class="sec" style="flex:1;display:flex;flex-direction:column;min-height:260px;padding:0">
+      <h2 style="padding:10px 12px 4px">パーツ一覧 / フォルダ</h2>
+      <div class="fbar" style="border-top:none;border-bottom:1px solid var(--line)">
+        <input id="newFolder" placeholder="新規フォルダ名" onkeydown="if(event.key==='Enter'){addFolder(this.value);this.value=''}">
+        <button onclick="const i=document.getElementById('newFolder');addFolder(i.value);i.value=''" style="font-weight:600">＋フォルダ</button>
+        <button onclick="openOrganizer()" title="ドラッグで並べ替えできる整理パネル">整理</button>
+      </div>
+      <div class="fpresets">
+        <span onclick="addFolder('後髪')">後髪</span><span onclick="addFolder('体')">体</span><span onclick="addFolder('顔')">顔</span><span onclick="addFolder('前髪')">前髪</span><span onclick="addFolder('小物')">小物</span>
+      </div>
+      <div id="shapelist"><div class="empty">まだパーツがありません。キャンバスに一筆書きしてみてください。</div></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <span id="stAnchors">anchors: 0</span>
+  <span id="stShapes">parts: 0</span>
+  <span style="margin-left:auto">preview: clipPath / export: materialized</span>
+</footer>
+
+<div id="organizer">
+  <div id="orgbox">
+    <div id="orghead">
+      <h3>🗂 パーツ整理 — ドラッグで並べ替え / フォルダにドロップで格納</h3>
+      <span style="font-size:10px;color:var(--dim)">上=手前(最前面) / 下=奥</span>
+      <div style="flex:1"></div>
+      <input id="orgNewFolder" placeholder="新規フォルダ" onkeydown="if(event.key==='Enter'){addFolder(this.value);this.value='';renderOrganizer()}">
+      <button onclick="const i=document.getElementById('orgNewFolder');addFolder(i.value);i.value='';renderOrganizer()">＋フォルダ</button>
+      <button class="on" onclick="closeOrganizer()">完了</button>
+    </div>
+    <div id="orglist"></div>
+  </div>
+</div>
+<div id="picker">
+  <div id="pickbox">
+    <h3>SVG読込 — 取り込むグループを選択</h3>
+    <div id="picklist"></div>
+    <div id="pickbtns">
+      <button id="pkAll">全選択</button>
+      <button id="pkNone">全解除</button>
+      <div class="spacer"></div>
+      <button id="pkCancel">キャンセル</button>
+      <button id="pkOk" class="on">読み込む</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============ state ============ */
+const S = {
+  shapes: [],          // {id, pts:[[x,y]..], bez, outline:{color,width}, fill:{type,gap,angle,width,jitter,color,seed}, rig:{name,parent,pivot:[x,y]|null}, folder:null}
+  folders: [],         // [{name, collapsed:false, visible:true}] — 存在管理(重ね順はshapes配列で表現)
+  sel: null,
+  tool: 'pen',
+  history: [],
+  view:{x:0,y:0,z:1},
+  art:{w:1024,h:1024},
+};
+let uid = 1;
+let activeFolder=null; // 描画先フォルダ(クリックで選択)
+const board = document.getElementById('board');
+const $ = id => document.getElementById(id);
+
+/* ============ helpers ============ */
+const rnd = seed => { let s = seed>>>0 || 1; return () => (s = (s*1664525+1013904223)>>>0) / 4294967296; };
+function pushHistory(){ S.history.push(JSON.stringify({shapes:S.shapes,folders:S.folders})); if(S.history.length>60) S.history.shift(); }
+function undo(){ if(!S.history.length) return; const h=JSON.parse(S.history.pop());
+  if(Array.isArray(h)){S.shapes=h;} else {S.shapes=h.shapes;S.folders=h.folders||[];}
+  S.sel = S.shapes.at(-1)?.id ?? null; render(); }
+
+/* ============ folders ============ */
+function folderMeta(name){ return S.folders.find(f=>f.name===name); }
+function ensureContiguous(){
+  // 同一フォルダのshapeを最初の出現位置に連結(重ね順の整合性維持)
+  const order=[]; const buckets=new Map(); // key → shapes
+  for(const sh of S.shapes){
+    const key = sh.folder ? 'F:'+sh.folder : 'S:'+sh.id;
+    if(!buckets.has(key)){ buckets.set(key,[]); order.push(key); }
+    buckets.get(key).push(sh);
+  }
+  S.shapes = order.flatMap(k=>buckets.get(k));
+}
+function blocks(){
+  // shapes配列を[フォルダブロック|単体shape]の列に分解 (index順=奥→手前)
+  ensureContiguous();
+  const bs=[];
+  for(let i=0;i<S.shapes.length;i++){
+    const f=S.shapes[i].folder||null;
+    if(f){
+      let j=i; while(j<S.shapes.length && (S.shapes[j].folder||null)===f) j++;
+      bs.push({folder:f, start:i, end:j}); i=j-1;
+    }else bs.push({folder:null, start:i, end:i+1});
+  }
+  return bs;
+}
+function moveBlock(bi,dir){ // dir:+1=手前, -1=奥
+  const bs=blocks(); const ti=bi+dir;
+  if(ti<0||ti>=bs.length)return;
+  const a=bs[Math.min(bi,ti)], b=bs[Math.max(bi,ti)];
+  pushHistory();
+  const arr=S.shapes;
+  const segA=arr.slice(a.start,a.end), segB=arr.slice(b.start,b.end);
+  S.shapes=[...arr.slice(0,a.start),...segB,...segA,...arr.slice(b.end)];
+  render();
+}
+function addFolder(name){
+  name=(name||'').trim();
+  if(!name||folderMeta(name))return;
+  S.folders.push({name,collapsed:false,visible:true});
+  renderList();
+}
+function assignToFolder(shId,fname){
+  const sh=S.shapes.find(s=>s.id===shId); if(!sh)return;
+  pushHistory();
+  sh.folder=fname||null;
+  ensureContiguous();
+  render();
+}
+function deleteFolder(fname){
+  if(activeFolder===fname)activeFolder=null;
+  pushHistory();
+  S.shapes.forEach(s=>{if(s.folder===fname)s.folder=null});
+  S.folders=S.folders.filter(f=>f.name!==fname);
+  render();
+}
+
+function toBack(id){
+  const i=S.shapes.findIndex(x=>x.id===id); if(i<0)return;
+  pushHistory();
+  const sh=S.shapes.splice(i,1)[0];
+  if(sh.folder){
+    const j=S.shapes.findIndex(x=>x.folder===sh.folder);
+    S.shapes.splice(j<0?0:j,0,sh); // フォルダ内の一番奥
+  }else{
+    S.shapes.unshift(sh);          // 全体の一番奥
+  }
+  ensureContiguous(); render();
+}
+function toFront(id){
+  const i=S.shapes.findIndex(x=>x.id===id); if(i<0)return;
+  pushHistory();
+  const sh=S.shapes.splice(i,1)[0];
+  if(sh.folder){
+    let j=-1; S.shapes.forEach((x,k)=>{if(x.folder===sh.folder)j=k;});
+    S.shapes.splice(j<0?S.shapes.length:j+1,0,sh); // フォルダ内の一番手前
+  }else{
+    S.shapes.push(sh);             // 全体の一番手前
+  }
+  ensureContiguous(); render();
+}
+function shapeHidden(sh){ const m=sh.folder&&folderMeta(sh.folder); return m? m.visible===false : false; }
+
+function rdp(pts, eps){
+  if(pts.length<3) return pts;
+  const d2line=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy;
+    if(!L)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+    let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L; t=Math.max(0,Math.min(1,t));
+    return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));};
+  let mi=0,md=0;
+  for(let i=1;i<pts.length-1;i++){const d=d2line(pts[i],pts[0],pts.at(-1));if(d>md){md=d;mi=i;}}
+  if(md>eps){const l=rdp(pts.slice(0,mi+1),eps),r=rdp(pts.slice(mi),eps);return l.slice(0,-1).concat(r);}
+  return [pts[0],pts.at(-1)];
+}
+function smoothPathD(pts){ // Catmull-Rom → cubic bezier, closed (legacy fallback)
+  const n=pts.length; if(n<3) return '';
+  let d=`M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=0;i<n;i++){
+    const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6];
+    const c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=` C ${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d+' Z';
+}
+
+/* ===== bezier fitting (Schneider) + corner detection ===== */
+const V={sub:(a,b)=>[a[0]-b[0],a[1]-b[1]],add:(a,b)=>[a[0]+b[0],a[1]+b[1]],
+  scl:(a,s)=>[a[0]*s,a[1]*s],dot:(a,b)=>a[0]*b[0]+a[1]*b[1],
+  len:a=>Math.hypot(a[0],a[1]),
+  norm(a){const l=Math.hypot(a[0],a[1])||1;return[a[0]/l,a[1]/l];}};
+function bezPoint(b,t){const mt=1-t;
+  return[mt*mt*mt*b[0][0]+3*mt*mt*t*b[1][0]+3*mt*t*t*b[2][0]+t*t*t*b[3][0],
+         mt*mt*mt*b[0][1]+3*mt*mt*t*b[1][1]+3*mt*t*t*b[2][1]+t*t*t*b[3][1]];}
+function fitCurve(pts,err){
+  if(pts.length<2)return[];
+  if(pts.length===2){
+    const d=V.len(V.sub(pts[1],pts[0]))/3;
+    const t=V.norm(V.sub(pts[1],pts[0]));
+    return[[pts[0],V.add(pts[0],V.scl(t,d)),V.sub(pts[1],V.scl(t,d)),pts[1]]];}
+  const tHat1=V.norm(V.sub(pts[1],pts[0]));
+  const tHat2=V.norm(V.sub(pts[pts.length-2],pts.at(-1)));
+  return fitCubic(pts,tHat1,tHat2,err);}
+function fitCubic(pts,tHat1,tHat2,err){
+  if(pts.length===2){
+    const d=V.len(V.sub(pts[1],pts[0]))/3;
+    return[[pts[0],V.add(pts[0],V.scl(tHat1,d)),V.add(pts[1],V.scl(tHat2,d)),pts[1]]];}
+  let u=chordParam(pts);
+  let bez=genBezier(pts,u,tHat1,tHat2);
+  let[maxE,splitI]=maxError(pts,bez,u);
+  if(maxE<err)return[bez];
+  if(maxE<err*err){ // reparameterize & retry
+    for(let it=0;it<4;it++){
+      u=reparam(pts,u,bez);
+      bez=genBezier(pts,u,tHat1,tHat2);
+      [maxE,splitI]=maxError(pts,bez,u);
+      if(maxE<err)return[bez];}}
+  // split at max error point
+  const centerT=V.norm(V.sub(pts[splitI-1],pts[splitI+1]||pts[splitI]));
+  const left=fitCubic(pts.slice(0,splitI+1),tHat1,centerT,err);
+  const right=fitCubic(pts.slice(splitI),V.scl(centerT,-1),tHat2,err);
+  return left.concat(right);}
+function chordParam(pts){
+  const u=[0];
+  for(let i=1;i<pts.length;i++)u.push(u[i-1]+V.len(V.sub(pts[i],pts[i-1])));
+  const L=u.at(-1)||1;return u.map(v=>v/L);}
+function genBezier(pts,u,tHat1,tHat2){
+  const n=pts.length;
+  let c00=0,c01=0,c11=0,x0=0,x1=0;
+  const first=pts[0],last=pts.at(-1);
+  for(let i=0;i<n;i++){
+    const t=u[i],mt=1-t;
+    const b0=mt*mt*mt,b1=3*mt*mt*t,b2=3*mt*t*t,b3=t*t*t;
+    const a0=V.scl(tHat1,b1),a1=V.scl(tHat2,b2);
+    c00+=V.dot(a0,a0);c01+=V.dot(a0,a1);c11+=V.dot(a1,a1);
+    const tmp=V.sub(pts[i],V.add(V.scl(first,b0+b1),V.scl(last,b2+b3)));
+    x0+=V.dot(a0,tmp);x1+=V.dot(a1,tmp);}
+  const det=c00*c11-c01*c01;
+  let a1=det?(x0*c11-x1*c01)/det:0, a2=det?(c00*x1-c01*x0)/det:0;
+  const segL=V.len(V.sub(last,first)),eps=1e-6*segL;
+  if(a1<eps||a2<eps||a1>segL*3||a2>segL*3){a1=a2=segL/3;} // degenerate → Wu-Barsky
+  return[first,V.add(first,V.scl(tHat1,a1)),V.add(last,V.scl(tHat2,a2)),last];}
+function maxError(pts,bez,u){
+  let maxE=0,si=(pts.length/2)|0;
+  for(let i=1;i<pts.length-1;i++){
+    const p=bezPoint(bez,u[i]);
+    const e=(p[0]-pts[i][0])**2+(p[1]-pts[i][1])**2;
+    if(e>maxE){maxE=e;si=i;}}
+  return[Math.sqrt(maxE),si];}
+function reparam(pts,u,bez){
+  return u.map((t,i)=>{
+    const q=bezPoint(bez,t);
+    const d=V.sub(q,pts[i]);
+    // derivatives
+    const q1=[3*((bez[1][0]-bez[0][0])*(1-t)*(1-t)+2*(bez[2][0]-bez[1][0])*(1-t)*t+(bez[3][0]-bez[2][0])*t*t)*1,
+              3*((bez[1][1]-bez[0][1])*(1-t)*(1-t)+2*(bez[2][1]-bez[1][1])*(1-t)*t+(bez[3][1]-bez[2][1])*t*t)];
+    const q2=[6*((bez[2][0]-2*bez[1][0]+bez[0][0])*(1-t)+(bez[3][0]-2*bez[2][0]+bez[1][0])*t),
+              6*((bez[2][1]-2*bez[1][1]+bez[0][1])*(1-t)+(bez[3][1]-2*bez[2][1]+bez[1][1])*t)];
+    const num=V.dot(d,q1),den=V.dot(q1,q1)+V.dot(d,q2);
+    return Math.abs(den)<1e-12?t:Math.max(0,Math.min(1,t-num/den));});}
+function detectCorners(pts,angDeg){ // closed polyline → corner index array (sorted)
+  const n=pts.length,out=[];
+  const lookPx=6; // look this far along the path each way
+  for(let i=0;i<n;i++){
+    let a=i,acc=0;
+    while(acc<lookPx){const j=(a-1+n)%n;acc+=V.len(V.sub(pts[a],pts[j]));a=j;if(a===i)break;}
+    let b=i;acc=0;
+    while(acc<lookPx){const j=(b+1)%n;acc+=V.len(V.sub(pts[b],pts[j]));b=j;if(b===i)break;}
+    const v1=V.norm(V.sub(pts[i],pts[a])),v2=V.norm(V.sub(pts[b],pts[i]));
+    const turn=Math.acos(Math.max(-1,Math.min(1,V.dot(v1,v2))))*180/Math.PI;
+    if(turn>angDeg)out.push(i);}
+  // merge adjacent corner runs → keep sharpest-ish (middle)
+  const merged=[];
+  for(let i=0;i<out.length;i++){
+    let j=i;
+    while(j+1<out.length&&out[j+1]-out[j]<=2)j++;
+    merged.push(out[(i+j)>>1]);i=j;}
+  return merged;}
+function buildCurves(rawPts,cornerDeg,errPx){ // → {bez:[cubic..], pts:densePolygon}
+  let pts=rawPts;
+  // dedupe
+  pts=pts.filter((p,i)=>i===0||V.len(V.sub(p,pts[i-1]))>0.3);
+  if(pts.length<3)return null;
+  let corners=detectCorners(pts,cornerDeg);
+  if(!corners.length)corners=[0];
+  const bez=[];
+  for(let k=0;k<corners.length;k++){
+    const a=corners[k],b=corners[(k+1)%corners.length];
+    const seg=[];
+    let i=a;
+    while(true){seg.push(pts[i]);if(i===b&&seg.length>1)break;i=(i+1)%pts.length;
+      if(seg.length>pts.length+1)break;}
+    if(seg.length>=2)bez.push(...fitCurve(seg,errPx));}
+  if(!bez.length)return null;
+  // safety: clamp any handle longer than 1.5x chord (kills residual spikes)
+  for(const b of bez){
+    const chord=V.len(V.sub(b[3],b[0]))||1;
+    for(const hi of[1,2]){
+      const anchor=hi===1?b[0]:b[3];
+      const h=V.sub(b[hi],anchor),hl=V.len(h);
+      if(hl>chord*1.5)b[hi]=V.add(anchor,V.scl(h,chord*1.5/hl));}}
+  // dense polygon from curves (for fill math / hit tests)
+  const dense=[];
+  for(const b of bez){
+    const L=V.len(V.sub(b[3],b[0]))+V.len(V.sub(b[1],b[0]))+V.len(V.sub(b[2],b[1]))+V.len(V.sub(b[3],b[2]));
+    const n=Math.max(4,Math.min(48,Math.round(L/2.5)));
+    for(let i=0;i<n;i++)dense.push(bezPoint(b,i/n));}
+  return{bez,pts:dense};}
+function bezPathD(bez){
+  if(!bez||!bez.length)return'';
+  const f=v=>v.toFixed(1);
+  let d=`M ${f(bez[0][0][0])} ${f(bez[0][0][1])}`;
+  for(const b of bez)d+=` C ${f(b[1][0])} ${f(b[1][1])} ${f(b[2][0])} ${f(b[2][1])} ${f(b[3][0])} ${f(b[3][1])}`;
+  return d+' Z';}
+function shapePathD(sh){return sh.bez?bezPathD(sh.bez):smoothPathD(sh.pts);}
+function bbox(pts){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[p,q]of pts){x0=Math.min(x0,p);y0=Math.min(y0,q);x1=Math.max(x1,p);y1=Math.max(y1,q);}return{x0,y0,x1,y1,cx:(x0+x1)/2,cy:(y0+y1)/2,w:x1-x0,h:y1-y0};}
+function inPoly(pt,pts){let inside=false;const[x,y]=pt;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const[xi,yi]=pts[i],[xj,yj]=pts[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}
+  return inside;}
+
+/* ============ fill generators (preview: full lines, clipped by clipPath) ============ */
+function hatchLines(shape, angOffset=0){
+  const f=shape.fill, b=bbox(shape.pts);
+  const ang=(f.angle+angOffset)*Math.PI/180;
+  const ux=Math.cos(ang),uy=Math.sin(ang);      // line direction
+  const nx=-uy,ny=ux;                            // normal
+  const R=Math.hypot(b.w,b.h)/2+f.gap;
+  const r=rnd(f.seed);
+  const lines=[];
+  for(let o=-R;o<=R;o+=f.gap){
+    const jx=(r()-.5)*f.jitter, jy=(r()-.5)*f.jitter;
+    const cx=b.cx+nx*o+jx, cy=b.cy+ny*o+jy;
+    lines.push([[cx-ux*R,cy-uy*R],[cx+ux*R,cy+uy*R]]);
+  }
+  return lines;
+}
+function previewFillD(shape){
+  const f=shape.fill;
+  if(f.type==='none') return '';
+  if(f.type==='hatch'||f.type==='cross'){
+    let ls=hatchLines(shape);
+    if(f.type==='cross') ls=ls.concat(hatchLines(shape,90));
+    return ls.map(([a,b])=>`M ${a[0].toFixed(1)} ${a[1].toFixed(1)} L ${b[0].toFixed(1)} ${b[1].toFixed(1)}`).join(' ');
+  }
+  if(f.type==='zigzag'){
+    const ls=hatchLines(shape);
+    let d='';
+    ls.forEach(([a,b],i)=>{ const s=i%2?[b,a]:[a,b];
+      d+=(i===0?`M ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`:` L ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`)+` L ${s[1][0].toFixed(1)} ${s[1][1].toFixed(1)}`;});
+    return d;
+  }
+  if(f.type==='spiral'){
+    const b=bbox(shape.pts), R=Math.hypot(b.w,b.h)/2+f.gap;
+    const bStep=f.gap/(2*Math.PI); const r=rnd(f.seed);
+    let d='',first=true;
+    for(let th=0;;th+=0.22){
+      const rad=bStep*th; if(rad>R)break;
+      const j=(r()-.5)*f.jitter;
+      const x=b.cx+(rad+j)*Math.cos(th), y=b.cy+(rad+j)*Math.sin(th);
+      d+=(first?`M ${x.toFixed(1)} ${y.toFixed(1)}`:` L ${x.toFixed(1)} ${y.toFixed(1)}`); first=false;
+    }
+    return d;
+  }
+  return '';
+}
+
+/* ============ materialization (export only) ============ */
+function segInPoly(a,b,pts){ // clip segment to polygon → array of [p,q]
+  // collect intersection params with all edges
+  const ts=[0,1];
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const[x1,y1]=pts[j],[x2,y2]=pts[i];
+    const d1x=b[0]-a[0],d1y=b[1]-a[1],d2x=x2-x1,d2y=y2-y1;
+    const den=d1x*d2y-d1y*d2x; if(Math.abs(den)<1e-9)continue;
+    const t=((x1-a[0])*d2y-(y1-a[1])*d2x)/den;
+    const u=((x1-a[0])*d1y-(y1-a[1])*d1x)/den;
+    if(t>0&&t<1&&u>=0&&u<=1)ts.push(t);
+  }
+  ts.sort((p,q)=>p-q);
+  const out=[];
+  for(let i=0;i<ts.length-1;i++){
+    const tm=(ts[i]+ts[i+1])/2;
+    const m=[a[0]+(b[0]-a[0])*tm,a[1]+(b[1]-a[1])*tm];
+    if(inPoly(m,pts)){
+      out.push([[a[0]+(b[0]-a[0])*ts[i],a[1]+(b[1]-a[1])*ts[i]],
+                [a[0]+(b[0]-a[0])*ts[i+1],a[1]+(b[1]-a[1])*ts[i+1]]]);
+    }
+  }
+  return out;
+}
+function materializeFill(shape){
+  const f=shape.fill;
+  if(f.type==='none') return '';
+  const P=shape.pts;
+  const fmt=p=>`${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+  if(f.type==='hatch'||f.type==='cross'){
+    let ls=hatchLines(shape); if(f.type==='cross')ls=ls.concat(hatchLines(shape,90));
+    const segs=ls.flatMap(([a,b])=>segInPoly(a,b,P)).filter(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])>1.5);
+    return segs.map(([a,b])=>`M ${fmt(a)} L ${fmt(b)}`).join(' ');
+  }
+  if(f.type==='zigzag'){
+    const ls=hatchLines(shape);
+    const rows=ls.map(([a,b])=>segInPoly(a,b,P)).map(r=>r.filter(([a,b])=>Math.hypot(b[0]-a[0],b[1]-a[1])>1.5));
+    let d='',pen=null;
+    rows.forEach((row,i)=>{
+      if(row.length===1){
+        let[a,b]=row[0]; if(i%2)[a,b]=[b,a];
+        if(pen){ const mid=[(pen[0]+a[0])/2,(pen[1]+a[1])/2];
+          d+= inPoly(mid,P) ? ` L ${fmt(a)}` : ` M ${fmt(a)}`; }
+        else d+=`M ${fmt(a)}`;
+        d+=` L ${fmt(b)}`; pen=b;
+      }else{ // concave split: emit as separate segments
+        row.forEach(([a,b])=>{d+=` M ${fmt(a)} L ${fmt(b)}`;}); pen=null;
+      }
+    });
+    return d.trim();
+  }
+  if(f.type==='spiral'){
+    const b=bbox(P),R=Math.hypot(b.w,b.h)/2+f.gap;
+    const bStep=f.gap/(2*Math.PI);const r=rnd(f.seed);
+    const samples=[];
+    for(let th=0;;th+=0.18){const rad=bStep*th;if(rad>R)break;
+      const j=(r()-.5)*f.jitter;
+      samples.push([b.cx+(rad+j)*Math.cos(th),b.cy+(rad+j)*Math.sin(th)]);}
+    let d='',run=false;
+    for(const p of samples){
+      if(inPoly(p,P)){ d+=(run?` L`:` M`)+` ${fmt(p)}`; run=true; }
+      else run=false;
+    }
+    return d.trim();
+  }
+  return '';
+}
+
+/* ============ render ============ */
+function render(){
+  const W=board.clientWidth,H=board.clientHeight;
+  board.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const{x:vx,y:vy,z}=S.view;
+  let defs='',body='';
+  for(const sh of S.shapes){
+    if(shapeHidden(sh))continue; // 非表示フォルダ
+    const d=shapePathD(sh);
+    const fd=sh.fill.type==='solid'?'':previewFillD(sh);
+    const selMark = sh.id===S.sel ? `stroke-dasharray="none"` : '';
+    if(sh.fill.type==='solid'){
+      body+=`<path d="${d}" fill="${sh.fill.color}" stroke="none" pointer-events="none"/>`;
+    }
+    if(fd){
+      defs+=`<clipPath id="clip${sh.id}"><path d="${d}"/></clipPath>`;
+      body+=`<path d="${fd}" clip-path="url(#clip${sh.id})" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round" pointer-events="none"/>`;
+    }
+    body+=`<path d="${d}" fill="rgba(255,255,255,0.01)" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" data-id="${sh.id}" class="shp" ${selMark}/>`;
+    if(sh.id===S.sel){
+      body+=`<path d="${d}" fill="none" stroke="var(--kin)" stroke-width="${1/z}" stroke-dasharray="${4/z} ${4/z}" pointer-events="none"/>`;
+    }
+    if(sh.rig.pivot){
+      const[px,py]=sh.rig.pivot, c=sh.id===S.sel?'#d9b56a':'#5aa8c4', r=5/z;
+      body+=`<g pointer-events="none" stroke-width="${1.5/z}"><circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="${c}"/><line x1="${px-r*1.8}" y1="${py}" x2="${px+r*1.8}" y2="${py}" stroke="${c}"/><line x1="${px}" y1="${py-r*1.8}" x2="${px}" y2="${py+r*1.8}" stroke="${c}"/></g>`;
+    }
+  }
+  // artboard: grid + frame + label
+  let art=`<rect x="0" y="0" width="${S.art.w}" height="${S.art.h}" fill="#ffffff"/>`;
+  const gstep=S.art.w>=2000?256:128;
+  for(let gx=gstep;gx<S.art.w;gx+=gstep)art+=`<line x1="${gx}" y1="0" x2="${gx}" y2="${S.art.h}" stroke="#e9e6df" stroke-width="${1/z}"/>`;
+  for(let gy=gstep;gy<S.art.h;gy+=gstep)art+=`<line x1="0" y1="${gy}" x2="${S.art.w}" y2="${gy}" stroke="#e9e6df" stroke-width="${1/z}"/>`;
+  art+=`<rect x="0" y="0" width="${S.art.w}" height="${S.art.h}" fill="none" stroke="var(--kin)" stroke-width="${1.5/z}" opacity=".55"/>`;
+  art+=`<text x="0" y="${-8/z}" fill="var(--dim)" font-size="${12/z}" font-family="var(--mono)">${S.art.w}×${S.art.h}</text>`;
+    if(mirrorOn){art+=`<line x1="${S.art.w/2}" y1="0" x2="${S.art.w/2}" y2="${S.art.h}" stroke="#5cc8ff" stroke-width="${1/z}" stroke-dasharray="${6/z} ${5/z}" opacity=".7"/>`;}
+  board.innerHTML=`<g transform="translate(${vx} ${vy}) scale(${z})">${art}<defs>${defs}</defs>${body}<path id="live" fill="none" stroke="#c0392b" stroke-width="${2.5/z}" stroke-linecap="round"/><path id="liveM" fill="none" stroke="#5b8bd9" stroke-width="${2.5/z}" stroke-linecap="round" opacity=".75"/></g>`;
+  $('zPct').textContent=Math.round(z*100)+'%';
+  renderList(); renderPanel(); renderStats();
+}
+function renderList(){
+  const el=$('shapelist');
+  const selSh=S.shapes.find(s=>s.id===S.sel);
+  const fbar='';
+  if(!S.shapes.length && !S.folders.length){el.innerHTML=fbar+'<div class="empty">まだパーツがありません。キャンバスに一筆書きしてみてください。</div>';return;}
+  const shapeRow=(sh,inFolder)=>`
+    <div class="shape-item ${sh.id===S.sel?'sel':''}" data-id="${sh.id}" style="${inFolder?'padding-left:26px':''}">
+      <span class="sw" style="background:${sh.fill.type==='none'?'transparent':sh.fill.color}"></span>
+      <span class="nm" title="ダブルクリックで名前変更">${sh.rig.name||('part_'+sh.id)}</span>
+      ${sh.rig.parent?`<span style="font-size:9px;color:var(--dim)">›${sh.rig.parent}</span>`:''}
+      ${sh.rig.pivot?'<span class="pv">⊕</span>':''}
+      ${inFolder?`<button class="mv" data-out="${sh.id}" title="フォルダから出す">⇱</button>`:''}
+      <button class="mv" data-fr="${sh.id}" title="手前へ">▲</button>
+      <button class="mv" data-bk="${sh.id}" title="奥へ">▼</button>
+      <button class="mv" data-top="${sh.id}" title="一番上(最前面)へ">⇈</button>
+      <button class="mv" data-btm="${sh.id}" title="一番下(最背面)へ">⇊</button>
+      <button class="del" data-del="${sh.id}">✕</button>
+    </div>`;
+  // blocks(手前=配列末尾)を上から表示するため反転
+  const bs=blocks().reverse();
+  let html=fbar;
+  const shownFolders=new Set();
+  bs.forEach((b,ri)=>{
+    const bi=bs.length-1-ri; // 元のblocks index
+    if(b.folder){
+      shownFolders.add(b.folder);
+      const m=folderMeta(b.folder)||{collapsed:false,visible:true};
+      const members=S.shapes.slice(b.start,b.end);
+      const act=b.folder===activeFolder;
+      html+=`<div class="folder-row ${act?'factive':''}" data-fname="${b.folder}" title="クリックで描画先に指定">
+        <span class="mv" data-fcol="${b.folder}" style="width:12px">${m.collapsed?'▸':'▾'}</span>
+        <span class="mv" data-fvis="${b.folder}" title="表示/非表示" style="color:${m.visible===false?'var(--dim)':'var(--kin)'}">${m.visible===false?'◌':'●'}</span>
+        <span class="fnm">📁 ${b.folder}</span><span class="fct">${members.length}</span>
+        ${selSh&&selSh.folder!==b.folder?`<button class="mv" data-fassign="${b.folder}" title="選択パーツをここへ">⤓</button>`:''}
+        <button class="mv" data-fmv-fr="${bi}" title="フォルダごと手前へ">▲</button>
+        <button class="mv" data-fmv-bk="${bi}" title="フォルダごと奥へ">▼</button>
+        <button class="del" data-fdel="${b.folder}" title="フォルダ解散">✕</button>
+      </div>`;
+      if(!m.collapsed) html+=members.slice().reverse().map(sh=>shapeRow(sh,true)).join('');
+    }else{
+      html+=shapeRow(S.shapes[b.start],false);
+    }
+  });
+  // 空フォルダも表示
+  S.folders.filter(f=>!shownFolders.has(f.name)).forEach(f=>{
+    html+=`<div class="folder-row ${f.name===activeFolder?'factive':''}" data-fname="${f.name}" style="opacity:.85" title="クリックで描画先に指定">
+      <span style="width:12px"></span>
+      <span class="mv" data-fvis="${f.name}" style="color:${f.visible===false?'var(--dim)':'var(--kin)'}">${f.visible===false?'◌':'●'}</span>
+      <span class="fnm">📁 ${f.name}</span><span class="fct">0</span>
+      ${selSh?`<button class="mv" data-fassign="${f.name}" title="選択パーツをここへ">⤓</button>`:''}
+      <button class="del" data-fdel="${f.name}">✕</button>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+function renderPanel(){
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  $('fillTarget').textContent = sh ? `→ ${sh.rig.name||'part_'+sh.id}` : '(新規描画に適用)';
+  document.querySelectorAll('.filltypes button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.ft === (sh?sh.fill.type:defaults.fill.type));
+  });
+  const f = sh?sh.fill:defaults.fill;
+  $('rGap').value=f.gap; $('vGap').textContent=f.gap;
+  $('rAng').value=f.angle; $('vAng').textContent=f.angle;
+  $('rFw').value=f.width; $('vFw').textContent=f.width;
+  $('rJit').value=f.jitter; $('vJit').textContent=f.jitter;
+  $('cFill').value=f.color;
+  $('iName').value=sh?sh.rig.name:'';
+  $('iParent').value=sh?sh.rig.parent:'';
+  $('pvInfo').textContent = sh&&sh.rig.pivot ? `(${sh.rig.pivot[0].toFixed(0)}, ${sh.rig.pivot[1].toFixed(0)})` : '未設定 — ⊕ツールでクリック';
+}
+function renderStats(){
+  let a=0;S.shapes.forEach(s=>a+=s.pts.length);
+  $('stAnchors').textContent=`anchors: ${a}`;
+  $('stShapes').textContent=`parts: ${S.shapes.length}`;
+}
+
+/* ============ defaults & panel binding ============ */
+const defaults={ outline:{color:'#3a3330',width:3},
+  fill:{type:'solid',gap:9,angle:35,width:2,jitter:2,color:'#e05a3a',seed:1234} };
+
+function curFill(){ const sh=S.shapes.find(s=>s.id===S.sel); return sh?sh.fill:defaults.fill; }
+function onFillChange(mut){
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  if(sh){pushHistory(); mut(sh.fill); render();}
+  else {mut(defaults.fill); renderPanel();}
+}
+[['rGap','gap',v=>+v],['rAng','angle',v=>+v],['rFw','width',v=>+v],['rJit','jitter',v=>+v]].forEach(([id,key,cv])=>{
+  $(id).addEventListener('input',e=>onFillChange(f=>f[key]=cv(e.target.value)));
+});
+$('cFill').addEventListener('input',e=>onFillChange(f=>f.color=e.target.value));
+$('bSeed').addEventListener('click',()=>onFillChange(f=>f.seed=(Math.random()*1e9)|0));
+document.querySelectorAll('.filltypes button').forEach(b=>{
+  b.addEventListener('click',()=>onFillChange(f=>f.type=b.dataset.ft));
+});
+$('rStab').addEventListener('input',e=>$('vStab').textContent=e.target.value);
+$('rCorn').addEventListener('input',e=>$('vCorn').textContent=e.target.value+'°');
+$('rErr').addEventListener('input',e=>$('vErr').textContent=(e.target.value/10).toFixed(1));
+$('rSimp').addEventListener('input',e=>$('vSimp').textContent=(e.target.value/10).toFixed(1));
+$('rOutW').addEventListener('input',e=>{$('vOutW').textContent=e.target.value;
+  const sh=S.shapes.find(s=>s.id===S.sel); if(sh){sh.outline.width=+e.target.value;render();} else defaults.outline.width=+e.target.value;});
+$('cOutline').addEventListener('input',e=>{
+  const sh=S.shapes.find(s=>s.id===S.sel); if(sh){sh.outline.color=e.target.value;render();} else defaults.outline.color=e.target.value;});
+$('iName').addEventListener('change',e=>{const sh=S.shapes.find(s=>s.id===S.sel);if(sh){sh.rig.name=e.target.value.trim();renderList();}});
+$('iParent').addEventListener('change',e=>{const sh=S.shapes.find(s=>s.id===S.sel);if(sh){sh.rig.parent=e.target.value.trim();}});
+
+/* rig template: role → name + parent + pivot hint */
+const ROLE_PARENT={body:'',head:'body',face:'head',
+  eyeL:'face',eyeR:'face',browL:'face',browR:'face',mouth:'face',nose:'face',
+  hairF:'head',hairB:'head',hairSideL:'head',hairSideR:'head',earL:'head',earR:'head',
+  armL:'body',armR:'body',handL:'armL',handR:'armR',legL:'body',legR:'body',
+  skirt:'body',tail:'body',acc:'head'};
+const ROLE_PIVOT={ // where the joint usually is, relative to bbox (x,y in 0..1)
+  head:[.5,.95],face:[.5,.5],hairF:[.5,.08],hairB:[.5,.06],
+  hairSideL:[.7,.08],hairSideR:[.3,.08],earL:[.5,.95],earR:[.5,.95],
+  armL:[.85,.1],armR:[.15,.1],handL:[.5,.05],handR:[.5,.05],
+  legL:[.5,.05],legR:[.5,.05],skirt:[.5,.05],tail:[.15,.15],acc:[.5,.9]};
+$('selRole').addEventListener('change',e=>{
+  const role=e.target.value;if(!role)return;
+  const sh=S.shapes.find(s=>s.id===S.sel);
+  if(!sh){e.target.value='';return;}
+  pushHistory();
+  // auto-number if the role name is taken
+  let name=role,n=2;
+  while(S.shapes.some(s=>s!==sh&&s.rig.name===name))name=role+'_'+String(n++).padStart(2,'0');
+  sh.rig.name=name;
+  sh.rig.parent=ROLE_PARENT[role]??'';
+  if(!sh.rig.pivot&&ROLE_PIVOT[role]){
+    const b=bbox(sh.pts),[fx,fy]=ROLE_PIVOT[role];
+    sh.rig.pivot=[b.x0+b.w*fx,b.y0+b.h*fy];}
+  e.target.value='';
+  render();});
+
+/* ============ tools ============ */
+function setTool(t){S.tool=t;
+  ['tPen','tSel','tPivot'].forEach(id=>$(id).classList.toggle('on',id==='t'+t[0].toUpperCase()+t.slice(1)));
+  board.classList.toggle('pivotmode',t==='pivot');
+  updateHint(t);
+}
+function updateHint(t){
+  t=t||S.tool;
+  const base = t==='pen' ? '✒ ドラッグで一筆書き → 離すと自動で閉じて塗りが生成されます'
+    : t==='sel' ? '➤ パーツをクリックして選択 / 右パネルで塗り・リグ情報を編集'
+    : '⊕ 選択中パーツのピボット位置をクリックで設定(肩・生え際・結び目など接続点に)';
+  const fld = activeFolder ? ` 〔描画先: 📁${activeFolder}〕` : '';
+  $('hint').textContent = base + (t==='pen'?fld:'');
+}
+$('tPen').onclick=()=>setTool('pen');
+$('tSel').onclick=()=>setTool('sel');
+$('tPivot').onclick=()=>setTool('pivot');
+
+/* ============ drawing ============ */
+let drawing=false, raw=[], smoothPt=null;
+function boardXY(e){const r=board.getBoundingClientRect();
+  return[(e.clientX-r.left-S.view.x)/S.view.z,(e.clientY-r.top-S.view.y)/S.view.z];}
+function fitView(){
+  const W=board.clientWidth,H=board.clientHeight;
+  if(!W||!H)return;
+  const z=Math.min((W-16)/S.art.w,(H-16)/S.art.h);
+  S.view={z,x:(W-S.art.w*z)/2,y:(H-S.art.h*z)/2};
+  render();}
+function zoomAt(cx,cy,factor){
+  const z2=Math.max(0.05,Math.min(16,S.view.z*factor));
+  S.view.x=cx-(cx-S.view.x)*z2/S.view.z;
+  S.view.y=cy-(cy-S.view.y)*z2/S.view.z;
+  S.view.z=z2;render();}
+board.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=board.getBoundingClientRect();
+  zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:1/1.12);
+},{passive:false});
+$('zIn').onclick=()=>zoomAt(board.clientWidth/2,board.clientHeight/2,1.25);
+$('zOut').onclick=()=>zoomAt(board.clientWidth/2,board.clientHeight/2,1/1.25);
+$('zFit').onclick=fitView;
+$('selArt').addEventListener('change',e=>{
+  const[w,h]=e.target.value.split(',').map(Number);
+  S.art={w,h};fitView();});
+let spaceDown=false,panning=false,panStart=null;
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat){spaceDown=true;board.style.cursor='grab';}});
+document.addEventListener('keyup',e=>{if(e.code==='Space'){spaceDown=false;board.style.cursor='';}});
+
+board.addEventListener('pointerdown',e=>{
+  if(spaceDown||e.button===1){
+    panning=true;panStart={mx:e.clientX,my:e.clientY,vx:S.view.x,vy:S.view.y};
+    board.style.cursor='grabbing';board.setPointerCapture(e.pointerId);
+    e.preventDefault();return;
+  }
+  const p=boardXY(e);
+  if(S.tool==='pivot'){
+    const sh=S.shapes.find(s=>s.id===S.sel);
+    if(sh){pushHistory();sh.rig.pivot=p;render();}
+    return;
+  }
+  if(S.tool==='sel'){
+    const t=e.target.closest?.('.shp')||e.target;
+    const id=+ (t.dataset?.id||0);
+    S.sel=id||null; render(); return;
+  }
+  drawing=true; raw=[p]; smoothPt=p.slice();
+  board.setPointerCapture(e.pointerId);
+});
+board.addEventListener('pointermove',e=>{
+  if(panning){
+    S.view.x=panStart.vx+e.clientX-panStart.mx;
+    S.view.y=panStart.vy+e.clientY-panStart.my;
+    render();return;
+  }
+  if(!drawing)return;
+  const p=boardXY(e);
+  const v=$('rStab').value/100;
+  const k=Math.pow(1-v*0.98, 1.6);   // stabilizer: 高値ほど急激に強く
+  smoothPt=[smoothPt[0]+(p[0]-smoothPt[0])*k, smoothPt[1]+(p[1]-smoothPt[1])*k];
+  const last=raw.at(-1);
+  if(Math.hypot(smoothPt[0]-last[0],smoothPt[1]-last[1])>1.2) raw.push(smoothPt.slice());
+  const live=$('live');
+  const dStr='M '+raw.map(q=>`${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' L ');
+  if(live) live.setAttribute('d',dStr);
+  const liveM=$('liveM');
+  if(liveM) liveM.setAttribute('d', mirrorOn ? 'M '+raw.map(q=>`${(S.art.w-q[0]).toFixed(1)} ${q[1].toFixed(1)}`).join(' L ') : '');
+});
+board.addEventListener('pointerup',()=>{
+  if(panning){panning=false;board.style.cursor=spaceDown?'grab':'';return;}
+  if(!drawing)return; drawing=false;
+  if(raw.length<8){render();return;}
+  // 確定時の追い抜きスムージング(補正値に応じて0〜4パス)
+  {
+    const passes=Math.round(($('rStab').value/100)*4);
+    for(let p=0;p<passes;p++){
+      for(let i=1;i<raw.length-1;i++){
+        raw[i]=[(raw[i-1][0]+2*raw[i][0]+raw[i+1][0])/4,(raw[i-1][1]+2*raw[i][1]+raw[i+1][1])/4];
+      }
+    }
+  }
+  const eps=$('rSimp').value/10;
+  let pts=rdp(raw,Math.max(0.4,eps));
+  if(pts.length<3){render();return;}
+  // drop duplicate closing point if start≈end
+  if(Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<8) pts.pop();
+  // ---- 対称モード: 軸に触れていたら左右を繋げて1つの絵に ----
+  let mirrored=false, merged=false;
+  if(mirrorOn){
+    const AX=S.art.w/2, TOL=14;
+    const nearS=Math.abs(pts[0][0]-AX)<TOL, nearE=Math.abs(pts.at(-1)[0]-AX)<TOL;
+    const crosses=pts.some((p,i)=>i>0&&(pts[i-1][0]-AX)*(p[0]-AX)<0);
+    if(nearS||nearE||crosses){
+      merged=true;
+      // 軸付近の端点は軸にスナップ(継ぎ目の段差防止)
+      if(nearS)pts[0][0]=AX;
+      if(nearE)pts.at(-1)[0]=AX;
+      const mir=pts.map(([x,y])=>[2*AX-x,y]);
+      if(nearE||(!nearS&&!nearE)){        // 継ぎ目=終点側
+        pts=pts.concat(mir.slice(0,-1).reverse());
+      }else{                               // 継ぎ目=始点側
+        pts=pts.slice().reverse().concat(mir.slice(1));
+      }
+    }else{
+      mirrored=true; // 軸に触れていない → 従来どおり左右2パーツ
+    }
+  }
+  const fitted=buildCurves(pts,+$('rCorn').value,$('rErr').value/10);
+  pushHistory();
+  const sh={id:uid++,
+    pts:fitted?fitted.pts:pts,
+    bez:fitted?fitted.bez:null,
+    outline:{...defaults.outline},
+    fill:{...defaults.fill,seed:(Math.random()*1e9)|0},
+    rig:{name:'part_'+(uid-1),parent:'',pivot:null}};
+  consumePendingTpl(sh);
+  if(activeFolder&&folderMeta(activeFolder))sh.folder=activeFolder;
+  S.shapes.push(sh);
+  if(mirrored) S.shapes.push(makeMirrorShape(sh));
+  S.sel=sh.id;
+  if(sh.folder)ensureContiguous();
+  render();
+});
+
+/* shape list interactions */
+$('shapelist').addEventListener('click',e=>{
+  const ds=e.target.dataset||{};
+  if(ds.del){pushHistory();S.shapes=S.shapes.filter(s=>s.id!=+ds.del);if(S.sel==+ds.del)S.sel=null;render();return;}
+  if(ds.fr){const i=S.shapes.findIndex(s=>s.id==+ds.fr);
+    if(i>=0&&i<S.shapes.length-1&&(S.shapes[i].folder||null)===(S.shapes[i+1].folder||null)){
+      pushHistory();[S.shapes[i],S.shapes[i+1]]=[S.shapes[i+1],S.shapes[i]];render();}return;}
+  if(ds.bk){const i=S.shapes.findIndex(s=>s.id==+ds.bk);
+    if(i>0&&(S.shapes[i].folder||null)===(S.shapes[i-1].folder||null)){
+      pushHistory();[S.shapes[i],S.shapes[i-1]]=[S.shapes[i-1],S.shapes[i]];render();}return;}
+  if(ds.out){assignToFolder(+ds.out,null);return;}
+  if(ds.top){toFront(+ds.top);return;}
+  if(ds.btm){toBack(+ds.btm);return;}
+  if(ds.fassign){if(S.sel!=null)assignToFolder(S.sel,ds.fassign);return;}
+  if(ds.fmvFr!==undefined){moveBlock(+ds.fmvFr,+1);return;}
+  if(ds.fmvBk!==undefined){moveBlock(+ds.fmvBk,-1);return;}
+  if(ds.fcol){const m=folderMeta(ds.fcol);if(m){m.collapsed=!m.collapsed;renderList();}return;}
+  if(ds.fvis){const m=folderMeta(ds.fvis);if(m){m.visible=m.visible===false;render();}return;}
+  if(ds.fdel){deleteFolder(ds.fdel);return;}
+  if(e.target.id==='newFolder'||e.target.closest('.fbar'))return;
+  const fr=e.target.closest('.folder-row');
+  if(fr&&fr.dataset.fname){
+    activeFolder = activeFolder===fr.dataset.fname ? null : fr.dataset.fname;
+    renderList(); updateHint(); return;
+  }
+  const it=e.target.closest('.shape-item'); if(it){S.sel=+it.dataset.id;render();}
+});
+$('shapelist').addEventListener('dblclick',e=>{
+  const it=e.target.closest('.shape-item');if(!it||!e.target.classList.contains('nm'))return;
+  const sh=S.shapes.find(s=>s.id==+it.dataset.id);if(!sh)return;
+  const nm=prompt('パーツ名(例: hairF, eyeL)',sh.rig.name);
+  if(nm!==null&&nm.trim()){pushHistory();sh.rig.name=uniqueName(nm.trim());render();}
+});
+
+/* ============ header actions ============ */
+$('bUndo').onclick=undo;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+$('bClear').onclick=()=>{if(!S.shapes.length)return;pushHistory();S.shapes=[];S.sel=null;render();};
+
+$('bSaveJson').onclick=()=>{
+  const data={version:2,tool:'hitofude',art:S.art,shapes:S.shapes,folders:S.folders};
+  dl(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}),'hitofude_project.json');
+};
+$('bLoadJson').onclick=()=>$('fJson').click();
+$('fJson').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    if(!Array.isArray(data.shapes))throw 0;
+    pushHistory(); S.shapes=data.shapes; S.folders=data.folders||[];
+    if(data.art&&data.art.w)S.art=data.art;
+    uid=Math.max(1,...S.shapes.map(s=>s.id+1));
+    S.sel=S.shapes.at(-1)?.id??null;
+    $('selArt').value=`${S.art.w},${S.art.h}`;
+    fitView();
+  }catch{alert('JSONの形式が読み取れませんでした');}
+  e.target.value='';
+});
+
+$('bExport').onclick=()=>{
+  if(!S.shapes.length){alert('書き出すパーツがありません');return;}
+  const W=S.art.w,H=S.art.h;
+  let out=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" shape-rendering="geometricPrecision" stroke-linejoin="round" stroke-linecap="round">\n`;
+  const shapeG=(sh,ind)=>{
+    const sp=' '.repeat(ind);
+    const nm=(sh.rig.name||('part_'+sh.id)).replace(/[^\p{L}\p{N}_\-]/gu,'_');
+    const pivotAttr=sh.rig.pivot?` data-pivot="${sh.rig.pivot[0].toFixed(1)},${sh.rig.pivot[1].toFixed(1)}"`:'';
+    const parentAttr=sh.rig.parent?` data-parent="${sh.rig.parent}"`:'';
+    let o=`${sp}<g id="${nm}"${pivotAttr}${parentAttr}>\n`;
+    const fd=sh.fill.type==='solid'?'':materializeFill(sh);
+    if(sh.fill.type==='solid')
+      o+=`${sp}  <path class="fill" d="${shapePathD(sh)}" fill="${sh.fill.color}" stroke="none"/>\n`;
+    if(fd) o+=`${sp}  <path class="fill" d="${fd}" fill="none" stroke="${sh.fill.color}" stroke-width="${sh.fill.width}" stroke-linecap="round"/>\n`;
+    o+=`${sp}  <path class="outline" d="${shapePathD(sh)}" fill="none" stroke="${sh.outline.color}" stroke-width="${sh.outline.width}" stroke-linejoin="round"/>\n`;
+    o+=`${sp}</g>\n`;
+    return o;
+  };
+  for(const b of blocks()){
+    if(b.folder){
+      const fnm=b.folder.replace(/[^\p{L}\p{N}_\-]/gu,'_');
+      out+=`  <g id="${fnm}" data-folder="${fnm}">\n`;
+      for(let i=b.start;i<b.end;i++)out+=shapeG(S.shapes[i],4);
+      out+=`  </g>\n`;
+    }else{
+      out+=shapeG(S.shapes[b.start],2);
+    }
+  }
+  out+=`</svg>\n`;
+  dl(new Blob([out],{type:'image/svg+xml'}),'hitofude_parts.svg');
+};
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+/* ============ rig template ============ */
+const RIG_TPL=[
+  {n:'body',p:'',j:'体'},{n:'head',p:'body',j:'頭'},{n:'face',p:'head',j:'顔'},{n:'neck',p:'body',j:'首'},
+  {n:'eyeL',p:'face',j:'目L'},{n:'eyeR',p:'face',j:'目R'},{n:'browL',p:'face',j:'眉L'},{n:'browR',p:'face',j:'眉R'},
+  {n:'mouth',p:'face',j:'口'},{n:'nose',p:'face',j:'鼻'},{n:'earL',p:'head',j:'耳L'},{n:'earR',p:'head',j:'耳R'},
+  {n:'hairF',p:'head',j:'前髪'},{n:'hairB',p:'head',j:'後髪'},{n:'hairSideL',p:'head',j:'横髪L'},{n:'hairSideR',p:'head',j:'横髪R'},
+  {n:'armL',p:'body',j:'腕L'},{n:'armR',p:'body',j:'腕R'},{n:'handL',p:'armL',j:'手L'},{n:'handR',p:'armR',j:'手R'},
+  {n:'legL',p:'body',j:'脚L'},{n:'legR',p:'body',j:'脚R'},{n:'tail',p:'body',j:'尻尾'},{n:'acc',p:'head',j:'飾り'}];
+let pendingTpl=null;
+function uniqueName(base){
+  if(!S.shapes.some(s=>s.rig.name===base))return base;
+  let k=2;while(S.shapes.some(s=>s.rig.name===base+'_'+k))k++;
+  return base+'_'+k;}
+function applyTpl(sh,tpl){sh.rig.name=uniqueName(tpl.n);sh.rig.parent=tpl.p;}
+(function buildTplGrid(){
+  const g=$('tplGrid');
+  g.innerHTML=RIG_TPL.map((t,i)=>`<button data-tpl="${i}" title="${t.n} (親:${t.p||'なし'})">${t.j}</button>`).join('');
+  g.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-tpl]');if(!b)return;
+    const tpl=RIG_TPL[+b.dataset.tpl];
+    const sh=S.shapes.find(s=>s.id===S.sel);
+    if(sh){pushHistory();applyTpl(sh,tpl);pendingTpl=null;render();}
+    else{
+      pendingTpl=pendingTpl&&pendingTpl.n===tpl.n?null:tpl; // toggle
+      [...g.children].forEach(c=>c.classList.toggle('pend',pendingTpl&&RIG_TPL[+c.dataset.tpl].n===pendingTpl.n));
+      $('tplState').textContent=pendingTpl?`→ 次: ${pendingTpl.j}`:'';
+    }});
+})();
+function consumePendingTpl(sh){
+  if(!pendingTpl)return;
+  applyTpl(sh,pendingTpl);
+  pendingTpl=null;
+  [...$('tplGrid').children].forEach(c=>c.classList.remove('pend'));
+  $('tplState').textContent='';}
+
+/* ============ SVG import ============ */
+$('bSvgIn').onclick=()=>$('fSvg').click();
+$('fSvg').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{importSvg(await f.text());}catch(err){alert('SVGを読み込めませんでした: '+err.message);}
+  e.target.value='';});
+
+function importSvg(text){
+  const doc=new DOMParser().parseFromString(text,'image/svg+xml');
+  const src=doc.querySelector('svg');
+  if(!src)throw new Error('svg要素がありません');
+  const holder=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  holder.style.cssText='position:absolute;left:-99999px;top:0;width:800px;height:800px';
+  holder.appendChild(document.importNode(src,true));
+  document.body.appendChild(holder);
+  const mounted=holder.querySelector('svg');
+  const rootCTM=mounted.getCTM();
+  // ---- units: direct-child groups (or deeper first-named groups) + loose geometry ----
+  const GEO='path,polygon,polyline,rect,circle,ellipse,line';
+  const units=[];
+  const claimed=new Set();
+  for(const g of mounted.querySelectorAll(':scope > g')){
+    const geoms=[...g.querySelectorAll(GEO)];
+    if(!geoms.length)continue;
+    geoms.forEach(el=>claimed.add(el));
+    units.push({label:g.id||('グループ'+(units.length+1)),geoms,gid:g.id||''});}
+  const loose=[...mounted.querySelectorAll(GEO)].filter(el=>!claimed.has(el));
+  if(loose.length)units.push({label:'(グループ外の図形)',geoms:loose,gid:''});
+  if(!units.length){holder.remove();throw new Error('取り込める図形がありません');}
+  if(units.length===1){doImport(units,mounted,rootCTM,holder);return;}
+  // ---- selection modal ----
+  const modal=document.createElement('div');modal.id='modal';
+  modal.innerHTML=`<div class="box"><h3>SVG読込 — 取り込む部分を選択</h3>
+    <div class="list">${units.map((u,i)=>{
+      const cols=[...new Set(u.geoms.slice(0,24).map(el=>{
+        const f=getComputedStyle(el).fill;return f&&f!=='none'?rgb2hex(f):null;}).filter(Boolean))].slice(0,5);
+      return `<label class="u"><input type="checkbox" data-u="${i}" checked>
+        <span>${u.label}</span>
+        <span class="sws">${cols.map(c=>`<i style="background:${c}"></i>`).join('')}</span>
+        <span class="cnt">${u.geoms.length}図形</span></label>`;}).join('')}</div>
+    <div class="foot">
+      <button id="mAll">全選択</button><button id="mNone">全解除</button>
+      <span style="flex:1"></span>
+      <button id="mCancel">キャンセル</button><button id="mGo" class="on">取り込む</button>
+    </div></div>`;
+  document.body.appendChild(modal);
+  const boxes=()=>[...modal.querySelectorAll('input[data-u]')];
+  modal.querySelector('#mAll').onclick=()=>boxes().forEach(b=>b.checked=true);
+  modal.querySelector('#mNone').onclick=()=>boxes().forEach(b=>b.checked=false);
+  modal.querySelector('#mCancel').onclick=()=>{modal.remove();holder.remove();};
+  modal.querySelector('#mGo').onclick=()=>{
+    const sel=boxes().filter(b=>b.checked).map(b=>units[+b.dataset.u]);
+    modal.remove();
+    if(!sel.length){holder.remove();return;}
+    doImport(sel,mounted,rootCTM,holder);};
+}
+function doImport(units,mounted,rootCTM,holder){
+  const parts=[];
+  for(const u of units){
+    for(const el of u.geoms){
+      if(typeof el.getTotalLength!=='function')continue;
+      let L=0;try{L=el.getTotalLength();}catch{continue;}
+      if(!L||!isFinite(L))continue;
+      let M=null;
+      try{const c=el.getCTM();if(c&&rootCTM)M=rootCTM.inverse().multiply(c);}catch{}
+      const n=Math.max(16,Math.min(600,Math.round(L/2)));
+      const samp=[];
+      for(let i=0;i<=n;i++){
+        let p=el.getPointAtLength(L*Math.min(i/n,0.9999));
+        if(M){const q=new DOMPoint(p.x,p.y).matrixTransform(M);p=q;}
+        samp.push([p.x,p.y]);}
+      const cs=getComputedStyle(el);
+      const fill=cs.fill&&cs.fill!=='none'?rgb2hex(cs.fill):null;
+      const stroke=cs.stroke&&cs.stroke!=='none'?rgb2hex(cs.stroke):null;
+      let g=el.closest('g[id]');
+      const nm=(el.id||u.gid||g?.id||'');
+      // split at subpath jumps: gap much larger than the sampling step
+      const step=L/n, jumpTh=Math.max(step*6,10);
+      const runs=[[samp[0]]];
+      for(let i=1;i<samp.length;i++){
+        const prev=samp[i-1],cur=samp[i];
+        if(Math.hypot(cur[0]-prev[0],cur[1]-prev[1])>jumpTh)runs.push([cur]);
+        else runs.at(-1).push(cur);}
+      for(const run of runs){
+        if(run.length<3)continue;
+        const rl=run.reduce((a,_,i)=>i?a+Math.hypot(run[i][0]-run[i-1][0],run[i][1]-run[i-1][1]):0,0);
+        const closed=fill!==null||Math.hypot(run[0][0]-run.at(-1)[0],run[0][1]-run.at(-1)[1])<Math.max(rl*0.03,6);
+        parts.push({pts:run,fill,stroke,closed,name:nm});}}}
+  holder.remove();
+  if(!parts.length){alert('選択範囲に取り込める図形がありませんでした');return;}
+  // fit all into board with margin
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  parts.forEach(p=>p.pts.forEach(([x,y])=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}));
+  const W=S.art.w,H=S.art.h,m=Math.min(W,H)*0.04;
+  const sc=Math.min((W-2*m)/Math.max(1,x1-x0),(H-2*m)/Math.max(1,y1-y0),1e6);
+  const ox=(W-(x1-x0)*sc)/2,oy=(H-(y1-y0)*sc)/2;
+  pushHistory();
+  for(const p of parts){
+    let pts=p.pts.map(([x,y])=>[ox+(x-x0)*sc,oy+(y-y0)*sc]);
+    if(p.closed&&Math.hypot(pts[0][0]-pts.at(-1)[0],pts[0][1]-pts.at(-1)[1])<8)pts.pop();
+    if(pts.length<3)continue;
+    const fitted=buildCurves(pts,+$('rCorn').value,$('rErr').value/10);
+    if(!fitted)continue;
+    const nsh={id:uid++,pts:fitted.pts,bez:fitted.bez,
+      outline:{color:p.stroke||defaults.outline.color,width:defaults.outline.width},
+      fill:{...defaults.fill,color:p.fill||defaults.fill.color,
+        type:p.fill?'solid':'none',seed:(Math.random()*1e9)|0},
+      rig:{name:p.name?uniqueName(p.name):uniqueName('svg'),parent:pendingTpl?pendingTpl.p:'',pivot:null}};
+    if(pendingTpl)nsh.rig.name=uniqueName(pendingTpl.n);
+    S.shapes.push(nsh);}
+  if(pendingTpl){pendingTpl=null;
+    [...$('tplGrid').children].forEach(c=>c.classList.remove('pend'));
+    $('tplState').textContent='';}
+  S.sel=S.shapes.at(-1)?.id??null;
+  render();}
+function rgb2hex(s){
+  const m=s.match(/rgba?\(([^)]+)\)/);
+  if(!m)return s.startsWith('#')?s:'#888888';
+  const[r,g,b]=m[1].split(',').map(v=>Math.round(parseFloat(v)));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+
+
+/* ============ organizer (パーツ整理パネル) ============ */
+function openOrganizer(){document.getElementById('organizer').classList.add('open');renderOrganizer();}
+function closeOrganizer(){document.getElementById('organizer').classList.remove('open');}
+document.getElementById('organizer').addEventListener('click',e=>{if(e.target.id==='organizer')closeOrganizer();});
+
+// 表示構造: blocks を上=手前 で並べたモデル {folder:name|null, ids:[手前→奥]}
+function orgModel(){
+  return blocks().reverse().map(b=>({
+    folder:b.folder,
+    ids:S.shapes.slice(b.start,b.end).reverse().map(sh=>sh.id)
+  }));
+}
+function applyOrgModel(model){
+  pushHistory();
+  const byId=new Map(S.shapes.map(sh=>[sh.id,sh]));
+  const next=[];
+  // model: 上(手前)→下(奥) → shapes配列は奥→手前なので逆順に構築
+  for(let i=model.length-1;i>=0;i--){
+    const blk=model[i];
+    for(let j=blk.ids.length-1;j>=0;j--){
+      const sh=byId.get(blk.ids[j]); if(!sh)continue;
+      sh.folder=blk.folder||null;
+      next.push(sh);
+    }
+  }
+  S.shapes=next;
+  render(); renderOrganizer();
+}
+let dragData=null; // {kind:'sh'|'fd', id|name, from:{bi,ii}}
+function renderOrganizer(){
+  const el=document.getElementById('orglist');
+  const model=orgModel();
+  // 空フォルダも末尾に
+  const shown=new Set(model.filter(m=>m.folder).map(m=>m.folder));
+  S.folders.forEach(f=>{ if(!shown.has(f.name)) model.push({folder:f.name, ids:[]}); });
+  let html='';
+  const dropzone=(bi,ii)=>`<div class="org-drop" data-bi="${bi}" data-ii="${ii}"></div>`;
+  model.forEach((blk,bi)=>{
+    html+=dropzone(bi,-1);
+    if(blk.folder){
+      const m=folderMeta(blk.folder)||{};
+      html+=`<div class="org-folder" draggable="true" data-fd="${blk.folder}">
+        <span>📁 ${blk.folder}</span><span class="fct">${blk.ids.length}</span>
+        <div style="flex:1"></div>
+        <button data-fvis2="${blk.folder}" style="color:${m.visible===false?'var(--dim)':'var(--kin)'}">${m.visible===false?'◌':'●'}</button>
+        <button data-fdel2="${blk.folder}">✕</button>
+      </div>`;
+      blk.ids.forEach((id,ii)=>{
+        const sh=S.shapes.find(x=>x.id===id);
+        html+=dropzone(bi,ii);
+        html+=orgShapeRow(sh,true);
+      });
+      html+=dropzone(bi,blk.ids.length);
+    }else{
+      html+=orgShapeRow(S.shapes.find(x=>x.id===blk.ids[0]),false);
+    }
+  });
+  html+=dropzone(model.length,-1);
+  el.innerHTML=html||'<div class="empty">パーツがありません</div>';
+  el._model=model;
+  // DnD wiring
+  el.querySelectorAll('[draggable]').forEach(row=>{
+    row.addEventListener('dragstart',e=>{
+      dragData = row.dataset.sh!==undefined ? {kind:'sh',id:+row.dataset.sh} : {kind:'fd',name:row.dataset.fd};
+      e.dataTransfer.effectAllowed='move';
+    });
+  });
+  el.querySelectorAll('.org-drop').forEach(z=>{
+    z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+    z.addEventListener('dragleave',()=>z.classList.remove('over'));
+    z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');orgDrop(+z.dataset.bi,+z.dataset.ii)});
+  });
+  el.querySelectorAll('.org-folder').forEach(f=>{
+    f.addEventListener('dragover',e=>{if(dragData&&dragData.kind==='sh'){e.preventDefault();f.classList.add('dropinto')}});
+    f.addEventListener('dragleave',()=>f.classList.remove('dropinto'));
+    f.addEventListener('drop',e=>{e.preventDefault();f.classList.remove('dropinto');
+      if(dragData&&dragData.kind==='sh')orgDropInto(f.dataset.fd);});
+  });
+  el.onclick=e=>{
+    const ds=e.target.dataset||{};
+    if(ds.fvis2){const m=folderMeta(ds.fvis2);if(m){m.visible=m.visible===false;render();renderOrganizer();}return;}
+    if(ds.fdel2){deleteFolder(ds.fdel2);renderOrganizer();return;}
+    const row=e.target.closest('[data-sh]');
+    if(row){S.sel=+row.dataset.sh;render();renderOrganizer();}
+  };
+}
+function orgShapeRow(sh,child){
+  if(!sh)return'';
+  return `<div class="org-item ${child?'child':''} ${sh.id===S.sel?'sel':''}" draggable="true" data-sh="${sh.id}">
+    <span class="sw" style="background:${sh.fill.type==='none'?'transparent':sh.fill.color}"></span>
+    <span class="nm">${sh.rig.name||('part_'+sh.id)}</span>
+    ${sh.rig.parent?`<span style="font-size:9px;color:var(--dim)">›${sh.rig.parent}</span>`:''}
+    ${sh.rig.pivot?'<span style="color:var(--kin);font-size:10px">⊕</span>':''}
+  </div>`;
+}
+function orgRemoveDragged(model){
+  if(dragData.kind==='sh'){
+    for(const blk of model){
+      const k=blk.ids.indexOf(dragData.id);
+      if(k>=0){blk.ids.splice(k,1);break;}
+    }
+    // 空になった単体ブロック除去
+    return model.filter(b=>b.folder||b.ids.length);
+  }else{
+    const k=model.findIndex(b=>b.folder===dragData.name);
+    const blk=model[k]; model.splice(k,1);
+    return {model,blk};
+  }
+}
+function orgDrop(bi,ii){
+  if(!dragData)return;
+  const el=document.getElementById('orglist');
+  let model=el._model.map(b=>({folder:b.folder,ids:[...b.ids]}));
+  // アンカー: ドロップ位置直後のブロック(削除後もこの前に挿入すれば位置が保たれる)
+  const anchorBlk = el._model[bi] || null;
+  const anchorKey = anchorBlk ? (anchorBlk.folder ? 'F:'+anchorBlk.folder : 'S:'+anchorBlk.ids[0]) : null;
+  const findAnchor = m => {
+    if(anchorKey===null) return m.length;
+    const i=m.findIndex(b=> (b.folder?'F:'+b.folder:'S:'+b.ids[0])===anchorKey );
+    return i<0 ? m.length : i;
+  };
+  if(dragData.kind==='sh'){
+    if(ii>=0 && anchorBlk && anchorBlk.folder){ // フォルダ内の指定位置
+      const fname=anchorBlk.folder;
+      // 同フォルダ内での移動: 削除位置がii以前ならiiを詰める
+      const blk0=model.find(b=>b.folder===fname);
+      const before=blk0?blk0.ids.slice(0,ii).includes(dragData.id):false;
+      model=orgRemoveDragged(model);
+      let blk=model.find(b=>b.folder===fname);
+      if(!blk){blk={folder:fname,ids:[]};model.splice(findAnchor(model),0,blk);}
+      blk.ids.splice(Math.min(before?ii-1:ii, blk.ids.length),0,dragData.id);
+    }else{ // ブロック間 = 単体shapeとして挿入
+      model=orgRemoveDragged(model);
+      model.splice(findAnchor(model),0,{folder:null,ids:[dragData.id]});
+    }
+  }else{
+    const r=orgRemoveDragged(model); model=r.model;
+    model.splice(findAnchor(model),0,r.blk); // フォルダ丸ごと移動
+  }
+  dragData=null;
+  applyOrgModel(model);
+}
+function orgDropInto(fname){
+  if(!dragData||dragData.kind!=='sh')return;
+  const el=document.getElementById('orglist');
+  let model=el._model.map(b=>({folder:b.folder,ids:[...b.ids]}));
+  model=orgRemoveDragged(model);
+  let blk=model.find(b=>b.folder===fname);
+  if(!blk){blk={folder:fname,ids:[]};model.push(blk);}
+  blk.ids.unshift(dragData.id); // フォルダ内の最前面へ
+  dragData=null;
+  applyOrgModel(model);
+}
+
+
+/* ============ palette ============ */
+const PALETTE=[
+ '#000000','#3a3330','#5b4a3f','#8a6f5c','#c69c7b','#f3c9a5','#fbe3cf','#ffffff','#b0b6bd','#6b7280',
+ '#7a1f1f','#c0392b','#e05a3a','#f28c28','#f5c542','#fff176','#d4e157','#7cb342','#2e7d32','#14532d',
+ '#0e7490','#22a7c4','#5cc8ff','#3b82f6','#1e40af','#4c1d95','#7c3aed','#a855f7','#e879ac','#f4a7c3',
+ '#fde2ea','#e6d9c8','#c9b8a0','#9c8468','#6d5a45','#403428','#2a2320','#846a9e','#5e548e','#ffd166'];
+let recentColors=[];
+function pushRecent(c){
+  recentColors=[c,...recentColors.filter(x=>x!==c)].slice(0,10);
+  const el=document.getElementById('recentPal');
+  el.innerHTML=recentColors.map(c=>`<span style="background:${c}" data-rc="${c}" title="${c}"></span>`).join('');
+}
+function buildPal(id,onPick){
+  const el=document.getElementById(id);
+  el.innerHTML=PALETTE.map(c=>`<span style="background:${c}" class="${c==='#ffffff'?'w':''}" data-c="${c}" title="${c}"></span>`).join('');
+  el.addEventListener('click',e=>{const c=e.target.dataset.c;if(c){onPick(c);pushRecent(c);}});
+}
+buildPal('palOutline',c=>{
+  document.getElementById('cOutline').value=c;
+  document.getElementById('cOutline').dispatchEvent(new Event('input'));
+});
+buildPal('palFill',c=>{
+  document.getElementById('cFill').value=c;
+  document.getElementById('cFill').dispatchEvent(new Event('input'));
+});
+document.getElementById('recentPal').addEventListener('click',e=>{
+  const c=e.target.dataset.rc;if(!c)return;
+  // 最近の色は塗り色に適用(選択パーツがあればそのfillへ)
+  document.getElementById('cFill').value=c;
+  document.getElementById('cFill').dispatchEvent(new Event('input'));
+});
+
+
+
+/* ============ symmetry (左右対称) ============ */
+let mirrorOn=false;
+$('tMirror').addEventListener('click',()=>{
+  mirrorOn=!mirrorOn;
+  $('tMirror').classList.toggle('on',mirrorOn);
+  render();
+});
+document.addEventListener('keydown',e=>{
+  if(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  if((e.key==='m'||e.key==='M')&&!e.ctrlKey&&!e.metaKey)$('tMirror').click();
+});
+function mirrorX(x){return S.art.w-x;}
+function mirrorPts(pts){return pts.map(([x,y])=>[mirrorX(x),y]);}
+function mirrorBez(bez){return bez?bez.map(seg=>seg.map(([x,y])=>[mirrorX(x),y])):null;}
+function mirrorName(n){
+  if(/L$/.test(n))return n.replace(/L$/,'R');
+  if(/R$/.test(n))return n.replace(/R$/,'L');
+  if(/_L(\b|_)/.test(n))return n.replace('_L','_R');
+  if(/_R(\b|_)/.test(n))return n.replace('_R','_L');
+  return n+'_mir';
+}
+function makeMirrorShape(sh){
+  const m={id:uid++,
+    pts:mirrorPts(sh.pts),
+    bez:mirrorBez(sh.bez),
+    outline:{...sh.outline},
+    fill:{...sh.fill, angle:(180-sh.fill.angle)%360, seed:(Math.random()*1e9)|0},
+    rig:{name:uniqueName(mirrorName(sh.rig.name)),
+         // 親もL/R反転(eyeL→eyeR)。L/Rが無い親(head等)はそのまま
+         parent:(()=>{const p=sh.rig.parent||'';if(!p)return'';const mp=mirrorName(p);return mp.endsWith('_mir')?p:mp;})(),
+         pivot:sh.rig.pivot?[mirrorX(sh.rig.pivot[0]),sh.rig.pivot[1]]:null},
+    folder:sh.folder||null};
+  return m;
+}
+
+/* ============ drawing QoL shortcuts ============ */
+document.addEventListener('keydown',e=>{
+  if(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  if(e.ctrlKey||e.metaKey)return;
+  const setTool=t=>{const b=document.querySelector(`.tool[data-tool="${t}"]`)||document.getElementById({pen:'tPen',select:'tSel',pivot:'tPivot'}[t]);if(b)b.click();};
+  if(e.key==='b'||e.key==='B'){setTool('pen');}
+  else if(e.key==='v'||e.key==='V'){setTool('select');}
+  else if(e.key==='p'||e.key==='P'){setTool('pivot');}
+  else if(e.key==='['){const r=document.getElementById('rOutW');r.value=Math.max(+r.min,+r.value-1);r.dispatchEvent(new Event('input'));}
+  else if(e.key===']'){const r=document.getElementById('rOutW');r.value=Math.min(+r.max,+r.value+1);r.dispatchEvent(new Event('input'));}
+  else if(e.key==='Delete'||e.key==='Backspace'){
+    if(S.sel!=null){pushHistory();S.shapes=S.shapes.filter(x=>x.id!==S.sel);S.sel=null;render();e.preventDefault();}
+  }
+  else if(e.key==='f'||e.key==='F'){openOrganizer();}
+  else if(e.key==='Tab'){e.preventDefault();document.body.classList.toggle('sidehide');requestAnimationFrame(fitView);}
+});
+
+/* ============ init ============ */
+if(typeof ResizeObserver!=='undefined'){
+  new ResizeObserver(()=>render()).observe(board);
+}else{
+  window.addEventListener('resize',()=>render());
+}
+requestAnimationFrame(fitView);
+</script>
+</body>
+</html>
