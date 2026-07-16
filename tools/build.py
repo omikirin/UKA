@@ -19,22 +19,30 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# ---- 長編『空の狐と地上のウサギ』 ----
+# ---- 長編 ----
 
 NOVEL_WORK = "空の狐と地上のウサギ"
 
-# (章番号, タイトル, mdファイル名)。md が無い章は None。
-CHAPTERS = [
-    (1, "風の音のする国", "chapter01.md"),
-    (2, "数式の花嫁", "chapter02.md"),
-    (3, "仇の名", "chapter03.md"),
-    (4, "式典の銃声", "chapter04.md"),
-    (5, "墜ちた狐", "chapter05.md"),
-    (6, "名前のない客", "chapter06.md"),
-    (7, "二つの露見", "chapter07.md"),
-    (8, "大徴収作戦", "chapter08.md"),
-    (9, "第二射", "chapter09.md"),
-    (10, "同じ高さの空", "chapter10.md"),
+# 各長編: work=作品名, prefix=mdファイル名の接頭辞, chapters=[(章番号, タイトル)]
+# mdファイル名は f"{prefix}chapter{n:02d}.md"
+NOVELS = [
+    {
+        "work": NOVEL_WORK,
+        "prefix": "",
+        "chapters": [
+            (1, "風の音のする国"),
+            (2, "数式の花嫁"),
+            (3, "仇の名"),
+            (4, "式典の銃声"),
+            (5, "墜ちた狐"),
+            (6, "名前のない客"),
+            (7, "二つの露見"),
+            (8, "大徴収作戦"),
+            (9, "第二射"),
+            (10, "同じ高さの空"),
+        ],
+    },
+    # ここに新しい長編を追加する(エージェント執筆分は後段で登録)
 ]
 
 # ---- 連作短編集『宇迦忍法帖』(全50篇・プロット番号=ファイル番号) ----
@@ -155,15 +163,16 @@ def kanji_num(n: int) -> str:
     return s or "〇"
 
 
-def md_to_paragraphs(text: str) -> str:
+def md_to_paragraphs(text: str, work: str = NOVEL_WORK) -> str:
     """原稿mdの本文をHTML段落に変換する。"""
     out = []
     for raw in text.splitlines():
         line = raw.rstrip()
         if not line.strip():
             continue
-        if line.startswith("# 全十章"):
-            out.append('<p class="fin">全十章　完</p>')
+        m = re.match(r"^# (全[一二三四五六七八九十]+章)", line)
+        if m:
+            out.append(f'<p class="fin">{html.escape(m.group(1))}　完</p>')
             continue
         if line.startswith("#"):
             continue  # タイトルはヘッダーで表示する
@@ -179,7 +188,7 @@ def md_to_paragraphs(text: str) -> str:
         # 長編ch10末尾の目次は index にあるので本文からは省く
         if re.match(r"^　第[一二三四五六七八九十]+章　", line):
             continue
-        if line.strip() == f"『{NOVEL_WORK}』":
+        if line.strip() == f"『{work}』":
             continue
         out.append(f"<p>{html.escape(line)}</p>")
     return "\n".join(out)
@@ -249,7 +258,7 @@ def render(dest_dir, fname, *, work, heading, page_title, description,
            index_anchor, prev_link, next_link, toc=""):
     src = dest_dir / fname
     raw = src.read_text(encoding="utf-8")
-    body = md_to_paragraphs(raw)
+    body = md_to_paragraphs(raw, work)
     chars = len(re.sub(r"\s", "", re.sub(r"^#.*$", "", raw, flags=re.M)))
     minutes = max(1, round(chars / 600))
     page = PAGE.format(
@@ -281,47 +290,60 @@ def make_toc(entries, current_href):
     return "\n".join(lines)
 
 
-def build_novel() -> None:
+def build_novels() -> None:
     dest_dir = ROOT / "novels"
-    available = [(n, t, f) for n, t, f in CHAPTERS if f]
-    toc_entries = [
-        (f.replace(".md", ".html"), f"第{kanji_num(n)}章　{t}")
-        for n, t, f in available
-    ]
-    for i, (n, title, fname) in enumerate(available):
-        label = f"第{kanji_num(n)}章"
+    for novel in NOVELS:
+        work = novel["work"]
+        prefix = novel["prefix"]
+        available = [
+            (n, t, f"{prefix}chapter{n:02d}.md")
+            for n, t in novel["chapters"]
+            if (dest_dir / f"{prefix}chapter{n:02d}.md").exists()
+        ]
+        missing = [
+            n for n, _ in novel["chapters"]
+            if not (dest_dir / f"{prefix}chapter{n:02d}.md").exists()
+        ]
+        if missing:
+            print(f"skip (原稿なし) 『{work}』: {missing}")
+        toc_entries = [
+            (f.replace(".md", ".html"), f"第{kanji_num(n)}章　{t}")
+            for n, t, f in available
+        ]
+        for i, (n, title, fname) in enumerate(available):
+            label = f"第{kanji_num(n)}章"
 
-        prev_link = EMPTY_LINK
-        if i > 0:
-            pn, pt, pf = available[i - 1]
-            prev_link = (
-                f'<a href="{pf.replace(".md", ".html")}">'
-                f"&laquo;　第{kanji_num(pn)}章　{html.escape(pt)}</a>"
+            prev_link = EMPTY_LINK
+            if i > 0:
+                pn, pt, pf = available[i - 1]
+                prev_link = (
+                    f'<a href="{pf.replace(".md", ".html")}">'
+                    f"&laquo;　第{kanji_num(pn)}章　{html.escape(pt)}</a>"
+                )
+
+            next_link = EMPTY_LINK
+            if i < len(available) - 1:
+                nn, nt, nf = available[i + 1]
+                next_link = (
+                    f'<a href="{nf.replace(".md", ".html")}">'
+                    f"第{kanji_num(nn)}章　{html.escape(nt)}　&raquo;</a>"
+                )
+
+            render(
+                dest_dir,
+                fname,
+                work=work,
+                heading=f"{label}　{html.escape(title)}",
+                page_title=f"{label}　{title} - {work}",
+                description=(
+                    f"クリプト忍者のウカを主人公にした長編小説"
+                    f"『{work}』{label}「{title}」"
+                ),
+                index_anchor="novels",
+                prev_link=prev_link,
+                next_link=next_link,
+                toc=make_toc(toc_entries, fname.replace(".md", ".html")),
             )
-
-        next_link = EMPTY_LINK
-        if i < len(available) - 1:
-            nn, nt, nf = available[i + 1]
-            next_link = (
-                f'<a href="{nf.replace(".md", ".html")}">'
-                f"第{kanji_num(nn)}章　{html.escape(nt)}　&raquo;</a>"
-            )
-
-        render(
-            dest_dir,
-            fname,
-            work=NOVEL_WORK,
-            heading=f"{label}　{html.escape(title)}",
-            page_title=f"{label}　{title} - {NOVEL_WORK}",
-            description=(
-                f"クリプト忍者のウカを主人公にした長編小説"
-                f"『{NOVEL_WORK}』{label}「{title}」"
-            ),
-            index_anchor="novels",
-            prev_link=prev_link,
-            next_link=next_link,
-            toc=make_toc(toc_entries, fname.replace(".md", ".html")),
-        )
 
 
 def story_fname(n: int) -> str:
@@ -434,6 +456,6 @@ def build_story_index(available: list[int]) -> None:
 
 
 if __name__ == "__main__":
-    build_novel()
+    build_novels()
     built = build_stories()
     build_story_index(built)
