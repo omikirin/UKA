@@ -1,0 +1,99 @@
+{
+  "title": "三百年目の空 第五章 織り込まれた文字",
+  "format_ref": "characters.json の format_rules_MANDATORY に準拠(1見開き=右3コマ+左3コマ=2ページ、16:9固定)",
+  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
+  "characters_required": {
+    "designed": ["uka"],
+    "needed": [
+      "makami(マカミ:第七筬塔の技師長。白髪を短く刈った、狼のように痩せた老人。技師の外套・重要)",
+      "riri(リーリー:第七筬塔の整備士。塔でいちばん大きな身体と大声の気のいい大男。作業着・重要)",
+      "haha(ウカの母:フナオロシ織物町の織屋の女主人。働き者の中年女性。前掛けに襷掛け)",
+      "mitama(ミタマ:中央記録庫の司書。青白く年齢性別不詳。白い埃よけ外套。幽霊のような佇まい・重要)",
+      "orochi(オロチ:母星から来た完成査察官。蛇の血筋。細身で背が高く、瞬きが少ない・重要)",
+      "カエデ(ウカの姉・織り手。モブ可)",
+      "※ルナは本章では伝声管の声のみ(姿の初登場は第八章)"
+    ]
+  },
+  "spreads": [
+    {"spread": 1, "scene": "祭りの匂いの町", "panels": [
+      {"no": 1, "chars": [], "prompt": "winter main street of Funaoroshi, festive dyed flags on eaves, cloud-shaped sugar candies in a shop front, bright cold light, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "冬のフナオロシは、祭りの匂いがした。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 2, "chars": ["uka"], "prompt": "{uka} fox-eared young woman in winter coat walking through crowd, hugging a chart tube and an old wooden box, tense eyes, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "天梯から降りたその足で、ウカは町へ出た。記録庫の閉架が、もう目の前に迫っていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 3, "chars": [], "prompt": "children hopping and pointing at the sky in front of candy shop, laughing, empty upper left", "dialogue": [{"speaker": "子供", "text": "完成の日にはね、空から金平糖が降るんだって!", "balloon": "top_left", "type": "normal"}], "sfx": "わいわい"},
+      {"no": 4, "chars": [], "prompt": "plaza with half-built festival scaffold tower, officials measuring lantern positions with rope on flagstones, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "完成の日は、もう町の隅々まで染み込んでいた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 5, "chars": ["uka"], "prompt": "{uka} stopping under festive banners, looking up uneasy, clutching the box tighter, empty left side", "dialogue": [{"speaker": "ウカ", "text": "三百年前の手紙。読み方さえ、分かれば……", "balloon": "bottom_left", "type": "thought"}], "sfx": null},
+      {"no": 6, "chars": ["uka"], "prompt": "{uka} turning into a narrow back alley of the weaving quarter, sound of looms from wooden houses, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "母の店は、大通りから二本裏の織物町にある。", "balloon": "top_right", "type": "narration"}], "sfx": "カタン カタン"}
+    ]},
+    {"spread": 2, "scene": "母の店", "panels": [
+      {"no": 7, "chars": ["uka"], "prompt": "{uka} pushing through shop curtain, three looms all working, sister and mother at work, warm interior, empty upper left", "dialogue": [{"speaker": "カエデ", "text": "あら", "balloon": "top_left", "type": "normal"}, {"speaker": "母", "text": "帰ったのかい", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 8, "chars": ["haha"], "prompt": "{haha} gesturing with chin at mountain of order slips on the counter, proud busy grin, empty upper right", "dialogue": [{"speaker": "母", "text": "見てごらんよ、この注文の山。祝いの旗五十本に官服の反物が二十。三百年に一度の景気だよ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 9, "chars": ["uka", "haha"], "prompt": "{uka} serious face leaning in, {haha} raising eyebrow, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "母さん。紋紙って、まだ使ってる?", "balloon": "top_left", "type": "normal"}, {"speaker": "母", "text": "藪から棒だね。柄物はぜんぶそうさ", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 10, "chars": ["haha"], "prompt": "close-up of thick punched cards pulled from a box, rows of holes, worn edges, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "穴の並んだ、あの紙。子供の頃、穴をひとつ塞いで反物一反ぶんの柄を狂わせ、叱られた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 11, "chars": ["uka"], "prompt": "{uka} leaning forward, fox ears straight up, earnest, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "紋紙の穴の並びで、柄じゃなくて、言葉を織り込むことって、できる?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 12, "chars": ["haha"], "prompt": "{haha} and sister exchanging a look, then smiling knowingly, loom behind, empty upper right", "dialogue": [{"speaker": "母", "text": "——できるよ。古い遊びだ。嫁入りの帯に、婿の名前を柄の中に隠すのさ", "balloon": "top_right", "type": "normal"}, {"speaker": "カエデ", "text": "知らなきゃ、ただの織りむらにしか見えないけどね", "balloon": "bottom_left", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "機の前の夜", "panels": [
+      {"no": 13, "chars": ["uka", "haha"], "prompt": "night, {uka} sitting at loom at her mother's knee, warm lamp, ten years since she last sat here, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "その晩、ウカは十年ぶりに、母の膝先で機の前に座った。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 14, "chars": [], "prompt": "close-up of weathered hands guiding threads over the loom, floats and sinks of weft, empty upper right", "dialogue": [{"speaker": "母", "text": "浮きと、沈み。詰めと、空き。仮名の割り当てには癖があってね", "balloon": "top_right", "type": "normal"}], "sfx": "カタン"},
+      {"no": 15, "chars": ["haha"], "prompt": "{haha} teaching without looking at any notebook, hands moving from memory, lamplight, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "母の手は、帳面も見ずにそれを教えた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 16, "chars": ["uka"], "prompt": "{uka} watching the hands, moved, eyes reflecting lamplight, empty right side", "dialogue": [{"speaker": "ナレーション", "text": "手が覚えているものは、三百年でも残る。紙は燃える。石は欠ける。けれど母から娘へ渡る手つきは、燃えも欠けもしない。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 17, "chars": [], "prompt": "symbolic image, the whole sky as a woven cloth, cloud bands as weft threads across warp winds, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "オリハが空に選んだのは、たぶん、それと同じ残り方だった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 18, "chars": ["uka"], "prompt": "{uka} at window of childhood home, chart tube beside her, starry band of unfinished sky outside, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "明日、記録庫へ行く", "balloon": "top_right", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "記録庫の幽霊司書", "panels": [
+      {"no": 19, "chars": [], "prompt": "stone building with few windows on a hill overlooking the landing plaza, winter light, lonely, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "中央記録庫は、町の北の外れ、船降ろしの広場を見下ろす丘の上にあった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 20, "chars": [], "prompt": "close-up of engraved plaque beside heavy door, old letters, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "扉の銘板にはこうあった。——此処に、星の覚えたること、すべて眠る。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 21, "chars": ["uka", "mitama"], "prompt": "dim book stacks, {mitama} pale figure in white dust coat appearing half-transparent between shelves, eyes fixed on the wooden box {uka} carries, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "それが、キリガイの一葉", "balloon": "top_left", "type": "normal"}, {"speaker": "ナレーション", "text": "挨拶より先に、その言葉だった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
+      {"no": 22, "chars": ["mitama"], "prompt": "{mitama} collating the cut edge of the leaf against binding scars of volume nineteen with silk thread and magnifier, meticulous, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "照合は、半日かかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 23, "chars": ["mitama"], "prompt": "close-up, old paper held up against the light, grain of the paper glowing, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "紙の漉き目、桁の数え方、墨の擦れ——", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["mitama", "uka"], "prompt": "{mitama} removing glasses, quiet solemn face in slanting evening light, {uka} holding breath, empty upper right", "dialogue": [{"speaker": "ミタマ", "text": "合致します。オリハ手稿十九巻、切り取られた十一葉のうちの一枚。……三百年ぶりに、帰ってきた", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "オリハは織物師だった", "panels": [
+      {"no": 25, "chars": ["uka", "mitama"], "prompt": "locked inner room deep in the stacks, nineteen old volumes, {mitama} opening volume three on a desk, candlelight, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "お手紙にあった……比喩と読まぬ、というのは", "balloon": "top_left", "type": "normal"}, {"speaker": "ミタマ", "text": "こちらへ", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 26, "chars": ["mitama"], "prompt": "{mitama} speaking over the open manuscript, long shadow on shelves, empty upper right", "dialogue": [{"speaker": "ミタマ", "text": "オリハの家は、母星で代々、織物師だった。それも、紋紙織りの", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 27, "chars": [], "prompt": "open page showing a drawn punch card diagram, identical to the ones in the weaving shop, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "母の仕事場で見たものと、同じだった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 28, "chars": ["mitama"], "prompt": "{mitama} tracing lines of the manuscript with a thin finger, reverent, empty upper right", "dialogue": [{"speaker": "ミタマ", "text": "空は巨大な織機である。梭が糸を投げ、筬が打ち込む。ならば空の設計図とは紋紙である——手稿にそうあります", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 29, "chars": ["mitama"], "prompt": "{mitama} lowering voice, leaning closer, candle flame steady, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "そして紋紙で織れるのは、模様だけではない。綾の浮き沈みに仮名を割り当て、文言を布に隠す符丁があった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 30, "chars": [], "prompt": "image panel, bridal obi cloth with hidden characters faintly glowing inside the weave pattern, empty upper right", "dialogue": [{"speaker": "ミタマ", "text": "読み方を知らない者には、ただの織りむらにしか見えない", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "星図と涙", "panels": [
+      {"no": 31, "chars": ["uka"], "prompt": "{uka} pulling the star chart from the tube and unrolling it across the desk, four hundred and seven points in columns, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "ウカは筒から星図を出した。四百と七つの点。経糸に沿って並ぶ、浮きと、沈み。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 32, "chars": ["mitama"], "prompt": "{mitama} frozen over the chart, utterly still, candle burning down, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ミタマは星図を一目見て、長いこと動かなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": ["mitama"], "prompt": "close-up of the ghostly librarian's eyes, tears welling, candle reflection, empty left side", "dialogue": [{"speaker": "ミタマ", "text": "……ああ。ほんとうに、書いてあったのか", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 34, "chars": ["uka"], "prompt": "{uka} watching quietly, moved, hand resting on the old box, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "三百年、紙の上でしか会えなかった相手の、これが直筆だった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 35, "chars": ["uka", "mitama"], "prompt": "both leaning over the chart and the key leaf side by side, determination, empty upper left", "dialogue": [{"speaker": "ウカ", "text": "読めますか", "balloon": "top_left", "type": "normal"}, {"speaker": "ミタマ", "text": "読みましょう。三晩、いただきます", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 36, "chars": [], "prompt": "window of the archive, winter night sky outside, first snow smell, empty center", "dialogue": [{"speaker": "ナレーション", "text": "解読は、三晩かかった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "三晩の解読", "panels": [
+      {"no": 37, "chars": ["uka", "mitama"], "prompt": "first night, papers covered in meaningless kana scattered, {mitama} head in hands, {uka} rubbing eyes, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "駄目だ……意味をなさない。仮名の砂利だ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 38, "chars": ["uka"], "prompt": "{uka} recounting all four hundred and seven points from the start, exhausted, dawn light creeping in, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ウカは写し間違いを疑って、四百と七つの点を、最初から数え直した。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 39, "chars": ["riri"], "prompt": "{riri} big mechanic smoothing hearth ash with fire chopsticks, speaking casually without looking up, empty upper left", "dialogue": [{"speaker": "リーリー", "text": "なあ、布ってのは機から、下から上に生まれてくるんだろう。だったら字も、下から書いたんじゃないのか", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 40, "chars": ["uka", "mitama"], "prompt": "{uka} and {mitama} freezing, looking at each other, sudden realization, empty right side", "dialogue": [{"speaker": "ウカ", "text": "逆さに——", "balloon": "top_right", "type": "normal"}, {"speaker": "ミタマ", "text": "下から、読む", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 41, "chars": [], "prompt": "the old leaf laid beside the star chart, dots and dashes forming a kana table, matching, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "符丁の割り当ては、ヤナギ婆の一葉が手引きになった。切り取られた十一葉のうちの、鍵の一枚だったのだ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 42, "chars": ["uka", "mitama", "riri"], "prompt": "three of them working around the hearth, {mitama} counting columns, {uka} reading points aloud, {riri} writing kana into the ash, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ミタマが桁を数え、ウカが点列を読み上げ、リーリーが灰に仮名を写した。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "灰の上の文字", "panels": [
+      {"no": 43, "chars": ["riri"], "prompt": "close-up of fire chopsticks tracing kana into pale ash, one character at a time, firelight, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "そ、ら、を", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 44, "chars": [], "prompt": "large panel, six kana in the ash lit by fire, letters seeming to breathe with the flame light, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "六つの仮名が並んだとき、誰も口をきかなかった。薪の爆ぜる音だけがしていた。", "balloon": "top_right", "type": "narration"}], "sfx": "パチ…"},
+      {"no": 45, "chars": ["uka", "mitama", "riri"], "prompt": "three faces in firelight staring at the ash, the air of the room leaning toward the words, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "三百年かけて届いた声は、大きくない。小さいのに、部屋じゅうの空気が、その六文字のほうへ傾いた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 46, "chars": [], "prompt": "second line of kana forming in the ash, camera close over the hearth, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "二つ目の列は、こう読めた。——おわりは、ほころびの、はじまり。とじたそらは、いきをやめる。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 47, "chars": ["riri"], "prompt": "{riri} gripping fire chopsticks, frowning hard at the third line, empty upper left", "dialogue": [{"speaker": "リーリー", "text": "のこりは、はじめのおさの、おもりのなか……第一筬塔か。あの廃塔の錘ん中ってことか", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 48, "chars": ["uka"], "prompt": "{uka} standing, fists clenched, voice trembling, fire behind her, empty upper right", "dialogue": [{"speaker": "ウカ", "text": "これを、雲居台に届けないと。春が来る前に。完成の日の、前に", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "閉架前夜", "panels": [
+      {"no": 49, "chars": ["mitama"], "prompt": "{mitama} giving an awkward cough, avoiding eyes, bad news posture, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "……お伝えしないと。母星の査察官が、予定より早く着きました。名を、オロチどのと", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["mitama", "uka"], "prompt": "{mitama} continuing gravely, {uka} shocked, empty upper right", "dialogue": [{"speaker": "ミタマ", "text": "そして明日から、記録庫は閉架です。手稿の持ち出しも写しも、まかりならんと", "balloon": "top_right", "type": "normal"}, {"speaker": "ウカ", "text": "明日!?", "balloon": "bottom_left", "type": "shout"}], "sfx": null},
+      {"no": 51, "chars": ["mitama"], "prompt": "{mitama} rolling up sleeves with un-ghostlike vigor, stacks of paper ready, empty upper left", "dialogue": [{"speaker": "ミタマ", "text": "今夜のうちに、写せるだけ写します。手伝いなさい。埃はそちらの管轄です、地上の人", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": ["uka"], "prompt": "{uka} carrying a stack of volumes, laughing a little despite everything, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "軌道のルナと同じ言い回しだったので、ウカはこんなときなのに、少し笑ってしまった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 53, "chars": [], "prompt": "montage of the copying night, lamps burning low, brushes moving, ink stones, window turning from black to grey, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "写しの筆は、夜どおし走った。", "balloon": "top_left", "type": "narration"}], "sfx": "カリカリ"},
+      {"no": 54, "chars": ["orochi"], "prompt": "morning at the archive entrance, {orochi} tall slim snake-blooded inspector standing with a single wicker trunk, unblinking eyes, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "査察官オロチは、蛇の血筋の人だった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 10, "scene": "蛇の目と口伝", "panels": [
+      {"no": 55, "chars": ["orochi", "uka"], "prompt": "{orochi} comparing roster and faces at the door, flat voice, {uka} standing straight, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "第七筬塔付技師、ウカ。検分名簿にない者が、閉架前夜の記録庫で何をしていた", "balloon": "top_left", "type": "normal"}, {"speaker": "ウカ", "text": "調べものです。三百年前の設計者の手稿について", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 56, "chars": ["uka"], "prompt": "{uka} answering with straight back, scared but not looking away, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "目的は", "balloon": "top_right", "type": "normal"}, {"speaker": "ウカ", "text": "……この星の空が、完成していい空なのかどうか、確かめるためです", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 57, "chars": ["orochi"], "prompt": "{orochi} writing in his notebook without a single change of expression, then looking up once, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "確かめるため、という言葉は、記録に値する。そういう人間を、わたしは職掌上、嫌いになれない。以上だ。持ち場に戻れ", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 58, "chars": ["uka"], "prompt": "{uka} at a speaking tube in Kumoidai hall, gripping the mouthpiece, empty upper right", "dialogue": [{"speaker": "ルナ", "text": "手順書だと、最初に止められるのは梭なの。……空の息の根を最初に止める役は、私たちなのよ", "balloon": "top_right", "type": "radio"}], "sfx": null},
+      {"no": 59, "chars": ["uka"], "prompt": "{uka} nodding hard into the tube, resolve hardening in her eyes, empty upper left", "dialogue": [{"speaker": "ルナ", "text": "あなたは、錘を開けなさい。急いで", "balloon": "top_left", "type": "radio"}, {"speaker": "ウカ", "text": "うん。第一筬塔へ行く", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 60, "chars": ["makami", "uka"], "prompt": "evening wind-combing room, {makami} looking at the northwest sky, {uka} behind him, distant Kagamiyama, empty upper right", "dialogue": [{"speaker": "マカミ", "text": "口伝がある。——空図を疑うな。ただし、空図の癖を消すな。……行け。雪の来る前に、帰れよ", "balloon": "top_right", "type": "normal"}, {"speaker": "ナレーション", "text": "春まで、あと百日足らず。", "balloon": "bottom_left", "type": "narration"}], "sfx": null}
+    ]}
+  ]
+}
