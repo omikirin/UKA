@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>読み切りマンガ | クリプト忍者のウカ</title>
-<meta name="description" content="読み切りマンガ。右から左へ読む日本式漫画リーダー。">
+<title>あう、あん、あと | クリプト忍者のウカ</title>
+<meta name="description" content="マンガ『あう、あん、あと』全二部。右から左へ読む日本式漫画リーダー。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
@@ -201,7 +201,7 @@
 <body>
 <header class="bar">
   <a href="../index.html#novels">&laquo; サイトへ</a>
-  <span class="title">読み切りマンガ</span>
+  <span class="title">あう、あん、あと</span>
   <select id="chapterSel" title="章を選ぶ"></select>
   <button type="button" id="modeBtn">単ページ</button>
 </header>
@@ -222,9 +222,10 @@
   "use strict";
   /* ---- 章の設定: 画像が揃ったら available を true に、count を枚数に ---- */
   var CHAPTERS = [
-    { id: "yomikiri01", no: "読み切り", title: "双子の朝(仮題)", count: 26, available: true }
+    { id: "yomikiri01", no: "第一部", title: "", count: 26, available: true },
+    { id: "yomikiri02", no: "第二部", title: "", count: 30, available: true }
   ];
-  var WORK = "読み切り";
+  var WORK = "あう、あん、あと";
 
   /* ---- ページ列を組み立てる(見開き単位) ----
      type: "title"=章とびら / "spread"=見開き / "end"=巻末 */
@@ -279,7 +280,7 @@
   CHAPTERS.forEach(function (ch, i) {
     var o = document.createElement("option");
     o.value = ch.id;
-    o.textContent = ch.no + "　" + ch.title + (ch.available ? "" : "(近日公開)");
+    o.textContent = ch.no + (ch.title ? "　" + ch.title : "") + (ch.available ? "" : "(近日公開)");
     o.disabled = !ch.available;
     sel.appendChild(o);
   });
@@ -298,8 +299,8 @@
     var d = document.createElement("div");
     d.className = "card";
     if (u.type === "title") {
-      d.innerHTML = '<span class="work">読み切りマンガ</span>' +
-        '<span class="ch">' + u.ch.no + "　" + u.ch.title + '</span>' +
+      d.innerHTML = '<span class="work">あう、あん、あと</span>' +
+        '<span class="ch">' + u.ch.no + (u.ch.title ? "　" + u.ch.title : "") + '</span>' +
         '<span class="sub">全' + u.ch.count + '見開き</span>';
       var b = document.createElement("button");
       b.className = "btn";
@@ -313,11 +314,11 @@
         if (!CHAPTERS[i].available) { next = CHAPTERS[i]; break; }
       }
       if (next) {
-        d.innerHTML = '<span class="work">読み切りマンガ</span>' +
+        d.innerHTML = '<span class="work">あう、あん、あと</span>' +
           '<span class="ch">つづく</span>' +
           '<span class="sub">' + next.no + "「" + next.title + "」は近日公開" + '</span>';
       } else {
-        d.innerHTML = '<span class="work">読み切りマンガ</span>' +
+        d.innerHTML = '<span class="work">あう、あん、あと</span>' +
           '<span class="ch">完</span>' +
           '<span class="sub">(了)　お読みいただきありがとうございました</span>';
       }
