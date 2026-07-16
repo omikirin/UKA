@@ -1,0 +1,1012 @@
+{
+ "title": "つくも堂の残り香 第八章 絵はまだ来ていないだけ",
+ "format_ref": "ネーム_第二章.json と同一",
+ "page_math": {
+  "spreads": 10,
+  "panels": 60,
+  "single_pages": 20
+ },
+ "characters_required": {
+  "designed": [
+   "uka",
+   "roujin(第一章)",
+   "orochi(第五章)",
+   "hanzo(第二章)",
+   "lily(第三章)",
+   "sakuya(第四章)",
+   "kino(第一章)",
+   "kino若年版(第六章写真)",
+   "roujin若年版(第六章写真)"
+  ],
+  "needed": [
+   "若い宵(回想本編:第六章写真版の精細化・詰襟か木綿の着物・木炭と画帖・重要度:本章回想の主役)",
+   "若い季乃(回想本編:第六章写真版の精細化・絣の着物・糊と刷毛で鍛えた職人の指・重要度:本章回想の主役)"
+  ]
+ },
+ "spreads": [
+  {
+   "spread": 1,
+   "scene": "一月十七日",
+   "panels": [
+    {
+     "no": 1,
+     "chars": [],
+     "prompt": "clear windless january morning, frost melting off the alley stones, TSUKUMODO storefront swept and waiting, thin winter sun, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "一月十七日は、よく晴れて、風のない日だった。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 2,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} rehanging the white scroll in the alcove, adding charcoal to the brazier, laying out a single guest cushion in the small room, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "軸は何事もなかったように、いつもの場所で、いつもの白に戻っていた。客用の座布団を、今日は一枚だけ、小間に敷いた。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 3,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} thinner but straight-backed, removing his hat inside the threshold, grey coat, cane, glass door light behind him, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "——ご機嫌よろしゅう。九十九の、お嬢さん",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": "からり"
+    },
+    {
+     "no": 4,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} bowing with a small smile, warmth and formality together, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "おいでやす。……お待ちしてました。六十年ぶん、いうことにしときます",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 5,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} seated by the brazier, both hands around the teacup, gazing long at the white in the alcove, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "老人は小間の白をしばらく見て、それから、話し始めた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 6,
+     "chars": [],
+     "prompt": "flashback opening, 1950s Shiorutsuji outskirts, a poor lodging room at night, young painter working by naked bulb, paint-stained hands, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "昭和三十年代の初め、栞辻の外れの下宿に、絵描き志望の貧乏学生がいた。名を、宵といった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 2,
+   "scene": "宵市の画学生",
+   "panels": [
+    {
+     "no": 7,
+     "chars": [],
+     "prompt": "flashback, the night market in full life, carbide lamps in a row along the river reflected as a bridge of fire, old tools and ceramics on straw mats, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "月に一度、十七日の晩だけは、仕事も絵も休んだ。買えない画材は、買えないから、描いた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "りん…"
+    },
+    {
+     "no": 8,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, the market's east end, KATAURA mounting shop stall, young {kino} minding it, luminous among the lamps, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "市の東の端に、表具師の見世があった。店番は、一人娘がしていた。季乃といった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 9,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "flashback, young {roujin} sketching the white fox mask at the stall corner, stealing nothing with his eyes and everything, present-day voice over, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "面を描いとれば、面の横の娘を、見んでも見ていられた。……姑息でしょう。二十歳の男いうのは、姑息なもんです",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 10,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, young {kino} leaning in from the side to peek into his sketchbook, mischievous smile, the youth petrified, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "あんた、その面、三月も描いて、まだ描き上がらんの。うちの面、そんな難しい顔してますか",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 11,
+     "chars": [
+      "kino",
+      "roujin"
+     ],
+     "prompt": "flashback, the two walking the riverside after the market, lamps being taken down behind them, respectful distance between shoulders, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "それが始まりだった。宵は月に一度の宵市のために生き、季乃は父の目を盗んで、市の終わった川端を歩いた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 12,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "present, {roujin} looking into his teacup, old hands, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "約束したんです。私が一人前の絵ェを描く。あの人が表具する。二人で一幅を仕立てて、それを看板に、小さい店を出す、と",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 3,
+   "scene": "買いそびれ",
+   "panels": [
+    {
+     "no": 13,
+     "chars": [],
+     "prompt": "flashback close-up, young woman's fingers hardened by paste and brush, artisan's hands over mounting tools, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "夫婦になろう、という言葉の代わりの約束だった。物を作る人間の、精一杯の言い方だった。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 14,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, young {kino} looking at the dawn sky over the river, naming him, tender profile, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "東雲。宵の明ける方角やから",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "ナレーション",
+       "text": "宵の絵が中央の展覧会に採られた。雅号は、季乃がつけた。",
+       "balloon": "bottom_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 15,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "flashback, the last night market, young {roujin} standing before the fox mask, mouth opening and closing, unable to ask the price, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "これを私やと思うて、絵が届くまで置いといてください——下宿で何遍も稽古した言葉は、出なかった。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 16,
+     "chars": [],
+     "prompt": "flashback, steam train pulling out at night, the white fox mask left unsold on the mat under the lamps, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "汽車の時間が来て、私は面を買いそびれたまま栞辻を出た。それが、六十年の買いそびれの始まりです",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": "ぽーっ…"
+    },
+    {
+     "no": 17,
+     "chars": [],
+     "prompt": "imagery panel, Tokyo art world, paintings turning into banknotes, banknotes into chains of obligation binding a painter's wrist, high contrast, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "東雲は、坂を転がるように売れた。絵が金に化け、金が義理に化け、義理が絵を縛った。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 18,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "present, {roujin}'s face darkening with sixty-year-old pain, brazier light low, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "十年目に知りました。出回る東雲の若描きの何枚かが贋作で——描かせとったんが、恩ある師その人やったことを",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 4,
+   "scene": "筆を折る",
+   "panels": [
+    {
+     "no": 19,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} quiet confession, eyes on his own old hands, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "自分の筆の先から出るもんが、全部、値札に見えた。人の顔が、全部、買い手に見えた",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 20,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "close-up {roujin}, the deepest wound spoken plainly, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "こんな目ェで、あの人の白い本紙の前に立てますか。一人前どころか、絵描きの目ェそのものを、私は落としてしもた",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 21,
+     "chars": [],
+     "prompt": "imagery panel, a brush laid down forever, a one-line letter on a desk, ink drying, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "最後の手紙には、一行だけ。もう描けません。忘れてください。——誠実の顔をした、ただの逃げだった。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 22,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, young {kino} in the emptied Kataura workshop doing her last work, mounting a blank sheet with perfect care, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "季乃は、待った。片浦の店を畳むとき、絵の入っていない白い本紙を、本寸法で表具したのだ。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 23,
+     "chars": [],
+     "prompt": "flashback close-up, scissors cutting through a bridal maru-obi of wave-patterned brocade, unflinching hands, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "裂には、自分の婚礼のために織られていた丸帯を、鋏で断って使った。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "しゃ…"
+    },
+    {
+     "no": 24,
+     "chars": [],
+     "prompt": "opening day of TSUKUMODO decades ago, small shop with fresh signboard, the white scroll already hanging in the back alcove, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "やがて季乃は九十九の家に嫁ぎ、後に小さな店を開いた。つくも堂。開店の日から、奥の小間には白い軸が掛かっていた。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 5,
+   "scene": "市の立たん宵市",
+   "panels": [
+    {
+     "no": 25,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} recalling his return, twenty-odd years ago, walking the changed alleys of Shiorutsuji as an old salaryman, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "栞辻に戻ったんは二十年余り前。女房も子ォもなし、絵ェも描かず。……戻る場所が、ここしか思いつかんかった",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 26,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "flashback, twenty years ago, {roujin} stepping over TSUKUMODO's threshold, the white scroll visible in the back, his face collapsing into understanding, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "奥の白が見えた瞬間に、全部分かってしもたんです。あの白は、六十年、私の絵ェを待っとった",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 27,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} gripping his cane, shame kept straight-backed for twenty years, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "ほんで私には、名乗る資格がなかった。約束の絵ェを持たん手ェで、あの白の前に立つ資格が",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 28,
+     "chars": [
+      "uka",
+      "roujin"
+     ],
+     "prompt": "{uka} understanding at last, {roujin} nodding slowly, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "せやから、月に一度、何も買わんと",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "宵",
+       "text": "宵市です。市の立たん宵市に、私も立つことにしたんです",
+       "balloon": "bottom_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 29,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, elderly {kino} at the counter tucking a white envelope into her sleeve with a knowing smile, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "ほな、預かっとくわ。あんたが絵ェを持ってくる日まで",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 30,
+     "chars": [
+      "uka",
+      "roujin"
+     ],
+     "prompt": "{uka} opening the fourteen ledgers before him, {roujin}'s finger tracing the vermilion lines one by one like reading braille, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "毎月十七日。宵市。預かり、一。六十年分の行を、老人は一行ずつ辿った。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 6,
+   "scene": "まだ",
+   "panels": [
+    {
+     "no": 31,
+     "chars": [],
+     "prompt": "extreme close-up of the ledger's final page, the usual neat line then two trembling characters MADA, brush strokes barely controlled, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "最後の頁の、震える二文字の前で、指が止まった。——まだ。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 32,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin}'s back folding deeply over the ledger, no sobbing, just stillness, {uka} looking away gently, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "……季乃さん",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "ナレーション",
+       "text": "嗚咽は、なかった。老人の背中は、長いこと動かなかった。",
+       "balloon": "bottom_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 33,
+     "chars": [
+      "uka",
+      "roujin"
+     ],
+     "prompt": "the scroll laid on white cloth on the tatami, {uka}'s hands on the black persimmon roller end, {roujin} watching, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "軸先を開けたのは、小半刻ののちだった。黒柿は、六十年の糊を割って、存外素直に緩んだ。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "きし…"
+    },
+    {
+     "no": 34,
+     "chars": [],
+     "prompt": "small oil-paper packet from the hollowed roller, an old mounting certificate unfolded, young formal handwriting, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "片浦季乃、謹んで仕立て奉る。店の名の入る場所には、まだ店の名がなく——ただ、二人の店、とだけ。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 35,
+     "chars": [],
+     "prompt": "a second newer oil-paper packet, a slender rolled note in an old woman's late handwriting, trembling restrained by discipline, dated two months before her death, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "もう一つは、祖母の字だった。震えを行儀で抑え込んだ、最晩年の字。日付は、死の二月前。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 36,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} reading silently by brazier light, reading again, third time laying it on his knees and looking up at the ceiling, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "これは……お嬢さんも、読むべきや。あの人の店の、今の主やから",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 7,
+   "scene": "書き付け",
+   "panels": [
+    {
+     "no": 37,
+     "chars": [],
+     "prompt": "the note itself, first clauses in disciplined brush writing, close-up on paper, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃(書き付け)",
+       "text": "一、この軸、白いまま売るべからず。白いまま焼くべからず",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 38,
+     "chars": [],
+     "prompt": "the note continuing, ghost image of elderly {kino}'s wry smile behind the letters, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "季乃(書き付け)",
+       "text": "一、宵さんへ。よう戻らはりました。うちが気づいてへんと思うてはるのは、あんたの目ェが節穴になった証拠です",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 39,
+     "chars": [],
+     "prompt": "the note, the core clause, paper filling the panel, warm lamp light, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃(書き付け)",
+       "text": "絵はまだ来ていないだけ。うちは六十年、嘘やと思うたことは一遍もあらしません。そのまま、好きな絵ェを描きなはれ",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 40,
+     "chars": [],
+     "prompt": "the note, practical clause with dry humor, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "季乃(書き付け)",
+       "text": "預かり賃は全部取ってあります。画材に替えてもらいなはれ。余った分は、香典やと思うて諦めなはれ",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 41,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} hands pressed to the tatami, eyes hot, unable to look at the old man, the last line of the note above her, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃(書き付け)",
+       "text": "一、宇迦へ。この人は、うちの一生の、渡しそびれです。あとを頼みます",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 42,
+     "chars": [
+      "uka",
+      "roujin"
+     ],
+     "prompt": "{uka} raising her face, calling him by name for the first time, {roujin} tucking the note into his breast pocket, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "……宵さん。蔵に二十年分の封筒があります。祖母の遺言や。画材に替えさせてもらいます。——描いてもらえますね",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 8,
+   "scene": "六十年の下描き",
+   "panels": [
+    {
+     "no": 43,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} tapping his own temple with a bony finger, first real smile, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "——六十年、下描きだけは、してきました。ここに",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 44,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "february montage, {roujin} sitting before the white day after day like a regular customer, low desk by hanzo, sweets by sakuya, {lily} running errands with art supplies, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "東雲宵は如月のあいだ、通いの客のように店へ来て、小間の白の前に、ただ座った。何日も座った。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 45,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} standing at the eaves once, not even glancing inside, leaving with words over his shoulder, mint cigarette smoke, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "ええ筆は下ろす前に一晩、枕元に置くもんやで",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 46,
+     "chars": [],
+     "prompt": "old ink shop and brush shop interiors, ancient Shotoku Taishi banknotes accepted without a blink, fine brushes and ink chosen by an old painter's fingers, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "聖徳太子の古い札も、店の主人は顔色一つ変えずに受け取った。栞辻とは、そういう町だった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 47,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "the morning of painting, inkstone sea shining still, {roujin}'s brush rising, stopping once above the white paper, then descending, {uka} watching from the doorway holding her breath, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "描いた日のことを、宇迦は生涯忘れないだろう。筆が上がり、白い本紙の上で一度だけ止まり、それから、下りた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 48,
+     "chars": [],
+     "prompt": "the finished painting, night riverside market, carbide lamps arcing a bridge of fire on the water, stalls with cups hairpins chipped plates, not a single human figure, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "描かれたのは、宵市だった。人は、一人も描かれていない。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 9,
+   "scene": "宛先",
+   "panels": [
+    {
+     "no": 49,
+     "chars": [],
+     "prompt": "detail of the painting's corner, east-end stall, a white fox mask propped and laughing in the painted lamplight, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "誰かを待つ者の白さで、誰かを待たせた者の白さで、六十年ぶんの宵の中で、笑っている。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 50,
+     "chars": [
+      "roujin"
+     ],
+     "prompt": "{roujin} setting down the brush, no seal on the painting, calm finished face, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "東雲の絵ェと違いますから。これは、宵の絵ェです。宛先は一人しかおらん。判子は要りません",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 51,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "days later, {uka} kneeling before the remounted scroll, nose close to the paper, eyes widening softly, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "匂いが、した。墨の奥に、飴と、カーバイドと、線香花火。——宵市の匂いだった。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 52,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} sitting back on the tatami, quiet realization, morning light through shoji, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "物に残るんは、未練やない。渡しそびれた気持ちの匂いや。届いた瞬間に、ただの、いい思い出の匂いになる",
+       "balloon": "top_right",
+       "type": "thought"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 53,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "close-up of {uka}'s brush writing one line in the ledger, on the page after MADA, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "三月十七日、宵市、お渡し、一。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 54,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} in the storehouse, pulling an old white fox festival mask from between kimono papers at the bottom of the wicker trunk, dust motes in light shaft, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "最後の宵市の晩、祖母はこれを売り物から下げて、持ち帰っていた。買いそびれた客のあることを、最初から知っていた。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 10,
+   "scene": "五十円の商い、そして",
+   "panels": [
+    {
+     "no": 55,
+     "chars": [
+      "uka",
+      "roujin"
+     ],
+     "prompt": "the next 17th, the white fox mask placed wordlessly on the counter tatami between {uka} and {roujin}, the old man gazing at it for a long time, no dialogue, silence, empty upper area",
+     "dialogue": [],
+     "sfx": null
+    },
+    {
+     "no": 56,
+     "chars": [
+      "roujin",
+      "uka"
+     ],
+     "prompt": "{roujin}'s trembling hand placing a single 50-yen coin on the tatami from an old coin purse, {uka} receiving it with both hands raised to her brow, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宵",
+       "text": "……当時の言い値で。負けてもろては、困ります",
+       "balloon": "top_left",
+       "type": "normal"
+      },
+      {
+       "speaker": "宇迦",
+       "text": "うちは値切りにも、まけにも、冷たい店です",
+       "balloon": "bottom_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 57,
+     "chars": [],
+     "prompt": "close-up of the ledger entry, KITSUNEMEN ONE 50 YEN, small neat characters, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "六十年越しの売り上げは、つくも堂の帳簿の中で、一番小さくて、一番大きい商いになった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 58,
+     "chars": [],
+     "prompt": "spring equinox storefront, scents gathering, sakura-mochi from next door, young ink from a school bag, machine oil, mint tobacco, a cane's sound approaching down the alley, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "月に一度、十七日には、杖の音と一緒に、歳月の匂いが敷居をまたぐ。もう何も、買いそびれずに。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "こつ…こつ…"
+    },
+    {
+     "no": 59,
+     "chars": [],
+     "prompt": "silent panel, the small back room, the finished night-market painting hanging in the alcove, the painted fox mask laughing in painted lamplight, incense-quiet air, no text, empty upper right",
+     "dialogue": [],
+     "sfx": null
+    },
+    {
+     "no": 60,
+     "chars": [],
+     "prompt": "final wide pull-back, Shiorutsuji morning from above the tiled roofs, the narrow alley, TSUKUMODO's glass door open one inch, spring light over the whole town down to the river, vast and gentle, no text",
+     "dialogue": [],
+     "sfx": null
+    }
+   ]
+  }
+ ]
+}
