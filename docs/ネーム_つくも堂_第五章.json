@@ -1,88 +1,1046 @@
 {
-  "title": "つくも堂の残り香 第五章 大蛇堂の白磁",
-  "format_ref": "ネーム_第二章.json と同一",
-  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
-  "characters_required": {"designed": ["uka"], "needed": ["オロチ(大蛇堂店主・五十代半ば・痩せた長身・鉄色の着物に蛇柄の帯・細い目・薄笑い・最重要)", "季乃(宇迦の祖母・回想。老年は白髪を結った小柄な女将、若い頃の姿は第六章以降と共通・重要)", "オロチの父(回想・病み衰えた老陶工・モブ可)"]},
-  "spreads": [
-    {"spread": 1, "scene": "骨董の季節", "panels": [
-      {"no": 1, "chars": [], "prompt": "establishing shot, autumn morning over Shiorutsuji old town, dry clear air, tiled roofs, ginkgo leaves drifting down narrow stone alley, antique shop signboard TSUKUMODO, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "十月の声を聞くと、栞辻には骨董の季節が来る。空気が乾いて、品物がいい顔になるのだ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 2, "chars": ["uka"], "prompt": "{uka} at shop counter checking wooden box inscriptions for the autumn fair, brushes and paulownia boxes stacked, soft daylight through glass door, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "月末には天満宮の境内で秋の辻市が立つ。つくも堂も端の見世を一つ借りるのが、祖母の代からの習いだった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 3, "chars": ["kino"], "prompt": "flashback, elderly {kino} at market stall under huge ginkgo tree, dappled light moving over antiques on cloth, gentle stubborn smile, sepia tone, empty upper left", "dialogue": [{"speaker": "季乃", "text": "木の下は日ィが読める。品物の顔はな、光の按配で嘘をつくんや", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 4, "chars": [], "prompt": "present, shop glass door, tall thin silhouette stepping over threshold without a sound, backlit, low angle from tatami, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "足音のない客というのは、それだけで骨董屋の背筋を伸ばさせる。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 5, "chars": ["uka"], "prompt": "{uka} looking up from counter, openly displeased expression, teacup halfway, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "……大蛇堂さん。うちに何ぞ", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 6, "chars": ["orochi"], "prompt": "full reveal of {orochi}, mid-fifties, lean tall man in iron-gray kimono with snake-pattern obi, narrow eyes, thin smile, standing in doorway light, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "挨拶やのう、九十九の嬢", "balloon": "top_right", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 2, "scene": "蛇の旦那", "panels": [
-      {"no": 7, "chars": ["orochi"], "prompt": "{orochi} gliding through the narrow shop, appraising eyes sweeping shelves of antiques, smooth serpentine walk, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "屋号は大蛇堂。辻市の世話役を長年務め、目利きの腕は町で三本の指に入る。同業は皆、この男をオロチと呼ぶ。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 8, "chars": ["kino", "orochi"], "prompt": "flashback, auction scene, elderly {kino} and younger {orochi} both raising hands over one item, tense crowd, price soaring, sepia tone, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "一度だけ、市で二人が同じ品に指を挙げ、値が青天井に駆け上がったことがある。競り勝ったのは祖母だった。", "balloon": "top_right", "type": "narration"}], "sfx": "ざわ…"},
-      {"no": 9, "chars": ["kino"], "prompt": "flashback, {kino} back at shop, deeply displeased, slapping folded fan on knee, empty upper left", "dialogue": [{"speaker": "季乃", "text": "あの蛇はな、宇迦、最後のひと声、わざと遅らせよった", "balloon": "top_left", "type": "normal"}, {"speaker": "ナレーション", "text": "情けをかけられたことが、値切られるより腹に据えかねたらしい。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
-      {"no": 10, "chars": ["orochi"], "prompt": "present, {orochi} sitting before counter uninvited, untying sanada cord of a paulownia box with practiced fingers, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "今日は客や。見てもらいたい物がある", "balloon": "top_left", "type": "normal"}], "sfx": "しゅる…"},
-      {"no": 11, "chars": ["uka", "orochi"], "prompt": "two shot across counter, {uka} teasing with mock politeness, {orochi} unimpressed, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "大蛇堂の旦那がうちに鑑定を? 日ィが西から昇りますよ", "balloon": "top_right", "type": "normal"}, {"speaker": "オロチ", "text": "口の減らんとこは、ばあさん譲りやの", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
-      {"no": 12, "chars": [], "prompt": "the white porcelain moon jar revealed inside the box, softly glowing, generous rounded shoulder, faint warp, milky bluish-white glaze, dramatic quiet lighting, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "白磁の壺だった。李朝の月壺——数寄者が一生に一度は抱きたいと願う、あの白だ。", "balloon": "top_left", "type": "narration"}], "sfx": null}
-    ]},
-    {"spread": 3, "scene": "二つの白", "panels": [
-      {"no": 13, "chars": [], "prompt": "extreme close-up of the moon jar, slight warp of the body, seam of two joined halves circling the waist, faint fire-color blush on glaze, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "胴はわずかに歪み、その歪みごと月のように満ちている。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 14, "chars": [], "prompt": "deep-focus composition, moon jar in foreground on counter, white hanging scroll visible far in the back alcove room, two whites facing each other, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "白い物が、これで二つ。壺の白は満ちてくる白。軸の白は、どこまでも引いて待っている白や", "balloon": "top_left", "type": "thought"}], "sfx": null},
-      {"no": 15, "chars": ["orochi"], "prompt": "{orochi} leaning slightly forward, narrow eyes suddenly serious, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "先だっての市で競り落とした。本歌の月壺いう触れ込みでな。……お前の見立てを聞きたい", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 16, "chars": ["uka"], "prompt": "{uka} hand stopping midway to teacup, caught off guard, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "わしの目ェの話やない。お前の鼻の話や", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 17, "chars": ["orochi"], "prompt": "close-up {orochi}, eyes smiling but not smiling, lamplight edge on thin face, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "九十九の孫が品物の匂いを嗅ぐ、いう噂は昔からある。血ィいうもんがあるなら、見せてもらお思うてな", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 18, "chars": ["uka"], "prompt": "{uka} lifting the jar carefully with both hands despite herself, antique dealer's hands moving before merchant's face, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "試されている。分かったが、目の前の白があまりに良すぎて、商売人の顔より先に骨董屋の手が出た。", "balloon": "top_left", "type": "narration"}], "sfx": null}
-    ]},
-    {"spread": 4, "scene": "目・指・鼻", "panels": [
-      {"no": 19, "chars": [], "prompt": "macro shot of glaze crazing under raking light, fine even crackle lines, {uka}'s eye reflected in surface, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "まず、目で見た。", "balloon": "top_left", "type": "narration"}, {"speaker": "宇迦", "text": "貫入が浅い。三百年の白磁の景色やない", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
-      {"no": 20, "chars": [], "prompt": "close-up of fingers stroking glaze, then the jar turned over showing foot ring with too-even trimming marks, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "次に、指で聞いた。いい肌だが、枯れていない。せいぜい数十年の乾きだった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 21, "chars": ["uka"], "prompt": "{uka} face close to the jar mouth, eyes closed, breathing in thinly, concentrated stillness, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "最後に、鼻で聞いた。", "balloon": "top_left", "type": "narration"}], "sfx": "すん…"},
-      {"no": 22, "chars": [], "prompt": "scent imagery panel, translucent overlay of hospital room, starched white sheets and disinfectant bottle, floating over the jar's white, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "薬の匂い。消毒液と、糊の効いた敷布——病室の匂いや", "balloon": "top_right", "type": "thought"}], "sfx": null},
-      {"no": 23, "chars": [], "prompt": "scent imagery panel, thin incense smoke rising in a closed dim room, daily-lit incense by a small altar, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "もう一筋は線香。閉めきった部屋で、毎日焚かれ続けた線香の匂い", "balloon": "top_left", "type": "thought"}], "sfx": null},
-      {"no": 24, "chars": ["uka", "orochi"], "prompt": "{uka} setting the jar down gently, long silence between the two across the white, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "……本歌やありません", "balloon": "top_right", "type": "normal"}, {"speaker": "オロチ", "text": "ほう", "balloon": "bottom_left", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 5, "scene": "供の一字", "panels": [
-      {"no": 25, "chars": ["uka"], "prompt": "{uka} explaining steadily, jar between them, professional gaze, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "李朝やない。五、六十年前の写しです。……せやけど、これ、売るために作った贋物と違います", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 26, "chars": [], "prompt": "extreme close-up beside the foot ring, a hair-thin nail-inscribed character hidden under the glaze, barely legible, raking light, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "高台の脇、釉の下に爪書きがある。読めるか読めんかの細さで——供、の一字", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 27, "chars": ["uka"], "prompt": "{uka} quiet and sure, shop hushed around her, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "売り物にこんな字ィ入れる贋作師はいてません。これは誰ぞに供えるつもりで焼かれた壺です", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 28, "chars": ["uka"], "prompt": "{uka} looking at the jar with soft eyes, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "焼いた人は、長いこと病んではった人です。焼き上がりを、寝床で抱いてはったんと違うかな", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 29, "chars": ["orochi"], "prompt": "{orochi} motionless, children's laughter passing outside the alley, shop interior left outside of time, wide quiet panel, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "オロチは長いこと、動かなかった。店の中だけが、壺の白を挟んで、時間の外に取り残されていた。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 30, "chars": ["orochi"], "prompt": "close-up {orochi}, narrow eyes closed, one deep breath without any theater, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "……親父の壺や", "balloon": "top_right", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 6, "scene": "贋作師の息子", "panels": [
-      {"no": 31, "chars": ["orochi"], "prompt": "{orochi} speaking low, gaze on the jar, lamplight, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "わしの親父が焼いた。死ぬ前の年に、病院を抜け出しては窯場に通うてな", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 32, "chars": [], "prompt": "flashback, gaunt old potter cradling a white moon jar on his futon, kiln glow through window, sepia tone, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "本歌に狂い、抱けんもんやから自分で焼いた。世間はそれを、贋作師と呼んだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 33, "chars": ["orochi"], "prompt": "{orochi} bitter thin smile, counting on memory, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "親父の壺は箱書きが化けて本歌に成り上がった。わしは見つけるたび競り落として蔵に戻しとる。これで七本目や", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 34, "chars": ["orochi"], "prompt": "close-up of {orochi}'s finger-back stroking the glaze with unexpected tenderness, empty right side", "dialogue": [{"speaker": "ナレーション", "text": "蛇と呼ばれる男の指が、そのときだけ、ただの息子の指だった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
-      {"no": 35, "chars": ["orochi"], "prompt": "{orochi} lifting eyes to {uka}, plain honest look for once, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "供の字ィはな、お袋の位牌に供える、いう意味や。……嬢。お前の鼻は、ほんまもんや", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 36, "chars": ["uka"], "prompt": "{uka} pouring fresh tea, eyes narrowed, reading the man, steam rising, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "ほんで、旦那。本題は何ですの", "balloon": "top_right", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 7, "scene": "東雲", "panels": [
-      {"no": 37, "chars": ["orochi"], "prompt": "{orochi}'s narrow gaze sliding across the shop to the back alcove, stopping on the white scroll, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "——あれや", "balloon": "top_left", "type": "normal"}, {"speaker": "ナレーション", "text": "声から湿り気が消えていた。商いの声だった。", "balloon": "bottom_right", "type": "narration"}], "sfx": null},
-      {"no": 38, "chars": ["orochi"], "prompt": "{orochi} facing {uka} squarely, low voice, shop shadows deepening, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "近頃、妙な筋が栞辻を嗅ぎ回っとる。探しもんは白いままの掛け軸や。……東雲いう画家の名前、聞いたことあるか", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 39, "chars": [], "prompt": "imagery panel, Showa-era art world, young painter silhouette walking away leaving a brush on the floor, exhibition hall behind, high contrast, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "東雲。彗星のように画壇に現れ、これからという時に、ぷつりと筆を折って消えた男。真筆は極端に少ない。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 40, "chars": ["orochi"], "prompt": "{orochi} remembering, faint awe on his face, snow-and-river painting ghosted behind him, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "消える前の年の絵は、そら凄まじかった。わしも一幅だけ見た。……絵の中から、水の匂いがした", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 41, "chars": [], "prompt": "imagery panel, blank white hanging scroll in a dark old shop, rumor-like haze around it, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "東雲には最後の一幅がある。絵の描かれとらん白いままの一幅が、古い町の古い店に今も掛かっとる——いう与太話や", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 42, "chars": ["uka"], "prompt": "{uka} keeping her business voice, hand clenched on her lap below the counter, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "うちのあれは祖母の遺品です。来歴も何もあらしません", "balloon": "top_right", "type": "normal"}, {"speaker": "オロチ", "text": "来歴なら、あるんと違うか", "balloon": "bottom_left", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 8, "scene": "片浦の一人娘", "panels": [
-      {"no": 43, "chars": ["orochi"], "prompt": "{orochi} raising one finger, precise as an appraisal, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "あの手ェの仕事をする表具師を、わしは一人しか知らん。紙屋町におった片浦いう男や。……片浦には、一人娘がおった", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 44, "chars": ["uka"], "prompt": "{uka} eyes widening, memory voice overlapping, ghosted image of old lady Fujino talking, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "——季乃さんはな、嫁入り前は紙屋町の子ォや。ふじ乃さんの声が、耳の奥で重なった", "balloon": "top_right", "type": "thought"}], "sfx": null},
-      {"no": 45, "chars": ["orochi"], "prompt": "{orochi} standing, rewrapping the box with careful hands, not looking at her, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "娘の名前まではわしも知らん。あとの勘定は、お前が自分でせえ", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 46, "chars": ["orochi"], "prompt": "{orochi} at the threshold turning back, sharp warning eyes, autumn alley behind, empty upper right", "dialogue": [{"speaker": "オロチ", "text": "忠告や、嬢。売る気がないなら、あの軸、人目に触れんとこへ仕舞え。嗅ぎ回っとるんは画商崩れの、行儀の悪い筋や", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 47, "chars": ["orochi"], "prompt": "close-up {orochi}, coldest professional face, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "値ェのつく白紙は、この商売で一番質の悪い獲物や。本物かどうか誰にも決められん。決められんもんには、なんぼでも値がつく", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 48, "chars": ["uka"], "prompt": "{uka} standing at counter, direct question, evening light slanting into shop, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "……なんで教えてくれはりますの。うちは商売敵ですよ", "balloon": "top_right", "type": "normal"}], "sfx": null}
-    ]},
-    {"spread": 9, "scene": "借り", "panels": [
-      {"no": 49, "chars": ["orochi"], "prompt": "{orochi} narrow eyes opening just a fraction, rare unguarded moment, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "季乃さんはな、親父の壺を、市で一遍だけ買うてくれた。皆が贋作や言うて指も差さん壺をな", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 50, "chars": ["kino"], "prompt": "flashback, {kino} holding the white jar in both hands at a market, looking at it long and kindly, sepia tone, empty upper right", "dialogue": [{"speaker": "季乃", "text": "ようできた嘘や。嘘のつき方に、真心がある", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 51, "chars": ["orochi"], "prompt": "{orochi} finishing the knot on the box, matter-of-fact tone hiding everything, empty upper left", "dialogue": [{"speaker": "オロチ", "text": "わしはあの人に、借りが一つある。今日で返した。それだけの話や", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 52, "chars": [], "prompt": "empty doorway, glass door ajar, autumn alley with drifting ginkgo leaves, no figure, no footsteps, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "足音のない男は、来たときと同じように、音もなく秋の路地へ消えた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 53, "chars": ["uka"], "prompt": "night, {uka} in the small back room with all lamps lit, sitting square before the white scroll, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "東雲。片浦。市の立たない宵市。毎月十七日の、名のない預かりもの。買いそびれた、と言った鼠色の背中。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 54, "chars": ["uka"], "prompt": "{uka} laying everything out on tatami, fourteen bound ledgers, a single white envelope, overhead shot, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "端物が五つ揃って同じ箱から出てきたら、それはもう端物ではない。揃いの道具だ。", "balloon": "top_right", "type": "narration"}], "sfx": null}
-    ]},
-    {"spread": 10, "scene": "婚礼の帯", "panels": [
-      {"no": 55, "chars": [], "prompt": "macro shot of the scroll mounting under lamp, young-sprout-green fabric with woven flowing-water pattern, the weave revealing bridal maru-obi quality, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "中廻しの若苗色の裂。よくよく見れば、織りの格が違う。丸帯——それも、婚礼に締める格の。", "balloon": "top_left", "type": "narration"}], "sfx": null},
-      {"no": 56, "chars": ["uka"], "prompt": "{uka} close to the scroll, voice cracking, lamplight trembling on her face, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "……おばあちゃん。あんたの帯と違うの、これ", "balloon": "top_right", "type": "normal"}], "sfx": null},
-      {"no": 57, "chars": [], "prompt": "imagery panel, young woman's hands cutting a bridal brocade obi with scissors, deliberate and unflinching, no face shown, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "表具師の娘が、婚礼の帯を断って、絵のない本紙を表装する。誰を待てば、人はそこまでできるのか。", "balloon": "top_left", "type": "narration"}], "sfx": "しゃ…"},
-      {"no": 58, "chars": ["uka"], "prompt": "{uka}'s fingertips stopping a breath away from the black persimmon roller end, hand withdrawing, empty right side", "dialogue": [{"speaker": "ナレーション", "text": "宛先より先に開けた手紙は、盗み読みという。", "balloon": "top_right", "type": "narration"}], "sfx": null},
-      {"no": 59, "chars": ["uka"], "prompt": "{uka} placing one white envelope on fukusa cloth before the scroll like an offering, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "受け取らんかったんと違うやろ。預かっとったんやろ。金も軸も、ぜんぶひっくるめて——あの人の、渡しそびれた気持ちを", "balloon": "top_left", "type": "normal"}], "sfx": null},
-      {"no": 60, "chars": [], "prompt": "wide shot of the dark small room, white scroll faintly glowing in moonlight through shoji, envelope at its foot, deep stillness, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "次の十七日に訊こう、と決めた。まさかその前に、軸のほうが店から消えることになるとは、まだ知らない。", "balloon": "top_right", "type": "narration"}], "sfx": null}
-    ]}
+ "title": "つくも堂の残り香 第五章 大蛇堂の白磁",
+ "format_ref": "ネーム_第二章.json と同一",
+ "page_math": {
+  "spreads": 10,
+  "panels": 60,
+  "single_pages": 20
+ },
+ "characters_required": {
+  "designed": [
+   "uka",
+   "kino(第一章・回想/写真)"
+  ],
+  "needed": [
+   "orochi(大蛇堂:五十代半ばの同業・痩せた長身・鉄色の着物に蛇柄の帯・細い目に薄笑い・足音のない歩き方・重要度:準レギュラー)",
+   "オロチの父(回想のみ:病み衰えた老陶工・寝床で月壺を抱く・重要度:モブ可)"
   ]
+ },
+ "spreads": [
+  {
+   "spread": 1,
+   "scene": "骨董の季節",
+   "panels": [
+    {
+     "no": 1,
+     "chars": [],
+     "prompt": "establishing shot, autumn morning over Shiorutsuji old town, dry clear air, tiled roofs, ginkgo leaves drifting down narrow stone alley, antique shop signboard TSUKUMODO, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "十月の声を聞くと、栞辻には骨董の季節が来る。空気が乾いて、品物がいい顔になるのだ。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 2,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} at shop counter checking wooden box inscriptions for the autumn fair, brushes and paulownia boxes stacked, soft daylight through glass door, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "月末には天満宮の境内で秋の辻市が立つ。つくも堂も端の見世を一つ借りるのが、祖母の代からの習いだった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 3,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, elderly {kino} at market stall under huge ginkgo tree, dappled light moving over antiques on cloth, gentle stubborn smile, sepia tone, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "木の下は日ィが読める。品物の顔はな、光の按配で嘘をつくんや",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 4,
+     "chars": [],
+     "prompt": "present, shop glass door, tall thin silhouette stepping over threshold without a sound, backlit, low angle from tatami, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "足音のない客というのは、それだけで骨董屋の背筋を伸ばさせる。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 5,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} looking up from counter, openly displeased expression, teacup halfway, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "……大蛇堂さん。うちに何ぞ",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 6,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "full reveal of {orochi}, mid-fifties, lean tall man in iron-gray kimono with snake-pattern obi, narrow eyes, thin smile, standing in doorway light, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "挨拶やのう、九十九の嬢",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 2,
+   "scene": "蛇の旦那",
+   "panels": [
+    {
+     "no": 7,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} gliding through the narrow shop, appraising eyes sweeping shelves of antiques, smooth serpentine walk, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "屋号は大蛇堂。辻市の世話役を長年務め、目利きの腕は町で三本の指に入る。同業は皆、この男をオロチと呼ぶ。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 8,
+     "chars": [
+      "kino",
+      "orochi"
+     ],
+     "prompt": "flashback, auction scene, elderly {kino} and younger {orochi} both raising hands over one item, tense crowd, price soaring, sepia tone, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "一度だけ、市で二人が同じ品に指を挙げ、値が青天井に駆け上がったことがある。競り勝ったのは祖母だった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": "ざわ…"
+    },
+    {
+     "no": 9,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, {kino} back at shop, deeply displeased, slapping folded fan on knee, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "あの蛇はな、宇迦、最後のひと声、わざと遅らせよった",
+       "balloon": "top_left",
+       "type": "normal"
+      },
+      {
+       "speaker": "ナレーション",
+       "text": "情けをかけられたことが、値切られるより腹に据えかねたらしい。",
+       "balloon": "bottom_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 10,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "present, {orochi} sitting before counter uninvited, untying sanada cord of a paulownia box with practiced fingers, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "今日は客や。見てもらいたい物がある",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": "しゅる…"
+    },
+    {
+     "no": 11,
+     "chars": [
+      "uka",
+      "orochi"
+     ],
+     "prompt": "two shot across counter, {uka} teasing with mock politeness, {orochi} unimpressed, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "大蛇堂の旦那がうちに鑑定を? 日ィが西から昇りますよ",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "オロチ",
+       "text": "口の減らんとこは、ばあさん譲りやの",
+       "balloon": "bottom_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 12,
+     "chars": [],
+     "prompt": "the white porcelain moon jar revealed inside the box, softly glowing, generous rounded shoulder, faint warp, milky bluish-white glaze, dramatic quiet lighting, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "白磁の壺だった。李朝の月壺——数寄者が一生に一度は抱きたいと願う、あの白だ。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 3,
+   "scene": "二つの白",
+   "panels": [
+    {
+     "no": 13,
+     "chars": [],
+     "prompt": "extreme close-up of the moon jar, slight warp of the body, seam of two joined halves circling the waist, faint fire-color blush on glaze, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "胴はわずかに歪み、その歪みごと月のように満ちている。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 14,
+     "chars": [],
+     "prompt": "deep-focus composition, moon jar in foreground on counter, white hanging scroll visible far in the back alcove room, two whites facing each other, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "白い物が、これで二つ。壺の白は満ちてくる白。軸の白は、どこまでも引いて待っている白や",
+       "balloon": "top_left",
+       "type": "thought"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 15,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} leaning slightly forward, narrow eyes suddenly serious, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "先だっての市で競り落とした。本歌の月壺いう触れ込みでな。……お前の見立てを聞きたい",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 16,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} hand stopping midway to teacup, caught off guard, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "わしの目ェの話やない。お前の鼻の話や",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 17,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "close-up {orochi}, eyes smiling but not smiling, lamplight edge on thin face, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "九十九の孫が品物の匂いを嗅ぐ、いう噂は昔からある。血ィいうもんがあるなら、見せてもらお思うてな",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 18,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} lifting the jar carefully with both hands despite herself, antique dealer's hands moving before merchant's face, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "試されている。分かったが、目の前の白があまりに良すぎて、商売人の顔より先に骨董屋の手が出た。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 4,
+   "scene": "目・指・鼻",
+   "panels": [
+    {
+     "no": 19,
+     "chars": [],
+     "prompt": "macro shot of glaze crazing under raking light, fine even crackle lines, {uka}'s eye reflected in surface, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "まず、目で見た。",
+       "balloon": "top_left",
+       "type": "narration"
+      },
+      {
+       "speaker": "宇迦",
+       "text": "貫入が浅い。三百年の白磁の景色やない",
+       "balloon": "bottom_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 20,
+     "chars": [],
+     "prompt": "close-up of fingers stroking glaze, then the jar turned over showing foot ring with too-even trimming marks, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "次に、指で聞いた。いい肌だが、枯れていない。せいぜい数十年の乾きだった。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 21,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} face close to the jar mouth, eyes closed, breathing in thinly, concentrated stillness, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "最後に、鼻で聞いた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "すん…"
+    },
+    {
+     "no": 22,
+     "chars": [],
+     "prompt": "scent imagery panel, translucent overlay of hospital room, starched white sheets and disinfectant bottle, floating over the jar's white, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "薬の匂い。消毒液と、糊の効いた敷布——病室の匂いや",
+       "balloon": "top_right",
+       "type": "thought"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 23,
+     "chars": [],
+     "prompt": "scent imagery panel, thin incense smoke rising in a closed dim room, daily-lit incense by a small altar, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "もう一筋は線香。閉めきった部屋で、毎日焚かれ続けた線香の匂い",
+       "balloon": "top_left",
+       "type": "thought"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 24,
+     "chars": [
+      "uka",
+      "orochi"
+     ],
+     "prompt": "{uka} setting the jar down gently, long silence between the two across the white, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "……本歌やありません",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "オロチ",
+       "text": "ほう",
+       "balloon": "bottom_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 5,
+   "scene": "供の一字",
+   "panels": [
+    {
+     "no": 25,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} explaining steadily, jar between them, professional gaze, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "李朝やない。五、六十年前の写しです。……せやけど、これ、売るために作った贋物と違います",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 26,
+     "chars": [],
+     "prompt": "extreme close-up beside the foot ring, a hair-thin nail-inscribed character hidden under the glaze, barely legible, raking light, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "高台の脇、釉の下に爪書きがある。読めるか読めんかの細さで——供、の一字",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 27,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} quiet and sure, shop hushed around her, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "売り物にこんな字ィ入れる贋作師はいてません。これは誰ぞに供えるつもりで焼かれた壺です",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 28,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} looking at the jar with soft eyes, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "焼いた人は、長いこと病んではった人です。焼き上がりを、寝床で抱いてはったんと違うかな",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 29,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} motionless, children's laughter passing outside the alley, shop interior left outside of time, wide quiet panel, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "オロチは長いこと、動かなかった。店の中だけが、壺の白を挟んで、時間の外に取り残されていた。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 30,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "close-up {orochi}, narrow eyes closed, one deep breath without any theater, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "……親父の壺や",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 6,
+   "scene": "贋作師の息子",
+   "panels": [
+    {
+     "no": 31,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} speaking low, gaze on the jar, lamplight, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "わしの親父が焼いた。死ぬ前の年に、病院を抜け出しては窯場に通うてな",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 32,
+     "chars": [],
+     "prompt": "flashback, gaunt old potter cradling a white moon jar on his futon, kiln glow through window, sepia tone, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "本歌に狂い、抱けんもんやから自分で焼いた。世間はそれを、贋作師と呼んだ。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 33,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} bitter thin smile, counting on memory, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "親父の壺は箱書きが化けて本歌に成り上がった。わしは見つけるたび競り落として蔵に戻しとる。これで七本目や",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 34,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "close-up of {orochi}'s finger-back stroking the glaze with unexpected tenderness, empty right side",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "蛇と呼ばれる男の指が、そのときだけ、ただの息子の指だった。",
+       "balloon": "bottom_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 35,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} lifting eyes to {uka}, plain honest look for once, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "供の字ィはな、お袋の位牌に供える、いう意味や。……嬢。お前の鼻は、ほんまもんや",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 36,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} pouring fresh tea, eyes narrowed, reading the man, steam rising, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "ほんで、旦那。本題は何ですの",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 7,
+   "scene": "東雲",
+   "panels": [
+    {
+     "no": 37,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi}'s narrow gaze sliding across the shop to the back alcove, stopping on the white scroll, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "——あれや",
+       "balloon": "top_left",
+       "type": "normal"
+      },
+      {
+       "speaker": "ナレーション",
+       "text": "声から湿り気が消えていた。商いの声だった。",
+       "balloon": "bottom_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 38,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} facing {uka} squarely, low voice, shop shadows deepening, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "近頃、妙な筋が栞辻を嗅ぎ回っとる。探しもんは白いままの掛け軸や。……東雲いう画家の名前、聞いたことあるか",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 39,
+     "chars": [],
+     "prompt": "imagery panel, Showa-era art world, young painter silhouette walking away leaving a brush on the floor, exhibition hall behind, high contrast, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "東雲。彗星のように画壇に現れ、これからという時に、ぷつりと筆を折って消えた男。真筆は極端に少ない。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 40,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} remembering, faint awe on his face, snow-and-river painting ghosted behind him, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "消える前の年の絵は、そら凄まじかった。わしも一幅だけ見た。……絵の中から、水の匂いがした",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 41,
+     "chars": [],
+     "prompt": "imagery panel, blank white hanging scroll in a dark old shop, rumor-like haze around it, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "東雲には最後の一幅がある。絵の描かれとらん白いままの一幅が、古い町の古い店に今も掛かっとる——いう与太話や",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 42,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} keeping her business voice, hand clenched on her lap below the counter, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "うちのあれは祖母の遺品です。来歴も何もあらしません",
+       "balloon": "top_right",
+       "type": "normal"
+      },
+      {
+       "speaker": "オロチ",
+       "text": "来歴なら、あるんと違うか",
+       "balloon": "bottom_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 8,
+   "scene": "片浦の一人娘",
+   "panels": [
+    {
+     "no": 43,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} raising one finger, precise as an appraisal, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "あの手ェの仕事をする表具師を、わしは一人しか知らん。紙屋町におった片浦いう男や。……片浦には、一人娘がおった",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 44,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} eyes widening, memory voice overlapping, ghosted image of old lady Fujino talking, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "——季乃さんはな、嫁入り前は紙屋町の子ォや。ふじ乃さんの声が、耳の奥で重なった",
+       "balloon": "top_right",
+       "type": "thought"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 45,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} standing, rewrapping the box with careful hands, not looking at her, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "娘の名前まではわしも知らん。あとの勘定は、お前が自分でせえ",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 46,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} at the threshold turning back, sharp warning eyes, autumn alley behind, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "忠告や、嬢。売る気がないなら、あの軸、人目に触れんとこへ仕舞え。嗅ぎ回っとるんは画商崩れの、行儀の悪い筋や",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 47,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "close-up {orochi}, coldest professional face, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "値ェのつく白紙は、この商売で一番質の悪い獲物や。本物かどうか誰にも決められん。決められんもんには、なんぼでも値がつく",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 48,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} standing at counter, direct question, evening light slanting into shop, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "……なんで教えてくれはりますの。うちは商売敵ですよ",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 9,
+   "scene": "借り",
+   "panels": [
+    {
+     "no": 49,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} narrow eyes opening just a fraction, rare unguarded moment, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "季乃さんはな、親父の壺を、市で一遍だけ買うてくれた。皆が贋作や言うて指も差さん壺をな",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 50,
+     "chars": [
+      "kino"
+     ],
+     "prompt": "flashback, {kino} holding the white jar in both hands at a market, looking at it long and kindly, sepia tone, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "季乃",
+       "text": "ようできた嘘や。嘘のつき方に、真心がある",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 51,
+     "chars": [
+      "orochi"
+     ],
+     "prompt": "{orochi} finishing the knot on the box, matter-of-fact tone hiding everything, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "オロチ",
+       "text": "わしはあの人に、借りが一つある。今日で返した。それだけの話や",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 52,
+     "chars": [],
+     "prompt": "empty doorway, glass door ajar, autumn alley with drifting ginkgo leaves, no figure, no footsteps, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "足音のない男は、来たときと同じように、音もなく秋の路地へ消えた。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 53,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "night, {uka} in the small back room with all lamps lit, sitting square before the white scroll, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "東雲。片浦。市の立たない宵市。毎月十七日の、名のない預かりもの。買いそびれた、と言った鼠色の背中。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 54,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} laying everything out on tatami, fourteen bound ledgers, a single white envelope, overhead shot, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "端物が五つ揃って同じ箱から出てきたら、それはもう端物ではない。揃いの道具だ。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  },
+  {
+   "spread": 10,
+   "scene": "婚礼の帯",
+   "panels": [
+    {
+     "no": 55,
+     "chars": [],
+     "prompt": "macro shot of the scroll mounting under lamp, young-sprout-green fabric with woven flowing-water pattern, the weave revealing bridal maru-obi quality, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "中廻しの若苗色の裂。よくよく見れば、織りの格が違う。丸帯——それも、婚礼に締める格の。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 56,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} close to the scroll, voice cracking, lamplight trembling on her face, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "……おばあちゃん。あんたの帯と違うの、これ",
+       "balloon": "top_right",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 57,
+     "chars": [],
+     "prompt": "imagery panel, young woman's hands cutting a bridal brocade obi with scissors, deliberate and unflinching, no face shown, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "表具師の娘が、婚礼の帯を断って、絵のない本紙を表装する。誰を待てば、人はそこまでできるのか。",
+       "balloon": "top_left",
+       "type": "narration"
+      }
+     ],
+     "sfx": "しゃ…"
+    },
+    {
+     "no": 58,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka}'s fingertips stopping a breath away from the black persimmon roller end, hand withdrawing, empty right side",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "宛先より先に開けた手紙は、盗み読みという。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 59,
+     "chars": [
+      "uka"
+     ],
+     "prompt": "{uka} placing one white envelope on fukusa cloth before the scroll like an offering, empty upper left",
+     "dialogue": [
+      {
+       "speaker": "宇迦",
+       "text": "受け取らんかったんと違うやろ。預かっとったんやろ。金も軸も、ぜんぶひっくるめて——あの人の、渡しそびれた気持ちを",
+       "balloon": "top_left",
+       "type": "normal"
+      }
+     ],
+     "sfx": null
+    },
+    {
+     "no": 60,
+     "chars": [],
+     "prompt": "wide shot of the dark small room, white scroll faintly glowing in moonlight through shoji, envelope at its foot, deep stillness, empty upper right",
+     "dialogue": [
+      {
+       "speaker": "ナレーション",
+       "text": "次の十七日に訊こう、と決めた。まさかその前に、軸のほうが店から消えることになるとは、まだ知らない。",
+       "balloon": "top_right",
+       "type": "narration"
+      }
+     ],
+     "sfx": null
+    }
+   ]
+  }
+ ]
 }
