@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>呪う系女子せおりちゃん | クリプト忍者のウカ</title>
+<meta name="description" content="マンガ『呪う系女子せおりちゃん』全32ページ。右から左へ読む日本式漫画リーダー。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #14110e;
+    color: #e8ded1;
+    font-family: "Shippori Mincho", serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px calc(14px + env(safe-area-inset-right)) 10px calc(14px + env(safe-area-inset-left));
+    background: #1d1813;
+    border-bottom: 1px solid #3a2f24;
+    flex: none;
+  }
+  .bar a { color: #cf9b4a; text-decoration: none; font-size: 14px; }
+  .bar .title { font-size: 15px; letter-spacing: .08em; flex: 1; text-align: center; }
+  .bar .spacer { width: 70px; }
+  .viewer { position: relative; flex: 1; min-height: 0; touch-action: pan-y; }
+  .page-view {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px;
+  }
+  .page-view img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 0 24px rgba(0,0,0,.6);
+  }
+  .zone {
+    position: absolute; top: 0; bottom: 0; width: 30%;
+    display: flex; align-items: center;
+    color: rgba(232,222,209,.0);
+    cursor: pointer; user-select: none; z-index: 2;
+  }
+  .zone:hover { color: rgba(232,222,209,.35); }
+  .zone span { font-size: 28px; padding: 0 10px; }
+  .zone.next { left: 0; justify-content: flex-start; }
+  .zone.prev { right: 0; justify-content: flex-end; }
+  .card {
+    max-width: 520px;
+    text-align: center;
+    display: flex; flex-direction: column; gap: 14px; align-items: center;
+    padding: 24px;
+  }
+  .card .work { color: #cf9b4a; letter-spacing: .2em; font-size: 13px; }
+  .card .ch { font-size: 24px; letter-spacing: .12em; }
+  .card .sub { color: #a99a86; font-size: 14px; line-height: 1.9; }
+  .btn {
+    font-family: inherit; font-size: 14px; letter-spacing: .1em;
+    color: #14110e; background: #cf9b4a;
+    border: 1px solid #cf9b4a; border-radius: 3px;
+    padding: 10px 26px; cursor: pointer; text-decoration: none;
+  }
+  .btn.ghost { background: transparent; color: #cf9b4a; }
+  .foot {
+    flex: none;
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 8px calc(14px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+    background: #1d1813; border-top: 1px solid #3a2f24;
+    font-size: 12px; color: #a99a86;
+  }
+  @media (max-width: 600px) {
+    .foot .hint { display: none; }
+    .bar .title { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a href="../index.html#novels">&laquo; サイトへ</a>
+  <span class="title">呪う系女子せおりちゃん</span>
+  <span class="spacer"></span>
+</header>
+
+<div class="viewer" id="viewer">
+  <div class="zone next" id="zoneNext" title="次へ(左)"><span>&#10094;</span></div>
+  <div class="zone prev" id="zonePrev" title="前へ(右)"><span>&#10095;</span></div>
+  <div class="page-view" id="pageView"></div>
+</div>
+
+<footer class="foot">
+  <span id="pageInfo">- / -</span>
+  <span class="hint">右から左へ読みます ｜ 左タップ・←キー・右スワイプで次のページ</span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var COUNT = 32; /* 単ページの枚数(img/norou/001.png〜) */
+  var UNITS = [{ type: "title" }];
+  for (var i = 1; i <= COUNT; i++) {
+    UNITS.push({ type: "page", src: "img/norou/" + String(i).padStart(3, "0") + ".png", n: i });
+  }
+  UNITS.push({ type: "end" });
+
+  var view = document.getElementById("pageView");
+  var info = document.getElementById("pageInfo");
+  var viewer = document.getElementById("viewer");
+
+  function get(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
+  function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  var idx = parseInt(get("uka-noroi-ui", "0"), 10);
+  if (!(idx > 0 && idx < UNITS.length)) idx = 0;
+
+  function makeCard(u) {
+    var d = document.createElement("div");
+    d.className = "card";
+    if (u.type === "title") {
+      d.innerHTML = '<span class="work">読み切りマンガ</span>' +
+        '<span class="ch">呪う系女子せおりちゃん</span>' +
+        '<span class="sub">全' + COUNT + 'ページ　右から左へ読みます</span>';
+      var b = document.createElement("button");
+      b.className = "btn";
+      b.type = "button";
+      b.textContent = "読みはじめる";
+      b.addEventListener("click", function (e) { e.stopPropagation(); go(1); });
+      d.appendChild(b);
+    } else {
+      d.innerHTML = '<span class="work">呪う系女子せおりちゃん</span>' +
+        '<span class="ch">完</span>' +
+        '<span class="sub">(了)　お読みいただきありがとうございました</span>';
+      var a2 = document.createElement("a");
+      a2.className = "btn ghost";
+      a2.href = "../index.html#novels";
+      a2.textContent = "サイトへ戻る";
+      d.appendChild(a2);
+    }
+    return d;
+  }
+
+  function render() {
+    var u = UNITS[idx];
+    view.innerHTML = "";
+    if (u.type === "page") {
+      var img = document.createElement("img");
+      img.src = u.src;
+      img.alt = u.n + "ページ";
+      view.appendChild(img);
+      info.textContent = u.n + " / " + COUNT;
+      /* 前後を先読み */
+      [idx + 1, idx + 2, idx - 1].forEach(function (j) {
+        var v = UNITS[j];
+        if (v && v.type === "page") { (new Image()).src = v.src; }
+      });
+    } else {
+      view.appendChild(makeCard(u));
+      info.textContent = u.type === "title" ? "表紙" : "巻末";
+    }
+    set("uka-noroi-ui", String(idx));
+  }
+
+  function go(dir) {
+    var next = idx + dir;
+    if (next < 0 || next >= UNITS.length) return;
+    idx = next;
+    render();
+  }
+
+  document.getElementById("zoneNext").addEventListener("click", function () { go(1); });
+  document.getElementById("zonePrev").addEventListener("click", function () { go(-1); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") go(1);
+    if (e.key === "ArrowRight") go(-1);
+  });
+  var tx = null;
+  viewer.addEventListener("touchstart", function (e) { tx = e.changedTouches[0].clientX; }, { passive: true });
+  viewer.addEventListener("touchend", function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    tx = null;
+    if (Math.abs(dx) < 40) return;
+    go(dx > 0 ? 1 : -1); /* 右スワイプ=次(右→左読み) */
+  }, { passive: true });
+
+  render();
+})();
+</script>
+</body>
+</html>
