@@ -1,0 +1,94 @@
+{
+  "title": "つくも堂の残り香 第二章 八時二十分の懐中時計",
+  "format_ref": "ネーム_第二章.json と同一",
+  "page_math": {"spreads": 10, "panels": 60, "single_pages": 20},
+  "characters_required": {
+    "designed": ["uka", "roujin", "kino"],
+    "needed": [
+      "shin(早瀬慎:二十二、三の大学四年生・雨に濡れた素朴な青年・元バンドマンの面影・重要度:本章ゲスト)",
+      "hanzo(服部半三:七十二歳の修理職人・片眼鏡・偏屈な仏頂面・作業着に前掛け・重要度:準レギュラー)"
+    ]
+  },
+  "spreads": [
+    {"spread": 1, "scene": "梅雨の看病", "panels": [
+      {"no": 1, "chars": [], "prompt": "rainy season, reed screen under shop eaves beaten by rain, interior with paulownia boxes slightly opened, hanging scrolls airing, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "梅雨に入ると、つくも堂の仕事は品物の看病になる。湿気は骨董の万病のもとや。", "balloon": "top_left", "type": "narration"}], "sfx": "ざあ…"},
+      {"no": 2, "chars": ["uka"], "prompt": "{uka} wiping lacquerware and oiling ironware among rows of antiques, sleeves tied up, working profile, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "黴は甘酸っぱい声で、錆は苦い声で鳴く。……この鼻が素直に役に立つ季節や", "balloon": "top_right", "type": "thought"}], "sfx": null},
+      {"no": 3, "chars": ["shin"], "prompt": "glass door opening timidly, {shin} young man with rain-soaked shoulders hunched in doorway, struggling with umbrella, empty upper left", "dialogue": [{"speaker": "慎", "text": "あの……買い取りって、してもらえますか", "balloon": "top_left", "type": "normal"}], "sfx": "からり"},
+      {"no": 4, "chars": ["uka", "shin"], "prompt": "{uka} silently holding out a hand towel to {shin}, practical kindness, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "どうぞ。品物、濡らさんうちに", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 5, "chars": ["shin"], "prompt": "{shin} glancing around the crowded antiques awkwardly, first time in such a shop, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "早瀬慎。市外の大学の四年生で、春には東京の会社に発つという。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 6, "chars": ["uka"], "prompt": "{uka} small smile at counter, shop goods waiting quietly around her, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "骨董屋は古い物の墓場でも宝の山でもない。品物が次の持ち主を待つ、待合室や", "balloon": "top_right", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 2, "scene": "八時二十分", "panels": [
+      {"no": 7, "chars": [], "prompt": "worn leather pouch on tatami, silver pocket watch emerging with chain, rain light from window, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "使い込まれた革の小袋から出てきたのは、銀色の懐中時計だった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 8, "chars": ["uka"], "prompt": "{uka} weighing the watch on her palm, appraising eye, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "ずしりといい目方。打ち傷は一つもなく、鎖の環だけが飴色に磨り減っていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 9, "chars": [], "prompt": "large panel, extreme close-up of white watch face with black arabic numerals, both hands frozen exactly at 8:20, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "針は、八時二十分で止まっている。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 10, "chars": ["shin"], "prompt": "{shin} sitting on stool, explaining with lowered eyes, empty upper right", "dialogue": [{"speaker": "慎", "text": "祖父の形見です。祖父は国鉄の機関士で……壊れてるんですけど、物は良いはずなので", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 11, "chars": ["uka"], "prompt": "{uka} fingers on crown about to wind, stopping herself, bringing watch to her nose instead, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "機械油と革の匂いの奥に、乳の匂い。赤ん坊の産着に染みる、あの薄く甘い匂いがあった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 12, "chars": ["uka", "shin"], "prompt": "{uka} looking up at {shin} directly, {shin} averting his eyes, rain sound filling silence, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "早瀬さん。これ、なんで売らはるんです", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 3, "scene": "絶縁", "panels": [
+      {"no": 13, "chars": ["shin"], "prompt": "{shin} fists clenched on knees, confession posture, empty upper left", "dialogue": [{"speaker": "慎", "text": "……持ってる資格が、ないからです。俺、祖父と絶縁みたいになってたんです", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 14, "chars": ["shin"], "prompt": "flashback, {shin} with guitar being shouted at by stern old man, harsh contrast, empty upper right", "dialogue": [{"speaker": "慎", "text": "音楽で飯が食えるか、って怒鳴られて。それきり三年、口をきかないまま、半年前に死にました", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 15, "chars": ["shin"], "prompt": "{shin} bitter self-mocking half smile, empty upper left", "dialogue": [{"speaker": "慎", "text": "結局俺は音楽も諦めて、普通に就職します。祖父の言った通りになりました", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 16, "chars": [], "prompt": "flashback, small boy and grandfather at railway yard on sunday, retired steam locomotives, grandfather pointing proudly, warm nostalgia, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "小さい頃は好きだった。日曜ごとに操車場へ連れられ、祖父は機関車の話を延々とした。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 17, "chars": [], "prompt": "flashback, grandfather's weathered hand holding the pocket watch, broad back in engineer's uniform, empty upper left", "dialogue": [{"speaker": "祖父(回想)", "text": "人の時間を千人も万人も預かって運ぶんが機関士や。時計に嘘だけはつかせるな", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 18, "chars": ["uka"], "prompt": "{uka} gazing at the stopped hands, thinking hard, watch face reflected in her eyes, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "時計に嘘をつかせん男の時計が、出鱈目な時刻で止まってる。この八時二十分は、時刻やない何かや", "balloon": "top_right", "type": "thought"}], "sfx": null}
+    ]},
+    {"spread": 4, "scene": "はっとり修理店", "panels": [
+      {"no": 19, "chars": [], "prompt": "dead-end of alley, old shuttered house with glass shoji, ink brush characters reading repair shop, rain puddles, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "鍵屋町の路地の突き当たり。栞辻で直らない物は、このはっとり修理店へ来る。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 20, "chars": ["hanzo"], "prompt": "{hanzo} old craftsman with monocle silently examining the watch, workbench with hundreds of tiny drawers of gears, wall covered in stopped clocks all showing different times, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "主の服部半三、七十二。宇迦が生まれる前から、祖母の店の品を直してきた偏屈である。", "balloon": "top_right", "type": "narration"}], "sfx": "ちち、ちち"},
+      {"no": 21, "chars": ["hanzo"], "prompt": "{hanzo} looking up over monocle after long silence, empty upper left", "dialogue": [{"speaker": "半三", "text": "……嬢ちゃん。これ、どこが壊れてるて", "balloon": "top_left", "type": "normal"}, {"speaker": "宇迦", "text": "動かへんそうです", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 22, "chars": ["hanzo"], "prompt": "{hanzo} sharp glare, craftsman's pride, close-up, empty upper right", "dialogue": [{"speaker": "半三", "text": "動かへんのと壊れてるのとは別や", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 23, "chars": ["hanzo"], "prompt": "{hanzo} explaining with watch open, mainspring barrel visible, precise gestures, empty upper left", "dialogue": [{"speaker": "半三", "text": "こいつは五十年、判で捺いたように毎朝巻かれとる。ほんで最後だけ、巻かれんとほどけ切って止まっとる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 24, "chars": ["hanzo"], "prompt": "close-up of {hanzo}'s face, grave and certain, key line, empty upper right", "dialogue": [{"speaker": "半三", "text": "時計が勝手に止まったんやない。持ち主が、止めよ、と決めて止めたんや", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 5, "scene": "裏蓋の跡", "panels": [
+      {"no": 25, "chars": ["hanzo"], "prompt": "extreme close-up of watch case hinge and rim, stepped nail marks on the edge, {hanzo}'s fingertip pointing, empty upper left", "dialogue": [{"speaker": "半三", "text": "裏蓋の蝶番が緩んどる。修理以外で開けるもんやないのに、毎日開けとった証拠や", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 26, "chars": [], "prompt": "back lid popping open, silver inner surface with round raised discoloration, trace of glue where small paper was long attached then peeled, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "銀の内側に、小さな紙が長年貼られて、剥がされた跡があった。", "balloon": "top_right", "type": "narration"}], "sfx": "ぱちん"},
+      {"no": 27, "chars": ["shin", "hanzo"], "prompt": "{shin} leaning in startled, {hanzo} watching him over monocle, empty upper left", "dialogue": [{"speaker": "慎", "text": "なんか、貼ってあったんですね", "balloon": "top_left", "type": "normal"}, {"speaker": "半三", "text": "写真やろな、この大きさなら。兄ちゃん、心当たりは", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 28, "chars": ["shin"], "prompt": "{shin} shaking his head, face stiff with fear of the answer, empty right side", "dialogue": [{"speaker": "ナレーション", "text": "分からないのではない。考えるのが怖いのだ。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 29, "chars": ["uka"], "prompt": "{uka} turning back to the dial, reasoning aloud, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "毎朝ラジオの時報で合わせてはった人の時計が、八時二十分いう半端な時刻で止まってる", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 30, "chars": ["uka"], "prompt": "{uka} eyes narrowing with insight, watch hands gleaming, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "ゼンマイを止めて、針だけ自分の手ェでこの時刻に合わせはった。八時二十分に、意味があるからです", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 6, "scene": "生まれた時刻", "panels": [
+      {"no": 31, "chars": ["uka", "shin"], "prompt": "{uka} asking quietly, {shin} frozen, workshop clocks around them, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "早瀬さん、生まれた時刻、知ってはります?", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 32, "chars": ["shin"], "prompt": "{shin} with trembling fingers taking out phone and calling his mother, face changing slowly like a window after rain, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "やりとりは短かった。電話を切った慎は、しばらく口が利けなかった。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 33, "chars": ["shin"], "prompt": "large panel, close-up of {shin} lowering the phone, stunned eyes brimming, empty upper area", "dialogue": [{"speaker": "慎", "text": "……朝の、八時二十分だそうです。母子手帳に書いてあるって。……なんで、そんな", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 34, "chars": [], "prompt": "symbolic image, watch face at 8:20 overlaid with morning light of a maternity ward, newborn's tiny hand, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "五十年物の鉄道時計に、孫の生まれた朝の時刻が刻まれていた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 35, "chars": ["uka"], "prompt": "{uka} advising calmly, hand on the closed watch, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "お祖父さんの遺品に、文箱とかありませんでした? 剥がれた写真いうのは、案外近くに仕舞われてるもんです", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 36, "chars": ["shin"], "prompt": "{shin} nodding with new resolve, gripping the leather pouch, rain lightening outside, empty upper right", "dialogue": [{"speaker": "慎", "text": "実家に、あります。……浚ってみます", "balloon": "top_right", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 7, "scene": "文箱の底", "panels": [
+      {"no": 37, "chars": ["shin"], "prompt": "three days later, evening after rain, {shin} at tsukumodo with red-rimmed eyes, laying items before {uka}, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "三日後、慎は夜行で実家を往復して、もう一度つくも堂へ来た。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 38, "chars": [], "prompt": "old black-and-white baby photograph with glue traces on corners, name and birthdate in fountain pen on the back, close-up on tatami, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "白黒の赤ん坊の写真が一枚。裏には生まれた日の日付と、慎、という名前。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 39, "chars": ["uka"], "prompt": "{uka} bringing the photo to her nose with permission, eyes closing, scent wisp linking photo and watch, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "あの乳の匂いや。二十二年、蓋裏の狭い闇の中で、写真から時計へ移った匂い", "balloon": "top_left", "type": "thought"}], "sfx": null},
+      {"no": 40, "chars": [], "prompt": "meticulous small handwriting in old notebook, weather and blood pressure records interrupted by different entries, close-up, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "慎、発表会。三列目では近すぎるか。——慎、また伸びた。声が父親に似てきた。", "balloon": "top_right", "type": "narration"}], "sfx": null},
+      {"no": 41, "chars": [], "prompt": "large panel, single notebook page filling frame, one entry underlined by trembling emotion, warm lamp light, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "慎の演奏、素人の儂にも分かるほど良うなった。あれで食えんのなら、世の中のほうが間違うとる。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 42, "chars": [], "prompt": "small concert ticket stub tucked near the last pages, cheap printed paper for a tiny winter live show, empty upper right", "dialogue": [{"speaker": "ナレーション", "text": "三年前の冬。客が二十人も入らない小さな演奏会の、半券だった。", "balloon": "top_right", "type": "narration"}], "sfx": null}
+    ]},
+    {"spread": 8, "scene": "物の証言", "panels": [
+      {"no": 43, "chars": ["shin"], "prompt": "{shin} voice dropping, staring at the stub, memory of a familiar back in the last row, empty upper left", "dialogue": [{"speaker": "慎", "text": "……来てたんだ。一番後ろに、それらしい背中を見た気がしたんです。声も、かけなかった", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 44, "chars": ["shin"], "prompt": "{shin} gripping the notebook until paper creaks, anguish bursting, empty upper right", "dialogue": [{"speaker": "慎", "text": "じゃあなんで、言ってくれなかったんだよ……一言でいいのに。俺、たぶん諦めなかった", "balloon": "top_right", "type": "shout"}], "sfx": "ぎしっ"},
+      {"no": 45, "chars": ["uka"], "prompt": "{uka} speaking quietly, steady eyes, antiques listening around her, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "あたしは骨董屋やから、口の達者な人間より、物のほうを信用します", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 46, "chars": ["uka"], "prompt": "{uka} continuing, image of daily ritual of opening lid and winding, fifty years of mornings layered, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "口は嘘がなんぼでもつけます。せやけど毎朝五十年、写真の蓋を開けてゼンマイを巻く仕事は、嘘ではできません", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 47, "chars": ["uka"], "prompt": "large panel, close-up of {uka}'s gentle decisive face, emotional core of the chapter, empty left side", "dialogue": [{"speaker": "宇迦", "text": "最後に時計を八時二十分に合わせた。あたしはそれを、生涯で一番正直な時報やったと思います", "balloon": "bottom_left", "type": "normal"}], "sfx": null},
+      {"no": 48, "chars": ["uka", "shin"], "prompt": "{uka} placing the pocket watch onto {shin}'s open palm, closing his fingers over it, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "買い取りは、しません。理由はもう、言わんでも分かってはりますね", "balloon": "top_left", "type": "normal"}], "sfx": null}
+    ]},
+    {"spread": 9, "scene": "ここから先はお前が巻け", "panels": [
+      {"no": 49, "chars": ["shin"], "prompt": "{shin} looking down at the watch in his hands, small voice, empty upper left", "dialogue": [{"speaker": "慎", "text": "これ……動かしてもいいんでしょうか。祖父が止めた時刻なのに", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 50, "chars": ["uka"], "prompt": "{uka} looking up at the repaired wall clock on the counter pillar, soft profile, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "お祖父さんが止めはったんは、たぶん、自分の時間だけです", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 51, "chars": ["uka"], "prompt": "{uka} smiling faintly at {shin}, warm light, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "八時二十分は、早瀬さんの時間が動き出した時刻。ここから先はお前が巻け、いう意味に聞こえますけどね", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 52, "chars": [], "prompt": "large panel, extreme close-up of young fingers slowly winding the crown, dry clicking filling the shop, second hand beginning to walk, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "五十年間毎朝そうされてきた通りの音で、時計は目を覚ました。", "balloon": "top_right", "type": "narration"}], "sfx": "りり、りり"},
+      {"no": 53, "chars": ["shin"], "prompt": "{shin} setting the time, bowing deeply at threshold, leaving into cleared evening, empty upper left", "dialogue": [{"speaker": "ナレーション", "text": "慎は時刻を合わせ、深く頭を下げて帰っていった。", "balloon": "top_left", "type": "narration"}], "sfx": null},
+      {"no": 54, "chars": ["uka"], "prompt": "{uka} alone in empty shop, speaking to no one, wall clock ticking companionably, empty upper right", "dialogue": [{"speaker": "宇迦", "text": "音楽、ほんまに諦めるかどうかは、あの子の時間の話やしな", "balloon": "top_right", "type": "normal"}], "sfx": "こち、こち"}
+    ]},
+    {"spread": 10, "scene": "軸木の重さ", "panels": [
+      {"no": 55, "chars": ["hanzo", "uka"], "prompt": "end of week, {hanzo} with teacup standing before the white scroll in the small room, {uka} behind, empty upper left", "dialogue": [{"speaker": "半三", "text": "相変わらず、白いなあ", "balloon": "top_left", "type": "normal"}, {"speaker": "宇迦", "text": "白いのが取り柄やそうです", "balloon": "bottom_right", "type": "normal"}], "sfx": null},
+      {"no": 56, "chars": ["hanzo"], "prompt": "{hanzo} kneeling close to the black persimmon roller ends, inspecting without touching, craftsman's intense gaze, empty upper right", "dialogue": [{"speaker": "半三", "text": "この軸、右と左で目方がちゃう気がする。昔の表具師はな、軸木を刳り抜いて文を仕込むことがあった", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 57, "chars": ["uka"], "prompt": "{uka} looking at her own hand on tatami, fingertips gone cold, hard voice, empty upper left", "dialogue": [{"speaker": "宇迦", "text": "開けて、みますか", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 58, "chars": ["hanzo"], "prompt": "{hanzo} standing up, putting monocle away in chest pocket, refusing gravely, empty upper right", "dialogue": [{"speaker": "半三", "text": "わしは触らん。開けるんは、開ける理由がお前さんの側にできてからでええ", "balloon": "top_right", "type": "normal"}], "sfx": null},
+      {"no": 59, "chars": ["hanzo"], "prompt": "{hanzo} at doorway in geta sandals, gazing at rainy alley, memory in his eyes, empty upper left", "dialogue": [{"speaker": "半三", "text": "一遍だけ、季乃さんがこの前で猪口を傾けとった。今日は連れがおるんや、て。……小間には誰もおらんのにな", "balloon": "top_left", "type": "normal"}], "sfx": null},
+      {"no": 60, "chars": ["uka"], "prompt": "large panel, night, {uka} sitting alone before the white scroll, rain tapping the reed screen, wide quiet composition, empty upper area", "dialogue": [{"speaker": "ナレーション", "text": "頃合いでない、と鼻の奥が言う。白い軸の前で、宇迦は祖母の言いかけた言葉の続きを考えていた。", "balloon": "top_right", "type": "narration"}], "sfx": "ぽつ…ぽつ…"}
+    ]}
+  ]
+}
