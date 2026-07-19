@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#f7f5ef"/>
+  <g fill="none" stroke="#16130f" stroke-width="3">
+    <path d="M40 130 C 20 90, 60 30, 110 40 C 160 50, 170 100, 130 120 C 100 136, 60 142, 40 130 Z"/>
+  </g>
+  <path d="M46 126 C 30 92, 64 38, 108 46 C 152 54, 160 98, 126 114 C 98 128, 62 134, 46 126 Z" fill="#c8371e" opacity="0.25"/>
+  <g fill="none" stroke="#c8371e" stroke-width="3">
+    <path d="M200 60 L 236 60 L 236 120 L 200 120 Z"/>
+    <path d="M212 78 L 228 90 L 212 102 Z" fill="#c8371e"/>
+  </g>
+  <text x="120" y="168" font-family="serif" font-size="18" font-weight="bold" fill="#16130f" text-anchor="middle">一筆塗り</text>
+  <text x="256" y="150" font-family="serif" font-size="18" font-weight="bold" fill="#c8371e" text-anchor="middle">アニメ</text>
+  <text x="272" y="52" font-family="serif" font-size="26" font-weight="bold" fill="#16130f" text-anchor="middle">v5</text>
+</svg>
