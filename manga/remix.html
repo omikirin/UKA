@@ -67,7 +67,9 @@ const chapterUrl = (prefix, n) =>
   RAW + encodeURIComponent(`ネーム_${prefix ? prefix + "_" : ""}第${kanji[n]}章.json`);
 
 const WORKS = [
-  { id:"sora", title:"空の狐と地上のウサギ", prefix:"", chapters:[2,3,4,5,6,7,8,9,10], note:"本編230p長編(第一章のネームJSONは未収録)" },
+  { id:"sora", title:"空の狐と地上のウサギ", prefix:"", chapters:[2,3,4,5,6,7,8,9,10], reader:"index.html", note:"本編230p長編(第一章のネームJSONは未収録)" },
+  { id:"noroi", title:"呪う系女子せおりちゃん", prefix:"呪う系女子せおりちゃん", chapters:[], reader:"noroi.html", note:"全80ページ(ネームJSONは未収録)" },
+  { id:"auan", title:"あう、あん、あと", prefix:"あう、あん、あと", chapters:[], reader:"yomikiri.html", note:"全二部(ネームJSONは未収録)" },
   { id:"tsukumo", title:"つくも堂", prefix:"つくも堂", chapters:[1,2,3,4,5,6,7,8], note:"" },
   { id:"sanbyaku", title:"三百年目の空", prefix:"三百年目の空", chapters:[1,2,3,4,5,6,7,8], note:"" },
   { id:"hinomimi", title:"火の耳", prefix:"火の耳", chapters:[1,2,3,4,5,6,7,8], note:"" },
@@ -297,7 +299,7 @@ function renderShelf(){
   for (const w of WORKS){
     h += `<article class="work">
       <div class="tone" style="padding:8px 12px;border-bottom:1px solid var(--ink);font-size:11px">
-        全${w.chapters.length}章 ${w.note ? "・" + esc(w.note) : ""}</div>
+        ${w.chapters.length ? `全${w.chapters.length}章` : "リーダーで読める作品"} ${w.note ? "・" + esc(w.note) : ""}</div>
       <div style="padding:14px">
         <h3 class="mincho" style="font-size:18px;margin:0 0 10px">${esc(w.title)}</h3>
         <div style="display:flex;flex-wrap:wrap;gap:6px">` +
@@ -305,6 +307,7 @@ function renderShelf(){
         `<button class="small" ${S.busy ? "disabled" : ""}
           onclick="openChapter('${esc(w.title)}','第${kanji[n]}章','${chapterUrl(w.prefix, n)}')">第${kanji[n]}章</button>`
       ).join("") +
+      (w.reader ? `<a href="${esc(w.reader)}" style="display:inline-block;padding:4px 10px;font-size:12px;border:1px solid var(--ao);color:var(--ao);text-decoration:none">漫画リーダーで読む ≫</a>` : "") +
       `</div></div></article>`;
   }
   // みんなの投稿棚 (docs/remix/index.json)
