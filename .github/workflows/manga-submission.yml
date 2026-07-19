@@ -1,0 +1,145 @@
+name: 漫画ネーム投稿の自動保存
+
+# 「[漫画投稿]」で始まるIssueが作られたら、本文からタイトル・著者名・ネームJSONを
+# 取り出して docs/remix/ に保存し、目録(index.json)を更新してコミットする。
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  save:
+    if: startsWith(github.event.issue.title, '[漫画投稿]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: 投稿を解析して保存
+        id: save
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        shell: python {0}
+        run: |
+          import json, os, re, sys, urllib.request, datetime
+
+          body = os.environ.get("ISSUE_BODY") or ""
+          out = open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8")
+
+          def fail(msg):
+              out.write("status=error\n")
+              out.write("message=" + msg.replace("\n", " ") + "\n")
+              sys.exit(0)
+
+          def section(name):
+              m = re.search(r"###\s*" + re.escape(name) + r"\s*\n+(.*?)(?=\n###\s|\Z)", body, re.S)
+              return m.group(1).strip() if m else ""
+
+          title  = section("タイトル")
+          author = section("著者名")
+          source = section("ネームJSONまたはURL") or section("ネームJSON または URL")
+
+          if not title or not author:
+              fail("タイトルと著者名は必須です。Issue本文に「### タイトル」「### 著者名」の見出しと値を入れてください。")
+          if not source:
+              fail("「### ネームJSONまたはURL」の欄にJSON本文か公開URLを入れてください。")
+
+          # コードフェンスを剥がす
+          fence = re.search(r"```(?:json)?\s*\n(.*?)```", source, re.S)
+          if fence:
+              source = fence.group(1).strip()
+
+          if source.startswith("http"):
+              if not re.match(r"https://(raw\.githubusercontent\.com|gist\.githubusercontent\.com)/", source):
+                  fail("URL投稿は raw.githubusercontent.com / gist.githubusercontent.com のみ受け付けています。")
+              try:
+                  with urllib.request.urlopen(source, timeout=30) as r:
+                      if int(r.headers.get("Content-Length") or 0) > 2_000_000:
+                          fail("JSONが大きすぎます(2MBまで)。")
+                      data = json.loads(r.read(2_000_000).decode("utf-8"))
+              except Exception as e:
+                  fail("URLからJSONを取得できませんでした: " + str(e))
+          else:
+              try:
+                  data = json.loads(source)
+              except Exception as e:
+                  fail("JSONの解析に失敗しました: " + str(e))
+
+          if not isinstance(data, dict) or not isinstance(data.get("spreads"), list):
+              fail("ネームJSONの形式が不正です(spreads配列が必要)。")
+
+          # タイトル・著者名をファイル名に(危険文字を除去)
+          def clean(s):
+              s = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "", s).strip().strip(".")
+              return s[:60] or "無題"
+
+          fname = f"投稿ネーム_{clean(title)}_{clean(author)}.json"
+
+          data.setdefault("title", title)
+          data["submitted_title"]  = title
+          data["submitted_author"] = author
+          data["submitted_via"]    = "issue #" + os.environ["ISSUE_NUMBER"]
+          data["submitted_by"]     = os.environ["ISSUE_USER"]
+
+          os.makedirs("docs/remix", exist_ok=True)
+          path = os.path.join("docs/remix", fname)
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=1)
+
+          # 目録を再構築
+          index = []
+          for fn in sorted(os.listdir("docs/remix")):
+              if not fn.endswith(".json") or fn == "index.json":
+                  continue
+              try:
+                  with open(os.path.join("docs/remix", fn), encoding="utf-8") as f:
+                      d = json.load(f)
+              except Exception:
+                  continue
+              index.append({
+                  "file": fn,
+                  "title": d.get("submitted_title") or d.get("title") or fn,
+                  "author": d.get("submitted_author") or "?",
+                  "remix_of": d.get("remix_of"),
+              })
+          with open("docs/remix/index.json", "w", encoding="utf-8") as f:
+              json.dump(index, f, ensure_ascii=False, indent=1)
+
+          out.write("status=ok\n")
+          out.write("file=" + path + "\n")
+
+      - name: コミットして反映
+        if: steps.save.outputs.status == 'ok'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/remix
+          git commit -m "漫画投稿: ${{ github.event.issue.title }} (#${{ github.event.issue.number }})" || exit 0
+          git push
+
+      - name: 結果をIssueに返信
+        uses: actions/github-script@v7
+        env:
+          STATUS: ${{ steps.save.outputs.status }}
+          MESSAGE: ${{ steps.save.outputs.message }}
+          FILE: ${{ steps.save.outputs.file }}
+        with:
+          script: |
+            const ok = process.env.STATUS === 'ok';
+            const body = ok
+              ? `投稿を保存しました: \`${process.env.FILE}\`\nリミックス室の「みんなの投稿」棚に並びます。ありがとうございました!`
+              : `保存できませんでした: ${process.env.MESSAGE}\nIssue本文を編集すると再実行されます。`;
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: context.issue.number, body });
+            if (ok) {
+              await github.rest.issues.update({
+                ...context.repo, issue_number: context.issue.number,
+                state: 'closed', state_reason: 'completed' });
+            }
