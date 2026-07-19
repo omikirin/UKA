@@ -55,7 +55,8 @@
 <script>
 "use strict";
 const REPO = "omikirin/UKA";
-const RAW = "https://raw.githubusercontent.com/" + REPO + "/master/docs/";
+// 同じサイト内の docs/ から相対パスで取得(ブランチ名に依存しない)
+const RAW = new URL("../docs/", location.href).href;
 const GH = "https://github.com/" + REPO;
 const API = "https://api.github.com";
 const SUBMIT_PREFIX = "[漫画投稿]";
