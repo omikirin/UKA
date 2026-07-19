@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漫画リミックス室 v4 — リミックス連鎖・投稿・コメント</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+  :root{ --ink:#16130f; --paper:#f7f5ef; --shu:#c8371e; --ao:#2a5d8f; --midori:#3a7d44; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:var(--paper); color:var(--ink);
+    font-family:'Zen Kaku Gothic New','Hiragino Sans',sans-serif; }
+  .tone{ background-image:radial-gradient(rgba(22,19,15,0.10) 1px, transparent 1px); background-size:5px 5px; }
+  .mincho{ font-family:'Shippori Mincho',serif; }
+  button{ font-family:inherit; font-size:13px; letter-spacing:0.12em; padding:9px 18px;
+    border:2px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer; border-radius:0; }
+  button.primary{ background:var(--ink); color:var(--paper); }
+  button.small{ padding:5px 10px; font-size:12px; }
+  button:disabled{ opacity:.5; cursor:wait; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid var(--shu); }
+  input, textarea{ border:2px solid var(--ink); padding:9px 12px; font-size:13px; font-family:inherit; border-radius:0; background:#fff; }
+  header{ border-bottom:3px solid var(--ink); padding:22px 24px 14px; }
+  h1{ font-family:'Shippori Mincho',serif; font-weight:800; font-size:clamp(24px,4vw,34px); margin:0; letter-spacing:0.06em; }
+  .badge{ display:inline-block; margin-left:12px; color:var(--shu); font-size:13px;
+    border:2px solid var(--shu); padding:1px 8px; transform:rotate(-3deg); vertical-align:middle; }
+  main{ max-width:1000px; margin:0 auto; padding:24px; }
+  .err{ color:var(--shu); font-size:13px; border:1px solid var(--shu); padding:8px 12px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  article.work{ border:2px solid var(--ink); background:#fff; }
+  article.user{ border:2px dashed var(--ao); background:#fff; }
+  h2.shelf{ font-family:'Shippori Mincho',serif; font-size:18px; border-bottom:2px solid var(--ink); padding-bottom:6px; }
+  .chain-note{ font-size:12px; color:var(--midori); border-left:4px solid var(--midori); padding:4px 10px; margin:8px 0; }
+  .panel-row{ font-size:12.5px; line-height:1.7; padding:5px 10px; margin-bottom:5px; border-left:3px solid #bbb; }
+  .panel-row.remixed{ border-left-color:var(--shu); background:#fdf1ee; }
+  .comment-card{ border:1px solid #ccc; background:#fff; padding:10px 14px; margin-bottom:10px; font-size:13px; }
+  .comment-card .meta{ font-size:11px; opacity:.6; margin-bottom:4px; }
+  footer{ border-top:1px solid var(--ink); padding:14px 24px; font-size:11px; opacity:.7; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<header class="tone">
+  <h1>漫画リミックス室 <span class="badge">連鎖リミックス対応</span></h1>
+  <p style="margin:6px 0 0;font-size:13px;opacity:.75">
+    原作ネームを読む・リミックスする・さらにリミックスする・投稿する。みんなの投稿とコメントはGitHubに貯まります。
+  </p>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  原作ネームは omikirin/UKA リポジトリの docs/ から取得。投稿ネームは docs/remix/ に、コメントはGitHub Issuesに保存されます。
+</footer>
+
+<script>
+"use strict";
+const REPO = "omikirin/UKA";
+const RAW = "https://raw.githubusercontent.com/" + REPO + "/master/docs/";
+const GH = "https://github.com/" + REPO;
+const API = "https://api.github.com";
+const SUBMIT_PREFIX = "[漫画投稿]";
+const COMMENT_PREFIX = "[漫画コメント]";
+
+const kanji = ["","一","二","三","四","五","六","七","八","九","十"];
+const chapterUrl = (prefix, n) =>
+  RAW + encodeURIComponent(`ネーム_${prefix ? prefix + "_" : ""}第${kanji[n]}章.json`);
+
+const WORKS = [
+  { id:"sora", title:"空の狐と地上のウサギ", prefix:"", chapters:[2,3,4,5,6,7,8,9,10], note:"本編230p長編(第一章のネームJSONは未収録)" },
+  { id:"tsukumo", title:"つくも堂", prefix:"つくも堂", chapters:[1,2,3,4,5,6,7,8], note:"" },
+  { id:"sanbyaku", title:"三百年目の空", prefix:"三百年目の空", chapters:[1,2,3,4,5,6,7,8], note:"" },
+  { id:"hinomimi", title:"火の耳", prefix:"火の耳", chapters:[1,2,3,4,5,6,7,8], note:"" },
+  { id:"todai", title:"燈台下の言伝", prefix:"燈台下の言伝", chapters:[1,2,3,4,5,6,7,8], note:"" },
+  { id:"mayonaka", title:"真夜中図書室の返却期限", prefix:"真夜中図書室の返却期限", chapters:[1,2,3,4,5,6,7,8], note:"" },
+];
+
+// ---------- 状態 ----------
+const S = {
+  view: "shelf",          // shelf | viewer
+  sel: null,              // {workTitle,label,url}
+  nameJson: null,
+  remixed: null,
+  comment: null,
+  lineage: [],            // 連鎖の履歴 [{title, instruction}]
+  userWorks: [],          // URLで棚に足したもの(ローカル)
+  postedWorks: [],        // docs/remix/index.json 由来
+  busy: false,
+  err: null,
+  ghComments: { state:"idle", issue:null, list:[] },
+};
+
+// ---------- ユーティリティ ----------
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function downloadJson(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function callClaude(userText, system, maxTokens = 1000){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      model:"claude-sonnet-4-6", max_tokens:maxTokens, system,
+      messages:[{ role:"user", content:userText }],
+    }),
+  });
+  const data = await res.json();
+  return (data.content || []).map(c => c.type === "text" ? c.text : "").join("\n");
+}
+
+function nameDigest(json){
+  return (json.spreads || []).map(sp =>
+    `見開き${sp.spread}「${sp.scene || ""}」\n` +
+    (sp.panels || []).map(p =>
+      `  コマ${p.no}: ${p.prompt || ""}` +
+      (p.dialogue || []).map(d => ` /「${d.text}」(${d.speaker})`).join("")
+    ).join("\n")
+  ).join("\n");
+}
+
+function applyPatches(json, plan){
+  const out = JSON.parse(JSON.stringify(json));
+  (out.spreads || []).forEach(sp => (sp.panels || []).forEach(p => delete p._remixed));
+  if (Array.isArray(plan.spread_order) && plan.spread_order.length){
+    const map = {};
+    out.spreads.forEach(s => map[s.spread] = s);
+    const reordered = plan.spread_order.map(n => map[n]).filter(Boolean);
+    if (reordered.length === out.spreads.length) out.spreads = reordered;
+  }
+  (plan.patches || []).forEach(pt => {
+    const sp = out.spreads.find(s => s.spread === pt.spread);
+    if (!sp) return;
+    if (pt.scene) sp.scene = pt.scene;
+    const pn = (sp.panels || []).find(p => p.no === pt.panel);
+    if (!pn) return;
+    if (pt.prompt) pn.prompt = pt.prompt;
+    if (Array.isArray(pt.dialogue))
+      pn.dialogue = pt.dialogue.map(d => ({
+        speaker:d.speaker || "?", text:d.text || "",
+        balloon:d.balloon || "top_left", type:d.type || "normal",
+      }));
+    pn._remixed = true;
+  });
+  return out;
+}
+
+// リミックス結果に系譜情報を焼き込む
+function stampLineage(remixedJson, baseJson, instruction){
+  const chain = Array.isArray(baseJson.remix_chain) ? baseJson.remix_chain.slice() : [];
+  chain.push({ of: baseJson.title || "無題", instruction });
+  return { ...remixedJson, remix_of: baseJson.title || "無題", remix_instruction: instruction, remix_chain: chain };
+}
+
+const workKey = () => (S.nameJson && S.nameJson.title) || (S.sel ? `${S.sel.workTitle} ${S.sel.label}` : "");
+
+// ---------- データ取得 ----------
+async function loadPostedWorks(){
+  try{
+    const res = await fetch(RAW + "remix/index.json", { cache:"no-store" });
+    if (!res.ok) return;
+    const list = await res.json();
+    if (Array.isArray(list)) { S.postedWorks = list; render(); }
+  }catch(e){ /* 目録なしは無視 */ }
+}
+
+async function openChapter(workTitle, label, url){
+  S.busy = true; S.err = null; S.remixed = null; S.comment = null; S.lineage = [];
+  render();
+  try{
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.status);
+    const j = await res.json();
+    if (!Array.isArray(j.spreads)) throw new Error("schema");
+    S.nameJson = j;
+    S.sel = { workTitle, label, url };
+    S.view = "viewer";
+    S.ghComments = { state:"idle", issue:null, list:[] };
+    loadComments();
+  }catch(e){
+    S.err = "ネームJSONの取得に失敗しました: " + url;
+  }
+  S.busy = false; render();
+}
+
+// ---------- リミックス ----------
+async function runRemix(){
+  const instruction = document.getElementById("instruction")?.value.trim();
+  if (!S.nameJson || !instruction) return;
+  S.busy = true; S.err = null; render();
+  try{
+    const text = await callClaude(
+      `原作ネーム(要約):\n${nameDigest(S.nameJson).slice(0, 9000)}\n\n` +
+      `リミックス指示: ${instruction}\n\n` +
+      `変更が必要なコマだけを差分パッチで返してください。JSONのみ:\n` +
+      `{"comment":"改変の狙い(1-2文)","spread_order":[並べ替える場合のみ見開き番号の新順序、不要ならnull],` +
+      `"patches":[{"spread":見開き番号,"panel":コマ番号,"scene":"変更時のみ","prompt":"英語の画像生成プロンプト・変更時のみ","dialogue":[{"speaker":"話者","text":"セリフ","balloon":"top_left","type":"normal"}]}]}\n` +
+      `patchesは重要な変更に絞り最大12件。dialogueは変更するコマのみ全文で。`,
+      "あなたは漫画ネームのリミックス演出家。原作の構造を尊重しつつ指示を大胆に反映する差分パッチを設計する。JSON以外を一切出力しない。",
+      1000
+    );
+    const plan = JSON.parse(text.replace(/```json|```/g, "").trim());
+    S.remixed = stampLineage(applyPatches(S.nameJson, plan), S.nameJson, instruction);
+    S.comment = plan.comment || null;
+  }catch(e){
+    S.err = "リミックスに失敗しました。指示を短くしてもう一度お試しください。";
+  }
+  S.busy = false; render();
+}
+
+// リミックス結果を新たな「原作」として採用 → 連鎖
+function chainRemix(){
+  if (!S.remixed) return;
+  S.lineage.push({ title:S.nameJson.title || "無題", instruction:S.remixed.remix_instruction });
+  S.nameJson = S.remixed;
+  S.remixed = null;
+  S.comment = null;
+  render();
+  const el = document.getElementById("instruction");
+  if (el){ el.value = ""; el.focus(); }
+}
+
+// ---------- 投稿 (GitHub Issue経由でGitに貯まる) ----------
+async function submitToGit(prefillJson){
+  const title  = document.getElementById("subTitle")?.value.trim();
+  const author = document.getElementById("subAuthor")?.value.trim();
+  const source = prefillJson ? JSON.stringify(prefillJson, null, 1)
+               : document.getElementById("subSource")?.value.trim();
+  if (!title || !author){ S.err = "タイトルと著者名は必須です。"; render(); return; }
+  if (!source){ S.err = "ネームJSON本文またはURLを入れてください。"; render(); return; }
+
+  const body =
+    "### タイトル\n\n" + title + "\n\n" +
+    "### 著者名\n\n" + author + "\n\n" +
+    "### ネームJSONまたはURL\n\n" +
+    (source.startsWith("http") ? source : "```json\n" + source + "\n```") + "\n";
+
+  const issueTitle = `${SUBMIT_PREFIX} ${title} / ${author}`;
+  try{ await navigator.clipboard.writeText(body); }catch(e){}
+  // JSONが長いとURLに載らないため、本文はクリップボード経由で貼ってもらう
+  const url = GH + "/issues/new?title=" + encodeURIComponent(issueTitle) +
+    "&body=" + encodeURIComponent("(ここに、コピー済みの投稿本文を貼り付けてください — Ctrl/Cmd+V)");
+  window.open(url, "_blank", "noopener");
+  S.err = null;
+  alert("GitHubのIssue作成画面をひらきました。\n投稿本文はコピー済みです。本文欄に貼り付けて「Submit new issue」を押すと、自動でリポジトリに保存されます。");
+}
+
+// ---------- コメント (GitHub Issues) ----------
+function commentIssueTitle(){ return `${COMMENT_PREFIX} ${workKey()}`; }
+
+async function loadComments(){
+  S.ghComments = { state:"loading", issue:null, list:[] };
+  render();
+  try{
+    const q = `repo:${REPO} in:title "${commentIssueTitle()}"`;
+    const res = await fetch(API + "/search/issues?q=" + encodeURIComponent(q));
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const issue = (data.items || []).find(it => it.title === commentIssueTitle());
+    if (!issue){ S.ghComments = { state:"none", issue:null, list:[] }; render(); return; }
+    let list = [];
+    if (issue.comments > 0){
+      const cr = await fetch(API + `/repos/${REPO}/issues/${issue.number}/comments?per_page=50`);
+      if (cr.ok) list = await cr.json();
+    }
+    if (issue.body && issue.body.trim())
+      list.unshift({ user:issue.user, created_at:issue.created_at, body:issue.body });
+    S.ghComments = { state:"ready", issue, list };
+  }catch(e){
+    S.ghComments = { state:"error", issue:null, list:[] };
+  }
+  render();
+}
+
+function commentLink(){
+  if (S.ghComments.issue) return S.ghComments.issue.html_url + "#new_comment_field";
+  return GH + "/issues/new?title=" + encodeURIComponent(commentIssueTitle()) +
+    "&body=" + encodeURIComponent("この作品への感想・コメントをどうぞ!\n\n");
+}
+
+// ---------- 描画 ----------
+function render(){
+  const app = document.getElementById("app");
+  app.innerHTML = S.view === "shelf" ? renderShelf() : renderViewer();
+}
+
+function renderShelf(){
+  let h = S.err ? `<p class="err">${esc(S.err)}</p>` : "";
+  h += `<h2 class="shelf">原作棚</h2><div class="grid">`;
+  for (const w of WORKS){
+    h += `<article class="work">
+      <div class="tone" style="padding:8px 12px;border-bottom:1px solid var(--ink);font-size:11px">
+        全${w.chapters.length}章 ${w.note ? "・" + esc(w.note) : ""}</div>
+      <div style="padding:14px">
+        <h3 class="mincho" style="font-size:18px;margin:0 0 10px">${esc(w.title)}</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">` +
+      w.chapters.map(n =>
+        `<button class="small" ${S.busy ? "disabled" : ""}
+          onclick="openChapter('${esc(w.title)}','第${kanji[n]}章','${chapterUrl(w.prefix, n)}')">第${kanji[n]}章</button>`
+      ).join("") +
+      `</div></div></article>`;
+  }
+  // みんなの投稿棚 (docs/remix/index.json)
+  for (const w of S.postedWorks){
+    const url = RAW + "remix/" + encodeURIComponent(w.file);
+    h += `<article class="user">
+      <div style="padding:8px 12px;border-bottom:1px dashed var(--ao);font-size:11px;color:var(--ao)">
+        みんなの投稿 ${w.remix_of ? "・リミックス元: " + esc(w.remix_of) : ""}</div>
+      <div style="padding:14px">
+        <h3 class="mincho" style="font-size:16px;margin:0 0 4px">${esc(w.title)}</h3>
+        <p style="font-size:11px;opacity:.7;margin:0 0 10px">著: ${esc(w.author)}</p>
+        <button ${S.busy ? "disabled" : ""} onclick="openChapter('${esc(w.title)}','','${url}')">ひらく</button>
+      </div></article>`;
+  }
+  // ローカルURL棚
+  S.userWorks.forEach((w, i) => {
+    h += `<article class="user">
+      <div style="padding:8px 12px;border-bottom:1px dashed var(--ao);font-size:11px;color:var(--ao)">URL読み込み(未投稿)</div>
+      <div style="padding:14px">
+        <h3 class="mincho" style="font-size:16px;margin:0 0 10px">${esc(w.title)}</h3>
+        <button ${S.busy ? "disabled" : ""} onclick="openChapter('${esc(w.title)}','','${esc(w.url)}')">ひらく</button>
+      </div></article>`;
+  });
+  h += `</div>`;
+
+  // URLで棚に追加
+  h += `<div style="border:2px dashed var(--ao);padding:16px;margin-top:28px">
+    <h2 class="mincho" style="font-size:16px;color:var(--ao);margin:0 0 8px">URLでネームをひらく</h2>
+    <p style="font-size:12px;margin:0 0 10px;opacity:.8">
+      ネームJSON(spreads配列を含む形式)の公開URLを貼ると棚に追加されます。raw.githubusercontent.com のURLが確実です。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="submitUrl" placeholder="https://raw.githubusercontent.com/…/あなたのネーム.json"
+        style="flex:1 1 320px" onkeydown="if(event.key==='Enter')addByUrl()">
+      <button class="primary" onclick="addByUrl()" ${S.busy ? "disabled" : ""}>棚に追加</button>
+    </div>
+  </div>`;
+
+  // Gitに投稿
+  h += `<div style="border:2px solid var(--midori);padding:16px;margin-top:20px">
+    <h2 class="mincho" style="font-size:16px;color:var(--midori);margin:0 0 8px">あなたのネームをリポジトリに投稿する</h2>
+    <p style="font-size:12px;margin:0 0 10px;opacity:.8">
+      タイトルと著者名は必須です(ファイル名として保存されます)。投稿するとGitHub Issueがひらき、
+      送信後は自動で docs/remix/ に保存されて上の「みんなの投稿」棚に並びます。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <input id="subTitle" placeholder="タイトル(必須)" style="flex:1 1 200px">
+      <input id="subAuthor" placeholder="著者名(必須)" style="flex:1 1 160px">
+    </div>
+    <textarea id="subSource" rows="5" placeholder='ネームJSON本文を貼り付け、またはJSONの公開URL'
+      style="width:100%;margin-bottom:8px"></textarea>
+    <button class="primary" onclick="submitToGit()" ${S.busy ? "disabled" : ""}>GitHubに投稿する</button>
+  </div>`;
+  return h;
+}
+
+function renderViewer(){
+  const nj = S.nameJson;
+  let h = `<button style="margin-bottom:16px" onclick="backToShelf()">← 原作棚へ戻る</button>`;
+  if (S.err) h += `<p class="err">${esc(S.err)}</p>`;
+
+  h += `<div style="border:2px solid var(--ink);background:#fff;padding:18px;margin-bottom:18px">
+    <h2 class="mincho" style="font-size:22px;margin:0 0 4px">${esc(S.sel.workTitle)} ${esc(S.sel.label)}</h2>
+    <p style="font-size:12px;opacity:.7;margin:0 0 4px">${esc(nj.title || "")}
+      ${nj.page_math ? ` ｜ 見開き${nj.page_math.spreads}・${nj.page_math.panels}コマ` : ""}</p>`;
+  // 系譜表示 (連鎖の見える化)
+  const chain = Array.isArray(nj.remix_chain) ? nj.remix_chain : [];
+  if (chain.length)
+    h += `<div class="chain-note">リミックス系譜: ` +
+      chain.map(c => `${esc(c.of)} →「${esc(c.instruction)}」`).join(" ⟶ ") + ` ⟶ 現在</div>`;
+  h += `<button style="margin-top:8px" onclick="dlOriginal()">このネームをDL</button></div>`;
+
+  // リミックス
+  h += `<div style="border:2px solid var(--shu);background:#fff;padding:16px;margin-bottom:18px">
+    <h3 class="mincho" style="color:var(--shu);font-size:17px;margin:0 0 10px">リミックスしたい</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="instruction" placeholder="例: ホラー演出に / セリフを関西弁に / 時系列を逆順に"
+        style="flex:1 1 280px" onkeydown="if(event.key==='Enter')runRemix()">
+      <button class="primary" onclick="runRemix()" ${S.busy ? "disabled" : ""}>${S.busy ? "改変中……" : "リミックス実行"}</button>
+    </div>`;
+  if (S.comment)
+    h += `<p style="font-size:13px;color:var(--ao);border-left:4px solid var(--ao);padding:4px 10px;margin-top:12px">${esc(S.comment)}</p>`;
+  if (S.remixed)
+    h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="primary" onclick="dlRemixed()">リミックスネームをDL</button>
+      <button style="border-color:var(--midori);color:var(--midori)" onclick="chainRemix()">この結果をさらにリミックス ↺</button>
+      <button style="border-color:var(--midori);color:var(--midori)" onclick="openSubmitRemixed()">この結果を投稿する</button>
+    </div>`;
+  h += `</div>`;
+
+  // 投稿フォーム(リミックス結果用・折りたたみ)
+  h += `<div id="remixSubmit" style="display:none;border:2px solid var(--midori);background:#fff;padding:16px;margin-bottom:18px">
+    <h3 class="mincho" style="color:var(--midori);font-size:16px;margin:0 0 10px">リミックス結果を投稿</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <input id="subTitle" placeholder="タイトル(必須)" style="flex:1 1 200px">
+      <input id="subAuthor" placeholder="著者名(必須)" style="flex:1 1 160px">
+    </div>
+    <button class="primary" onclick="submitRemixed()">GitHubに投稿する</button>
+  </div>`;
+
+  h += renderPreview(S.remixed || nj, S.remixed ? "var(--shu)" : "var(--ink)",
+    S.remixed ? "リミックス版(朱=改変コマ)" : "ネーム");
+
+  // コメント
+  h += renderComments();
+  return h;
+}
+
+function renderPreview(json, color, title){
+  let h = `<div style="border:1px solid ${color};margin-bottom:18px">
+    <div class="tone" style="padding:6px 12px;border-bottom:1px solid ${color};font-size:12px;font-weight:700;color:${color}">${esc(title)}</div>
+    <div style="padding:12px;background:#fff;max-height:520px;overflow-y:auto">`;
+  for (const sp of (json.spreads || [])){
+    h += `<div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px">見開き${sp.spread} ${sp.scene ? "「" + esc(sp.scene) + "」" : ""}</div>`;
+    for (const p of (sp.panels || [])){
+      h += `<div class="panel-row${p._remixed ? " remixed" : ""}">
+        <span style="opacity:.55">コマ${p.no}: ${esc(p.prompt || "")}</span>` +
+        (p.dialogue || []).map(d => `<div class="mincho">${esc(d.speaker)}「${esc(d.text)}」</div>`).join("") +
+        `</div>`;
+    }
+    h += `</div>`;
+  }
+  return h + `</div></div>`;
+}
+
+function renderComments(){
+  const c = S.ghComments;
+  let h = `<div style="border:2px solid var(--ao);background:#fff;padding:16px">
+    <h3 class="mincho" style="color:var(--ao);font-size:17px;margin:0 0 10px">この漫画へのコメント</h3>`;
+  if (c.state === "loading") h += `<p style="font-size:12px;opacity:.6">読み込み中……</p>`;
+  else if (c.state === "error") h += `<p style="font-size:12px;opacity:.6">コメントの取得に失敗しました(GitHub APIの制限の可能性)。</p>`;
+  else if (c.state === "none" || (c.state === "ready" && !c.list.length))
+    h += `<p style="font-size:12px;opacity:.6">まだコメントはありません。最初のコメントをどうぞ。</p>`;
+  else for (const cm of c.list){
+    h += `<div class="comment-card">
+      <div class="meta">${esc(cm.user?.login || "?")} ・ ${esc((cm.created_at || "").slice(0,10))}</div>
+      <div style="white-space:pre-wrap">${esc(cm.body || "")}</div></div>`;
+  }
+  h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+    <a href="${commentLink()}" target="_blank" rel="noopener">
+      <button class="primary">GitHubでコメントする</button></a>
+    <button onclick="loadComments()">コメントを再読み込み</button>
+  </div>
+  <p style="font-size:11px;opacity:.6;margin:8px 0 0">コメントはGitHub Issue「${esc(commentIssueTitle())}」に貯まります(要GitHubアカウント)。</p>
+  </div>`;
+  return h;
+}
+
+// ---------- イベント ----------
+function backToShelf(){
+  S.view = "shelf"; S.sel = null; S.nameJson = null; S.remixed = null;
+  S.comment = null; S.err = null; S.lineage = [];
+  render();
+}
+function dlOriginal(){
+  downloadJson(S.nameJson, `${S.sel.workTitle}_${S.sel.label || "投稿"}_ネーム.json`);
+}
+function dlRemixed(){
+  downloadJson(S.remixed, `${S.sel.workTitle}_${S.sel.label || ""}_リミックスネーム.json`);
+}
+function openSubmitRemixed(){
+  const el = document.getElementById("remixSubmit");
+  el.style.display = el.style.display === "none" ? "block" : "none";
+  const t = document.getElementById("subTitle");
+  if (t && !t.value) t.value = (S.remixed.title || "") + " (リミックス)";
+}
+function submitRemixed(){ submitToGit(S.remixed); }
+
+async function addByUrl(){
+  const el = document.getElementById("submitUrl");
+  const url = el?.value.trim();
+  if (!url) return;
+  S.busy = true; S.err = null; render();
+  try{
+    const res = await fetch(url);
+    const j = await res.json();
+    if (!Array.isArray(j.spreads)) throw new Error("schema");
+    S.userWorks.push({ title:j.title || "投稿ネーム", url });
+  }catch(e){
+    S.err = "URLからネームを読み込めませんでした。CORS許可されたJSON(spreads配列を含む)のURLを指定してください。raw.githubusercontent.com 上のファイルが確実です。";
+  }
+  S.busy = false; render();
+}
+
+render();
+loadPostedWorks();
+</script>
+</body>
+</html>
