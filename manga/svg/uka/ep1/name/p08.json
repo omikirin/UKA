@@ -1,0 +1,38 @@
+{
+ "layout_id": "1コマ",
+ "title": "初午の夜",
+ "panels": [
+  {
+   "chars": [
+    {
+     "pose_id": "P068_side",
+     "x": 0.82,
+     "scale": 0.5,
+     "flip": true
+    },
+    {
+     "pose_id": "P029_front",
+     "x": 0.3,
+     "scale": 0.7
+    }
+   ],
+   "background_id": "BG088",
+   "serif": [
+    {
+     "t": "姉上!!",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ザァァ",
+     "intensity": 5
+    },
+    {
+     "text": "ドン",
+     "intensity": 5
+    }
+   ]
+  }
+ ]
+}

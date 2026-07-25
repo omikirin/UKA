@@ -1,0 +1,49 @@
+{
+ "layout_id": "3段4コマ3",
+ "title": "根の国の淵",
+ "panels": [
+  {
+   "background_id": "BG093",
+   "sfx": [
+    {
+     "text": "ゴゴゴゴ",
+     "intensity": 5
+    }
+   ]
+  },
+  {
+   "pose_id": "P057_front",
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "バクバク",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "background_id": "BG091",
+   "serif": [
+    {
+     "t": "抜けば里が呑まれる",
+     "shape": "角丸"
+    },
+    {
+     "t": "燃やせば姉が消える",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "P090_back",
+   "pose_x": 0.5,
+   "background_id": "BG097",
+   "sfx": [
+    {
+     "text": "ゴォォ",
+     "intensity": 4
+    }
+   ]
+  }
+ ]
+}

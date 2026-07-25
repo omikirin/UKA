@@ -1,0 +1,34 @@
+{
+ "layout_id": "3段等分",
+ "title": "九尾",
+ "panels": [
+  {
+   "expr_id": "EXP023",
+   "serif": [
+    {
+     "t": "……持っていけ",
+     "shape": "震え"
+    }
+   ]
+  },
+  {
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "pose_id": "P065_low",
+   "pose_x": 0.5,
+   "background_id": "BG088",
+   "sfx": [
+    {
+     "text": "ドン",
+     "intensity": 5
+    }
+   ]
+  }
+ ]
+}

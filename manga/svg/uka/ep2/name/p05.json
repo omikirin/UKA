@@ -1,0 +1,43 @@
+{
+ "layout_id": "3段等分",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "pose_id": "P090_front",
+   "pose_x": 0.5,
+   "background_id": "BG061",
+   "serif": [
+    {
+     "t": "縫い目をこじ開ければ、里ごと呑まれる",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "P017_side",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "正しい、と頭では分かった",
+     "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ズーン",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP033",
+   "background_id": "BG093",
+   "sfx": [
+    {
+     "text": "ザァァ",
+     "intensity": 4
+    }
+   ]
+  }
+ ]
+}

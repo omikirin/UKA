@@ -1,0 +1,32 @@
+{
+ "layout_id": "3段等分",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "background_id": "BG097",
+   "sfx": [
+    {
+     "text": "パチパチ",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "pose_id": "P007_front",
+   "pose_x": 0.55,
+   "background_id": "BG023"
+  },
+  {
+   "expr_id": "EXP010",
+   "serif": [
+    "根の国、じゃ"
+   ],
+   "sfx": [
+    {
+     "text": "ゴゴゴゴ",
+     "intensity": 3
+    }
+   ]
+  }
+ ]
+}

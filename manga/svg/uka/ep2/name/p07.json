@@ -1,0 +1,47 @@
+{
+ "layout_id": "3段5コマ1",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "pose_id": "P041_front",
+   "pose_x": 0.5,
+   "background_id": "BG069"
+  },
+  {
+   "serif": [
+    {
+     "t": "この術の薪は、術者の記憶なり",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "serif": [
+    {
+     "t": "九尾を灯し尽くさば、灯し得ぬものなし",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "P083_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "焼く、ではなく、灯す。この焔は刃ではなく、火そのものだ",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP024",
+   "background_id": "BG097",
+   "sfx": [
+    {
+     "text": "ゴクッ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}

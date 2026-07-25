@@ -1,0 +1,34 @@
+{
+ "layout_id": "3段等分",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "pose_id": "P078_front",
+   "pose_x": 0.5,
+   "background_id": "BG049",
+   "serif": [
+    "岩爺様が触れを出した"
+   ]
+  },
+  {
+   "pose_id": "P029_front",
+   "pose_x": 0.45,
+   "serif": [
+    "戻れ、於兎。これは私の——"
+   ]
+  },
+  {
+   "pose_id": "P087_front",
+   "pose_x": 0.5,
+   "serif": [
+    "連れ戻しに来た"
+   ],
+   "sfx": [
+    {
+     "text": "ムスッ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}

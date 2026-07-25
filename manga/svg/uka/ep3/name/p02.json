@@ -1,0 +1,39 @@
+{
+ "layout_id": "3段等分",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "background_id": "BG049",
+   "sfx": [
+    {
+     "text": "ザワザワ",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "pose_id": "P005_front",
+   "pose_x": 0.45,
+   "sfx": [
+    {
+     "text": "ハッ",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "pose_id": "P002_side",
+   "pose_x": 0.55,
+   "background_id": "BG051",
+   "serif": [
+    "——やっぱりだ"
+   ],
+   "sfx": [
+    {
+     "text": "ビュオオ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}

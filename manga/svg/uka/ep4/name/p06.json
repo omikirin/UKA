@@ -1,0 +1,30 @@
+{
+ "layout_id": "3段等分",
+ "title": "根の国の淵",
+ "panels": [
+  {
+   "pose_id": "P001_front",
+   "pose_x": 0.5,
+   "background_id": "BG090",
+   "serif": [
+    "誰かが内側から、楔になって留めるしかない"
+   ]
+  },
+  {
+   "pose_id": "P084_front",
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "ジーッ",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP018",
+   "serif": [
+    "飯綱の法は場を縛る術だ。……私は、ちょうどよかった"
+   ]
+  }
+ ]
+}

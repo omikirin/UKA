@@ -1,0 +1,18 @@
+{
+ "layout_id": "2段ビート下",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "background_id": "BG043",
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "beat_id": "BEAT08"
+  }
+ ]
+}

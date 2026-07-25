@@ -1,0 +1,44 @@
+{
+ "layout_id": "3段等分",
+ "title": "根の国の淵",
+ "panels": [
+  {
+   "pose_id": "P077_side",
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "ガシッ",
+     "intensity": 4
+    }
+   ]
+  },
+  {
+   "background_id": "BG092",
+   "serif": [
+    {
+     "t": "あそこはもう、こちら側ではない",
+     "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ゴォォ",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP024",
+   "background_id": "BG086",
+   "serif": [
+    "私を、燃やせ"
+   ],
+   "sfx": [
+    {
+     "text": "ドキッ",
+     "intensity": 4
+    }
+   ]
+  }
+ ]
+}

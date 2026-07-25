@@ -1,0 +1,22 @@
+{
+ "layout_id": "1コマ",
+ "title": "九尾",
+ "panels": [
+  {
+   "expr_id": "EXP027",
+   "background_id": "BG091",
+   "serif": [
+    {
+     "t": "燃え尽きた後の炉のように、静かだった",
+     "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
+  }
+ ]
+}

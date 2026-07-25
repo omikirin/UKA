@@ -1,0 +1,27 @@
+{
+ "layout_id": "1コマ",
+ "title": "初午の夜",
+ "panels": [
+  {
+   "pose_id": "P090_side",
+   "pose_x": 0.62,
+   "background_id": "BG066",
+   "serif": [
+    {
+     "t": "九尾の焔は記憶を喰う",
+     "shape": "角丸"
+    },
+    {
+     "t": "第一話　初午の夜",
+     "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ガヤガヤ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+{
+ "layout_id": "3段等分",
+ "title": "根の国の淵",
+ "panels": [
+  {
+   "pose_id": "P088_back",
+   "pose_x": 0.5,
+   "background_id": "BG072",
+   "sfx": [
+    {
+     "text": "タタタ",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "pose_id": "P088_side",
+   "pose_x": 0.5,
+   "serif": [
+    "おまえ一人で行かせたら、帰り道を忘れる"
+   ]
+  },
+  {
+   "pose_id": "P017_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "正しすぎて、言い返せなかった",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

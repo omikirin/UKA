@@ -1,0 +1,29 @@
+{
+ "layout_id": "3段等分",
+ "title": "名を呼ぶ声",
+ "panels": [
+  {
+   "pose_id": "P088_back",
+   "pose_x": 0.5,
+   "background_id": "BG043"
+  },
+  {
+   "serif": [
+    {
+     "t": "ここで何かが始まったのだと、記録は言う",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP021",
+   "background_id": "BG058",
+   "sfx": [
+    {
+     "text": "ヒュルル",
+     "intensity": 1
+    }
+   ]
+  }
+ ]
+}

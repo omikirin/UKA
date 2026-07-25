@@ -1,0 +1,52 @@
+{
+ "layout_id": "3段4コマ1",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "pose_id": "P060_side",
+   "pose_x": 0.5,
+   "background_id": "BG087",
+   "sfx": [
+    {
+     "text": "ビュン",
+     "intensity": 4
+    }
+   ]
+  },
+  {
+   "pose_id": "P065_front",
+   "pose_x": 0.5,
+   "serif": [
+    "こいつら、群れで考えてやがる!"
+   ]
+  },
+  {
+   "pose_id": "P060_front",
+   "pose_x": 0.5,
+   "background_id": "BG086",
+   "sfx": [
+    {
+     "text": "ザシュ",
+     "intensity": 4
+    }
+   ]
+  },
+  {
+   "pose_id": "P034_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "湧き口を塞ぐ! あの祠が綻びの口だ!",
+     "shape": "叫び"
+    },
+    "塞ぐって、どうやって——"
+   ],
+   "sfx": [
+    {
+     "text": "バッ",
+     "intensity": 3
+    }
+   ]
+  }
+ ]
+}
