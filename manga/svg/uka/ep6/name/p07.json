@@ -8,11 +8,23 @@
    "background_id": "BG064",
    "serif": [
     "模擬戦だ。出ろ"
+   ],
+   "sfx": [
+    {
+     "text": "ガタッ",
+     "intensity": 3
+    }
    ]
   },
   {
    "pose_id": "P057_front",
-   "pose_x": 0.5
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "バシッ",
+     "intensity": 4
+    }
+   ]
   },
   {
    "serif": [

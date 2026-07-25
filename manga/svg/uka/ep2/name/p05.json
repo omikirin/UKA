@@ -21,6 +21,12 @@
      "t": "正しい、と頭では分かった",
      "shape": "角丸"
     }
+   ],
+   "sfx": [
+    {
+     "text": "ズーン",
+     "intensity": 2
+    }
    ]
   },
   {
@@ -29,7 +35,7 @@
    "background_id": "BG093",
    "sfx": [
     {
-     "text": "ざぱ",
+     "text": "ザァァ",
      "intensity": 4
     }
    ]

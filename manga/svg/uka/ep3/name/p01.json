@@ -3,7 +3,13 @@
  "title": "兎と狐",
  "panels": [
   {
-   "background_id": "BG051"
+   "background_id": "BG051",
+   "sfx": [
+    {
+     "text": "ヒュルル",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P089_front",
@@ -22,6 +28,12 @@
     {
      "t": "名を忘れた狐は、それでも私の先を駆けてくれる",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "タタタ",
+     "intensity": 2
     }
    ]
   }

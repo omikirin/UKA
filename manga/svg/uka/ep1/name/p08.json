@@ -25,7 +25,11 @@
    ],
    "sfx": [
     {
-     "text": "ざぱ",
+     "text": "ザァァ",
+     "intensity": 5
+    },
+    {
+     "text": "ドン",
      "intensity": 5
     }
    ]

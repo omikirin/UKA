@@ -3,7 +3,13 @@
  "title": "根の国の淵",
  "panels": [
   {
-   "background_id": "BG050"
+   "background_id": "BG050",
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P018_front",
@@ -17,7 +23,13 @@
   },
   {
    "pose_id": "P085_low",
-   "pose_x": 0.5
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "ゾクッ",
+     "intensity": 3
+    }
+   ]
   }
  ]
 }

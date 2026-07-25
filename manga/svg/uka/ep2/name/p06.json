@@ -3,12 +3,24 @@
  "title": "封印の綻び",
  "panels": [
   {
-   "background_id": "BG058"
+   "background_id": "BG058",
+   "sfx": [
+    {
+     "text": "ヒュルル",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P018_side",
    "pose_x": 0.45,
-   "background_id": "BG069"
+   "background_id": "BG069",
+   "sfx": [
+    {
+     "text": "コソコソ",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P071_front",

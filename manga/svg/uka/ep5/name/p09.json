@@ -3,7 +3,13 @@
  "title": "九尾",
  "panels": [
   {
-   "background_id": "BG090"
+   "background_id": "BG090",
+   "sfx": [
+    {
+     "text": "キラキラ",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P075_front",
@@ -14,6 +20,12 @@
    "pose_x": 0.5,
    "serif": [
     "息はある。脈もある。傷ひとつない"
+   ],
+   "sfx": [
+    {
+     "text": "ホッ",
+     "intensity": 1
+    }
    ]
   }
  ]

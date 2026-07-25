@@ -5,7 +5,13 @@
   {
    "pose_id": "P088_side",
    "pose_x": 0.45,
-   "background_id": "BG044"
+   "background_id": "BG044",
+   "sfx": [
+    {
+     "text": "ザワザワ",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P083_front",
@@ -27,7 +33,7 @@
    "sfx": [
     {
      "text": "ポン",
-     "intensity": 2
+     "intensity": 1
     }
    ]
   }

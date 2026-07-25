@@ -8,7 +8,7 @@
    "background_id": "BG043",
    "sfx": [
     {
-     "text": "ドサッ",
+     "text": "ガクッ",
      "intensity": 3
     }
    ]
@@ -29,6 +29,12 @@
      "shape": "震え"
     },
     "それ、十六回目も聞いた"
+   ],
+   "sfx": [
+    {
+     "text": "プルプル",
+     "intensity": 2
+    }
    ]
   }
  ]

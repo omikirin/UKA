@@ -3,7 +3,7 @@
  "title": "名を呼ぶ声",
  "panels": [
   {
-   "background_id": "BG058",
+   "background_id": "BG057",
    "serif": [
     {
      "t": "綺麗だ、と思おうとした",
@@ -25,6 +25,12 @@
     {
      "t": "思えないことの悲しみも、灯らなかった",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
     }
    ]
   }

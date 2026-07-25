@@ -3,7 +3,13 @@
  "title": "封印の綻び",
  "panels": [
   {
-   "background_id": "BG043"
+   "background_id": "BG043",
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P065_front",
@@ -15,7 +21,7 @@
    "background_id": "BG090",
    "sfx": [
     {
-     "text": "ぽ",
+     "text": "ポッ",
      "intensity": 3
     }
    ]

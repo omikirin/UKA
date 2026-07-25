@@ -24,6 +24,12 @@
    "background_id": "BG090",
    "serif": [
     "初めから焔で楔を打てばいい"
+   ],
+   "sfx": [
+    {
+     "text": "ピカッ",
+     "intensity": 3
+    }
    ]
   }
  ]

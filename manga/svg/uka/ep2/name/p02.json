@@ -14,8 +14,8 @@
    ],
    "sfx": [
     {
-     "text": "ゴゴゴゴ",
-     "intensity": 4
+     "text": "ゴォォ",
+     "intensity": 5
     }
    ]
   },
@@ -25,6 +25,12 @@
    "background_id": "BG023",
    "serif": [
     "その封印が、緩んでいると?"
+   ],
+   "sfx": [
+    {
+     "text": "ザワザワ",
+     "intensity": 2
+    }
    ]
   }
  ]

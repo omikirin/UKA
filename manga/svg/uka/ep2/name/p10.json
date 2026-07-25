@@ -5,7 +5,13 @@
   {
    "pose_id": "P045_low",
    "pose_x": 0.45,
-   "background_id": "BG043"
+   "background_id": "BG043",
+   "sfx": [
+    {
+     "text": "チュンチュン",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P086_front",
@@ -19,6 +25,12 @@
     {
      "t": "この狐の名前が、どうしても、思い出せなかった",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ズーン",
+     "intensity": 2
     }
    ]
   }

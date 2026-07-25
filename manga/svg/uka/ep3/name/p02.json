@@ -6,14 +6,20 @@
    "background_id": "BG049",
    "sfx": [
     {
-     "text": "がさ",
+     "text": "ザワザワ",
      "intensity": 3
     }
    ]
   },
   {
    "pose_id": "P005_front",
-   "pose_x": 0.45
+   "pose_x": 0.45,
+   "sfx": [
+    {
+     "text": "ハッ",
+     "intensity": 3
+    }
+   ]
   },
   {
    "pose_id": "P002_side",
@@ -21,6 +27,12 @@
    "background_id": "BG051",
    "serif": [
     "——やっぱりだ"
+   ],
+   "sfx": [
+    {
+     "text": "ビュオオ",
+     "intensity": 2
+    }
    ]
   }
  ]

@@ -4,7 +4,13 @@
  "panels": [
   {
    "pose_id": "P032_front",
-   "pose_x": 0.5
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "キョトン",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P085_front",

@@ -8,7 +8,7 @@
    "background_id": "BG043",
    "sfx": [
     {
-     "text": "ぴーひゃら",
+     "text": "ザワザワ",
      "intensity": 1
     }
    ]
@@ -19,7 +19,7 @@
    "sfx": [
     {
      "text": "シーン",
-     "intensity": 2
+     "intensity": 1
     }
    ]
   },
@@ -30,6 +30,12 @@
     {
      "t": "——宇迦。下がれ",
      "shape": "トゲ"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ハッ",
+     "intensity": 3
     }
    ]
   }

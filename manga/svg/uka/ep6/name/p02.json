@@ -5,7 +5,13 @@
   {
    "pose_id": "P007_front",
    "pose_x": 0.55,
-   "background_id": "BG023"
+   "background_id": "BG023",
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P086_front",

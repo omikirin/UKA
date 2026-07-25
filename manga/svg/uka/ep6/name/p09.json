@@ -3,7 +3,13 @@
  "title": "名を呼ぶ声",
  "panels": [
   {
-   "background_id": "BG066"
+   "background_id": "BG066",
+   "sfx": [
+    {
+     "text": "ガヤガヤ",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P012_side",
@@ -12,7 +18,13 @@
   },
   {
    "pose_id": "P071_side",
-   "pose_x": 0.5
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "ニコニコ",
+     "intensity": 1
+    }
+   ]
   },
   {
    "pose_id": "P039_side",
@@ -22,6 +34,12 @@
     {
      "t": "癖だと聞いたので、そうした",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "モグモグ",
+     "intensity": 1
     }
    ]
   }

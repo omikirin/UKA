@@ -5,7 +5,13 @@
   {
    "pose_id": "P090_front",
    "pose_x": 0.5,
-   "background_id": "BG088"
+   "background_id": "BG088",
+   "sfx": [
+    {
+     "text": "ピカッ",
+     "intensity": 4
+    }
+   ]
   },
   {
    "background_id": "BG091",
@@ -13,6 +19,12 @@
     {
      "t": "自分の名前も。ここがどこかも。なぜ、こんなに悲しいのかも",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
     }
    ]
   }

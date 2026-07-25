@@ -3,7 +3,13 @@
  "title": "根の国の淵",
  "panels": [
   {
-   "background_id": "BG072"
+   "background_id": "BG072",
+   "sfx": [
+    {
+     "text": "ヒュルル",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P029_front",

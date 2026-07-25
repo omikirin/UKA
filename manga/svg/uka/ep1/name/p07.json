@@ -9,7 +9,7 @@
    "sfx": [
     {
      "text": "シーン",
-     "intensity": 2
+     "intensity": 1
     }
    ]
   },
@@ -18,8 +18,8 @@
    "pose_x": 0.5,
    "sfx": [
     {
-     "text": "ゆら",
-     "intensity": 3
+     "text": "ゴゴゴゴ",
+     "intensity": 4
     }
    ]
   },

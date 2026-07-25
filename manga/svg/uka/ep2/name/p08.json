@@ -4,7 +4,13 @@
  "panels": [
   {
    "pose_id": "P084_side",
-   "pose_x": 0.5
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "プルプル",
+     "intensity": 2
+    }
+   ]
   },
   {
    "pose_id": "P035_front",
@@ -24,6 +30,12 @@
     {
      "t": "だが姉のいない朝がもう一度来ることのほうが、ずっと恐かった",
      "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ゴゴゴゴ",
+     "intensity": 3
     }
    ]
   }
