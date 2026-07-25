@@ -139,10 +139,12 @@ for idx, cid in enumerate(ids):
     crop = np.pad(np.where(sel, 0, 255).astype(np.uint8), pad, constant_values=255)
     tmp = os.path.join(tmpdir, "c.png")
     Image.fromarray(crop).save(tmp)
+    if os.environ.get("DUMP_CROP"):
+        Image.fromarray(crop).save(os.path.join(os.environ["DUMP_CROP"], f"{cid}.png"))
     out = os.path.join(outdir, f"{cid}.svg")
     vtracer.convert_image_to_svg_py(tmp, out, colormode="binary", mode="spline",
-                                    filter_speckle=30, corner_threshold=70,
-                                    length_threshold=8.0, splice_threshold=60)
+                                    filter_speckle=8, corner_threshold=55,
+                                    length_threshold=3.5)
     s2 = open(out).read()
     s2 = re.sub(r"(\d+\.\d{2})\d+", r"\1", s2)
     w2 = float(re.search(r'width="([\d.]+)', s2).group(1))
