@@ -28,6 +28,7 @@ HZ_DEF=float(HZ.get("_default",0.55))
 # キャラの目線がコマ上端から何割の位置に来るか(450セルの実測: セル内で全身0.165/バスト0.42/寄り0.47。
 # レンダラは図をコマ高92%・下端揃えで置くので 0.08+0.92*実測 がコマ基準の値になる)
 EYE_AT={"full":0.23,"bust":0.47,"close":0.51}
+HALO_PX=7.0   # 背景の上でキャラの周りに抜く白フチの太さ(ページ座標)
 
 def eye_target(panel):
     """このコマで背景の地平線を置くべき高さ(コマ比)"""
@@ -246,7 +247,14 @@ def render(name):
                 vb3,inner3=ec
                 ew,eh=w*0.8,h*0.86
                 ex,ey=x+(w-ew)/2,y+(h-eh)/2
-                out.append(f'<svg x="{ex:.0f}" y="{ey:.0f}" width="{ew:.0f}" height="{eh:.0f}" viewBox="{vb3}" preserveAspectRatio="xMidYMid meet">{inner3}</svg>')
+                halo3=""
+                if panel.get("background_id") and panel.get("halo",True):
+                    vbv3=[float(v) for v in vb3.split()]
+                    hw3=vbv3[2]/max(ew,1)*HALO_PX
+                    hi3=re.sub(r'fill="[^"]*"','fill="#fff"',inner3)
+                    halo3=(f'<g fill="#fff" stroke="#fff" stroke-width="{hw3:.1f}" '
+                           f'stroke-linejoin="round" stroke-linecap="round">{hi3}</g>')
+                out.append(f'<svg x="{ex:.0f}" y="{ey:.0f}" width="{ew:.0f}" height="{eh:.0f}" viewBox="{vb3}" preserveAspectRatio="xMidYMid meet">{halo3}{inner3}</svg>')
             else:
                 out.append(f'<circle cx="{x+w/2}" cy="{y+h*0.42}" r="{min(w,h)*0.26}" fill="none" stroke="#999" stroke-dasharray="6 5" stroke-width="2"/>')
                 out.append(f'<text x="{x+w/2}" y="{y+h*0.8}" text-anchor="middle" font-size="15" fill="#999">[{eid} {panel.get("beat_desc","")}]</text>')
@@ -278,7 +286,15 @@ def render(name):
             px=x+w*cs.get("x",0.5)-pw/2; px=max(x,min(px,x+w-pw)); py=y+h-ph
             cb=(px,py,px+pw,py+ph)
             charbox=(min(charbox[0],cb[0]),min(charbox[1],cb[1]),max(charbox[2],cb[2]),max(charbox[3],cb[3])) if charbox else cb
-            frag=f'<svg x="{px:.0f}" y="{py:.0f}" width="{pw:.0f}" height="{ph:.0f}" viewBox="{vb2}" preserveAspectRatio="xMidYMax meet">{inner}</svg>'
+            # 背景の上に置くときはキャラの周囲を白く抜く(白フチ)。
+            # 線画どうしだと線の太さが同じで輪郭が埋もれ、背景を入れるほど読めなくなる。
+            halo=""
+            if panel.get("background_id") and panel.get("halo",True):
+                hw=float(vbv[2])/max(pw,1)*HALO_PX      # ページ座標でHALO_PXぶんの太さ
+                hi=re.sub(r'fill="[^"]*"','fill="#fff"',inner)
+                halo=(f'<g fill="#fff" stroke="#fff" stroke-width="{hw:.1f}" '
+                      f'stroke-linejoin="round" stroke-linecap="round">{hi}</g>')
+            frag=f'<svg x="{px:.0f}" y="{py:.0f}" width="{pw:.0f}" height="{ph:.0f}" viewBox="{vb2}" preserveAspectRatio="xMidYMax meet">{halo}{inner}</svg>'
             if cs.get("flip"):
                 frag=f'<g transform="translate({2*px+pw:.0f},0) scale(-1,1)">{frag}</g>'
             frags.append(frag)
