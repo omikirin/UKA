@@ -18,6 +18,8 @@ tools/build.py        原稿から読書ページを生成するスクリプト
 docs/                 企画資料（王道プロット50 など）
 games/                CryptoNinja ゲーム集（自己完結型のHTMLゲーム）
 manga/                マンガ版リーダー（右綴じ・見開き/単ページ切替）
+characters/           SVG漫画メーカー用のキャラ素材（ウカのポーズ450・表情45）
+tools/sheet_extract.py 発注シートPNGからセルSVGを切り出すスクリプト
 ```
 
 マンガの見開き画像は `manga/img/chNN/spread01.jpg` 〜 の連番で配置します
