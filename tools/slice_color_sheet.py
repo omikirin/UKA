@@ -82,18 +82,43 @@ def main():
         if not mem:
             print(f"  EMPTY {cid}")
             continue
-        # 面積が最大のパス＝キャラ本体。そこから離れた小さいパスは通し番号
-        areas = [(b[2] - b[0]) * (b[3] - b[1]) for _, b in mem]
-        mb = mem[int(np.argmax(areas))][1]
-        body = []
-        drop = 0
-        for p, b in mem:
-            small = (b[3] - b[1]) < ch * 0.10 and (b[2] - b[0]) < cw * 0.30
-            outside = b[2] < mb[0] or b[0] > mb[2] or b[3] < mb[1] or b[1] > mb[3]
-            if small and outside:
-                drop += 1
-                continue
-            body.append((p, b))
+        # bboxが接している者どうしを束ね、いちばん大きい塊をキャラ本体とする。
+        # 通し番号や隣のカットの食い込みは別の塊になるので自然に落ちる。
+        # (「最大パスのbbox外を捨てる」方式は、色ごとにパスが分かれた絵で
+        #  頭の花や顔まで巻き添えにする。実際に一度消した)
+        par = list(range(len(mem)))
+
+        def find(a):
+            while par[a] != a:
+                par[a] = par[par[a]]
+                a = par[a]
+            return a
+
+        order = sorted(range(len(mem)), key=lambda i: mem[i][1][0])
+        for ii in range(len(order)):
+            i = order[ii]
+            bi = mem[i][1]
+            for jj in range(ii + 1, len(order)):
+                j = order[jj]
+                bj = mem[j][1]
+                if bj[0] > bi[2]:
+                    break
+                if not (bi[2] < bj[0] or bj[2] < bi[0] or bi[3] < bj[1] or bj[3] < bi[1]):
+                    ra, rb = find(i), find(j)
+                    if ra != rb:
+                        par[rb] = ra
+        groups = {}
+        for i in range(len(mem)):
+            groups.setdefault(find(i), []).append(i)
+
+        def span(g):
+            xs = [mem[i][1][0] for i in g] + [mem[i][1][2] for i in g]
+            ys = [mem[i][1][1] for i in g] + [mem[i][1][3] for i in g]
+            return (max(xs) - min(xs)) * (max(ys) - min(ys))
+
+        main = max(groups.values(), key=span)
+        body = [mem[i] for i in sorted(main)]
+        drop = len(mem) - len(body)
         x0 = min(b[0] for _, b in body); y0 = min(b[1] for _, b in body)
         x1 = max(b[2] for _, b in body); y1 = max(b[3] for _, b in body)
         pad = max(4.0, min(x1 - x0, y1 - y0) * 0.03)
