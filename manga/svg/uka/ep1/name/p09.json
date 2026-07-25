@@ -27,8 +27,7 @@
    "pose_x": 0.5
   },
   {
-   "pose_id": "P086_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP027",
    "serif": [
     {
      "t": "囃子の音が、遠くでまだ続いている",

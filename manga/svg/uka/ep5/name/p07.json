@@ -3,8 +3,7 @@
  "title": "九尾",
  "panels": [
   {
-   "pose_id": "P086_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP023",
    "serif": [
     {
      "t": "……持っていけ",

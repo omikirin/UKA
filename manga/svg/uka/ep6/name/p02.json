@@ -14,8 +14,7 @@
    ]
   },
   {
-   "pose_id": "P086_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP010",
    "serif": [
     "記憶が失せたのではない"
    ]

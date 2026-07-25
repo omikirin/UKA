@@ -3,8 +3,7 @@
  "title": "九尾",
  "panels": [
   {
-   "pose_id": "P085_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP024",
    "serif": [
     "姉上が残る"
    ]
@@ -35,8 +34,7 @@
    ]
   },
   {
-   "pose_id": "P086_side",
-   "pose_x": 0.5,
+   "expr_id": "EXP001",
    "serif": [
     {
      "t": "……戻ってこい",

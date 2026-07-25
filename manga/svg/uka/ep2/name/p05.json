@@ -30,8 +30,7 @@
    ]
   },
   {
-   "pose_id": "P085_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP033",
    "background_id": "BG093",
    "sfx": [
     {

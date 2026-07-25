@@ -3,8 +3,7 @@
  "title": "初午の夜",
  "panels": [
   {
-   "pose_id": "P086_front",
-   "pose_x": 0.5,
+   "expr_id": "EXP018",
    "serif": [
     "おまえの狐は、いい狐だ",
     {
