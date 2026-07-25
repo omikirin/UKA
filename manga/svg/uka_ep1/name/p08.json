@@ -1,0 +1,10 @@
+{
+ "layout_id": "1コマ",
+ "panels": [
+  {"background_id": "BG086",
+   "chars": [{"pose_id": "P068_side", "x": 0.86, "scale": 0.55, "flip": true},
+             {"pose_id": "P029_front", "x": 0.32, "scale": 0.95}],
+   "serif": [{"t": "姉上!!", "shape": "叫び"}],
+   "sfx": [{"text": "ざぱ", "intensity": 5}]}
+ ]
+}

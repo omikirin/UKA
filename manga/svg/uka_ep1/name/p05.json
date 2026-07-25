@@ -1,0 +1,13 @@
+{
+ "layout_id": "3段4コマ2",
+ "panels": [
+  {"pose_id": "P086_front", "pose_x": 0.5,
+   "serif": ["おまえの狐は、いい狐だ", {"t": "けど、おまえはまだ狐に呼ばれている側だな", "shape": "ひそひそ"}]},
+  {"pose_id": "P032_front", "background_id": "BG094", "pose_x": 0.45,
+   "serif": ["……どういう意味だ"], "sfx": [{"text": "キョトン", "intensity": 2}]},
+  {"pose_id": "P043_front", "background_id": "BG066", "pose_x": 0.55,
+   "serif": ["呼ぶ側になれば分かる", {"t": "来年はな、宇迦。おまえの狐火で参道の灯籠を全部ともしてみせろ", "shape": "標準"}]},
+  {"pose_id": "P088_back", "background_id": "BG066", "pose_x": 0.5,
+   "serif": [{"t": "約束が積まれるかぎり、来年もこの参道を二人で歩く", "shape": "角丸"}]}
+ ]
+}

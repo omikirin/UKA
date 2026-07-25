@@ -1,0 +1,7 @@
+{
+ "layout_id": "1コマ",
+ "panels": [
+  {"pose_id": "P090_side", "background_id": "BG066", "pose_x": 0.62,
+   "serif": [{"t": "九尾の焔は記憶を喰う", "shape": "角丸"}, {"t": "第一話　初午の夜", "shape": "角丸"}]}
+ ]
+}

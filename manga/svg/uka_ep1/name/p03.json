@@ -1,0 +1,10 @@
+{
+ "layout_id": "3段等分",
+ "panels": [
+  {"pose_id": "P088_side", "background_id": "BG044", "pose_x": 0.45},
+  {"pose_id": "P083_front", "pose_x": 0.5,
+   "serif": [{"t": "今夜は一匹も、まともに走らせてやれなかった", "shape": "角丸"}]},
+  {"pose_id": "P076_front", "background_id": "BG066", "pose_x": 0.5,
+   "serif": ["また負けたな、宇迦"], "sfx": [{"text": "ポン", "intensity": 2}]}
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "layout_id": "3段4コマ3",
+ "panels": [
+  {"pose_id": "P065_front", "background_id": "BG090", "pose_x": 0.5,
+   "sfx": [{"text": "パァァ", "intensity": 5}]},
+  {"background_id": "BG043", "sfx": [{"text": "シーン", "intensity": 3}]},
+  {"pose_id": "P084_front", "pose_x": 0.5},
+  {"pose_id": "P086_front", "pose_x": 0.5,
+   "serif": [{"t": "囃子の音が、遠くでまだ続いている", "shape": "角丸"}]}
+ ]
+}
