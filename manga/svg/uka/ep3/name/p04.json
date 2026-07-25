@@ -1,0 +1,24 @@
+{
+ "layout_id": "3段等分",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "pose_id": "P085_side",
+   "pose_x": 0.5
+  },
+  {
+   "background_id": "BG043"
+  },
+  {
+   "pose_id": "P090_front",
+   "pose_x": 0.5,
+   "background_id": "BG093",
+   "sfx": [
+    {
+     "text": "ぞろ",
+     "intensity": 4
+    }
+   ]
+  }
+ ]
+}

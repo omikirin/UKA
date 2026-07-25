@@ -1,0 +1,41 @@
+{
+ "layout_id": "3段4コマ2",
+ "title": "名を呼ぶ声",
+ "panels": [
+  {
+   "pose_id": "P029_front",
+   "pose_x": 0.45,
+   "serif": [
+    "……嬉しくないのか。ずっと私に勝ちたかったんだろう"
+   ]
+  },
+  {
+   "pose_id": "P086_front",
+   "pose_x": 0.5,
+   "serif": [
+    "そのようですね。記録にそうあります"
+   ]
+  },
+  {
+   "pose_id": "P028_front",
+   "pose_x": 0.5,
+   "background_id": "BG086",
+   "serif": [
+    {
+     "t": "次はやられない",
+     "shape": "叫び"
+    }
+   ]
+  },
+  {
+   "pose_id": "P085_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "たぶん、於兎の願望だった",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

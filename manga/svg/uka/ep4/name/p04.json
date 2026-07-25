@@ -1,0 +1,23 @@
+{
+ "layout_id": "1コマ",
+ "title": "根の国の淵",
+ "panels": [
+  {
+   "pose_id": "P032_front",
+   "pose_x": 0.35,
+   "background_id": "BG093",
+   "serif": [
+    {
+     "t": "——姉上!!",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ゴ",
+     "intensity": 4
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "layout_id": "3段等分",
+ "title": "名を呼ぶ声",
+ "panels": [
+  {
+   "pose_id": "P078_front",
+   "pose_x": 0.5,
+   "background_id": "BG064",
+   "serif": [
+    "模擬戦だ。出ろ"
+   ]
+  },
+  {
+   "pose_id": "P057_front",
+   "pose_x": 0.5
+  },
+  {
+   "serif": [
+    {
+     "t": "迷いも気負いも欲もない狐使いは、恐ろしく強かった",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

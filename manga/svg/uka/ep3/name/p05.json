@@ -1,0 +1,34 @@
+{
+ "layout_id": "1コマ",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "chars": [
+    {
+     "pose_id": "P064_front",
+     "x": 0.74,
+     "scale": 0.6,
+     "flip": true
+    },
+    {
+     "pose_id": "P065_side",
+     "x": 0.27,
+     "scale": 0.62
+    }
+   ],
+   "background_id": "BG088",
+   "serif": [
+    {
+     "t": "話は後だ!!",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ドッ",
+     "intensity": 5
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+{
+ "layout_id": "2段2コマ1",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "pose_id": "P065_side",
+   "pose_x": 0.5,
+   "background_id": "BG075",
+   "serif": [
+    {
+     "t": "悪鬼悪霊の湧く源。死と負念の溜まり場。それが根の国じゃ",
+     "shape": "角丸"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ゴゴゴゴ",
+     "intensity": 4
+    }
+   ]
+  },
+  {
+   "pose_id": "P071_front",
+   "pose_x": 0.5,
+   "background_id": "BG023",
+   "serif": [
+    "その封印が、緩んでいると?"
+   ]
+  }
+ ]
+}

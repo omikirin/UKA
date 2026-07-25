@@ -1,0 +1,40 @@
+{
+ "layout_id": "3段4コマ2",
+ "title": "初午の夜",
+ "panels": [
+  {
+   "pose_id": "P072_side",
+   "pose_x": 0.5,
+   "background_id": "BG066"
+  },
+  {
+   "pose_id": "P084_front",
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "スッ",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "pose_id": "P039_side",
+   "pose_x": 0.5,
+   "sfx": [
+    {
+     "text": "はふ",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "pose_id": "P071_front",
+   "pose_x": 0.5,
+   "background_id": "BG044",
+   "serif": [
+    "白玉は焼き目の側が好きだな",
+    "姉上が甘やかすからだ"
+   ]
+  }
+ ]
+}

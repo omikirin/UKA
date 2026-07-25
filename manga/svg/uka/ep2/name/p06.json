@@ -1,0 +1,25 @@
+{
+ "layout_id": "3段等分",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "background_id": "BG058"
+  },
+  {
+   "pose_id": "P018_side",
+   "pose_x": 0.45,
+   "background_id": "BG069"
+  },
+  {
+   "pose_id": "P071_front",
+   "pose_x": 0.5,
+   "background_id": "BG069",
+   "serif": [
+    {
+     "t": "姉と忍び込んで、二人並んで叱られた棚だ",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "layout_id": "3段等分",
+ "title": "名を呼ぶ声",
+ "panels": [
+  {
+   "pose_id": "P046_front",
+   "pose_x": 0.5,
+   "background_id": "BG099",
+   "serif": [
+    "お役に立てて何よりです"
+   ]
+  },
+  {
+   "pose_id": "P039_front",
+   "pose_x": 0.5,
+   "background_id": "BG040",
+   "serif": [
+    "甘いです"
+   ]
+  },
+  {
+   "pose_id": "P076_front",
+   "pose_x": 0.5,
+   "background_id": "BG022",
+   "serif": [
+    {
+     "t": "正確に受け止める。癖のとおりに",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

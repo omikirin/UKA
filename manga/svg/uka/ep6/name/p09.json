@@ -1,0 +1,29 @@
+{
+ "layout_id": "3段4コマ2",
+ "title": "名を呼ぶ声",
+ "panels": [
+  {
+   "background_id": "BG066"
+  },
+  {
+   "pose_id": "P012_side",
+   "pose_x": 0.5,
+   "background_id": "BG044"
+  },
+  {
+   "pose_id": "P071_side",
+   "pose_x": 0.5
+  },
+  {
+   "pose_id": "P039_side",
+   "pose_x": 0.5,
+   "background_id": "BG044",
+   "serif": [
+    {
+     "t": "癖だと聞いたので、そうした",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

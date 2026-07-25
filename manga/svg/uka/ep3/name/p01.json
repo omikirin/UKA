@@ -1,0 +1,29 @@
+{
+ "layout_id": "3段等分",
+ "title": "兎と狐",
+ "panels": [
+  {
+   "background_id": "BG051"
+  },
+  {
+   "pose_id": "P089_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "影の通った跡は、緑が灰色に褪せる",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "P086_front",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "名を忘れた狐は、それでも私の先を駆けてくれる",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "layout_id": "3段等分",
+ "title": "封印の綻び",
+ "panels": [
+  {
+   "background_id": "BG091",
+   "serif": [
+    {
+     "t": "綻び、じゃ。開いた隙間から、影が滲む",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "P083_front",
+   "pose_x": 0.5
+  },
+  {
+   "pose_id": "P029_front",
+   "pose_x": 0.45,
+   "serif": [
+    "では姉上は、その隙間の向こう側にいるのですね"
+   ]
+  }
+ ]
+}

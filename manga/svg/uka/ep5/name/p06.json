@@ -1,0 +1,17 @@
+{
+ "layout_id": "1コマ",
+ "title": "九尾",
+ "panels": [
+  {
+   "pose_id": "P008_front",
+   "pose_x": 0.5,
+   "background_id": "BG090",
+   "serif": [
+    {
+     "t": "名前も思い出せない誰かを、好きだ、という気持ちだった",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

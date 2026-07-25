@@ -1,0 +1,30 @@
+{
+ "layout_id": "3段等分",
+ "title": "九尾",
+ "panels": [
+  {
+   "background_id": "BG093",
+   "serif": [
+    {
+     "t": "嫌だ",
+     "shape": "震え"
+    }
+   ]
+  },
+  {
+   "pose_id": "P085_front",
+   "pose_x": 0.5,
+   "serif": [
+    "姉上は燃やさない。楔も抜かない。第三の道を取る"
+   ]
+  },
+  {
+   "pose_id": "P065_front",
+   "pose_x": 0.5,
+   "background_id": "BG090",
+   "serif": [
+    "初めから焔で楔を打てばいい"
+   ]
+  }
+ ]
+}
