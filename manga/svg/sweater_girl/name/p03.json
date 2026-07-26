@@ -2,55 +2,53 @@
  "layout_id": "3段4コマ2",
  "panels": [
   {
-   "pose_id": "C306",
-   "pose_x": 0.5,
-   "background_id": "BG086",
-   "sfx": [
-    {
-     "text": "ヒュン",
-     "intensity": 3
-    }
-   ]
-  },
-  {
-   "pose_id": "C307",
-   "pose_x": 0.5,
-   "sfx": [
-    {
-     "text": "ズバッ",
-     "intensity": 3
-    }
-   ]
-  },
-  {
-   "pose_id": "C426",
+   "pose_id": "C466",
    "pose_x": 0.5,
    "serif": [
     {
-     "t": "……",
+     "t": "大学。",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "C386",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "おはようございます",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "pose_id": "C421",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "……そのセーター",
      "shape": "標準"
     }
    ],
    "sfx": [
     {
-     "text": "シーン",
-     "intensity": 2
+     "text": "ジーッ",
+     "intensity": 1
     }
    ]
   },
   {
-   "pose_id": "C310",
+   "pose_id": "C166",
    "pose_x": 0.5,
-   "background_id": "BG088",
    "serif": [
     {
-     "t": "もう一本！",
+     "t": "見るなー！",
      "shape": "叫び"
     }
    ],
    "sfx": [
     {
-     "text": "ドン",
+     "text": "カァァ",
      "intensity": 3
     }
    ]

@@ -2,48 +2,55 @@
  "layout_id": "3段4コマ1",
  "panels": [
   {
-   "pose_id": "C466",
+   "pose_id": "C001",
    "pose_x": 0.5,
+   "background_id": "BG016",
    "serif": [
     {
-     "t": "先輩とは、大学で知り合った。",
+     "t": "去年のセーターを出した。",
      "shape": "角丸"
     }
    ]
   },
   {
-   "pose_id": "C421",
+   "pose_id": "C156",
    "pose_x": 0.5,
    "serif": [
     {
-     "t": "今日、ひま？",
+     "t": "……あれ",
      "shape": "標準"
     }
    ]
   },
   {
-   "pose_id": "C470",
+   "pose_id": "C161",
    "pose_x": 0.5,
    "serif": [
     {
-     "t": "ひまだけど",
-     "shape": "標準"
-    }
-   ]
-  },
-  {
-   "pose_id": "C476",
-   "pose_x": 0.5,
-   "serif": [
-    {
-     "t": "じゃあ、道場つきあって",
+     "t": "縮んだ？",
      "shape": "標準"
     }
    ],
    "sfx": [
     {
-     "text": "パァァ",
-     "intensity": 2
+     "text": "キョトン",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "pose_id": "C151",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "わたしが育った！？",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ガーン",
+     "intensity": 3
     }
    ]
   }

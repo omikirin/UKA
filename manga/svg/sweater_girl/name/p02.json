@@ -2,39 +2,35 @@
  "layout_id": "2段3コマ1",
  "panels": [
   {
-   "pose_id": "C301",
+   "pose_id": "C226",
    "pose_x": 0.5,
-   "background_id": "BG064",
+   "background_id": "BG019",
    "serif": [
     {
-     "t": "道場。",
-     "shape": "角丸"
-    }
-   ]
-  },
-  {
-   "pose_id": "C411",
-   "pose_x": 0.5,
-   "sfx": [
-    {
-     "text": "ギュッ",
-     "intensity": 2
-    }
-   ]
-  },
-  {
-   "pose_id": "C305",
-   "pose_x": 0.5,
-   "serif": [
-    {
-     "t": "見ててね",
+     "t": "まあ、着られるし",
      "shape": "標準"
     }
-   ],
+   ]
+  },
+  {
+   "pose_id": "C441",
+   "pose_x": 0.5,
    "sfx": [
     {
-     "text": "スッ",
+     "text": "タタタ",
      "intensity": 1
+    }
+   ]
+  },
+  {
+   "pose_id": "C061",
+   "pose_x": 0.5,
+   "background_id": "BG028",
+   "bg_y": 0.45,
+   "serif": [
+    {
+     "t": "秋の匂いがした。",
+     "shape": "角丸"
     }
    ]
   }
