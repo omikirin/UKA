@@ -1,0 +1,53 @@
+{
+ "layout_id": "3段4コマ1",
+ "panels": [
+  {
+   "pose_id": "C466",
+   "pose_x": 0.5,
+   "background_id": "BG012",
+   "serif": [
+    {
+     "t": "先輩とは、大学で知り合った。",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "pose_id": "C421",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "今日、ひま？",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "pose_id": "C470",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "ひまだけど",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "pose_id": "C476",
+   "pose_x": 0.5,
+   "background_id": "BG014",
+   "serif": [
+    {
+     "t": "じゃあ、道場つきあって",
+     "shape": "標準"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "パァァ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}
