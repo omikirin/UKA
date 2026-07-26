@@ -1,0 +1,48 @@
+{
+ "layout_id": "3段等分",
+ "title": "田舎のほんチい",
+ "panels": [
+  {
+   "background_id": "BG103",
+   "serif": [
+    {
+     "t": "町並みを二人で歩いた",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "chars": [
+    {
+     "pose_id": "P012_side",
+     "x": 0.34,
+     "scale": 0.62
+    },
+    {
+     "pose_id": "P003_side",
+     "x": 0.7,
+     "scale": 0.95,
+     "char": "037_izuna"
+    }
+   ],
+   "background_id": "BG103",
+   "serif": [
+    "ここ、なんにもないでしょ"
+   ],
+   "sfx": [
+    {
+     "text": "ガヤガヤ",
+     "intensity": 1
+    }
+   ]
+  },
+  {
+   "pose_id": "P001_front",
+   "pose_x": 0.5,
+   "serif": [
+    "いや。川の音がする",
+    "それは、なにも無いとは言わない"
+   ]
+  }
+ ]
+}

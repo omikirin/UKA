@@ -1,0 +1,67 @@
+{
+ "layout_id": "3段4コマ2",
+ "title": "田舎のほんチい",
+ "panels": [
+  {
+   "background_id": "BG102",
+   "serif": [
+    {
+     "t": "吉野川の河原",
+     "shape": "角丸"
+    }
+   ]
+  },
+  {
+   "chars": [
+    {
+     "pose_id": "P001_front",
+     "x": 0.3,
+     "scale": 0.62
+    },
+    {
+     "pose_id": "P001_side",
+     "x": 0.72,
+     "scale": 0.95,
+     "char": "037_izuna",
+     "flip": true
+    }
+   ],
+   "background_id": "BG102",
+   "serif": [
+    "道に迷った。ここはどこだ"
+   ]
+  },
+  {
+   "pose_id": "P003_front",
+   "pose_x": 0.45,
+   "serif": [
+    "本山町だよ。ずいぶん遠くから来たね"
+   ]
+  },
+  {
+   "chars": [
+    {
+     "pose_id": "P002_front",
+     "x": 0.32,
+     "scale": 0.62
+    },
+    {
+     "pose_id": "P002_front",
+     "x": 0.7,
+     "scale": 0.95,
+     "char": "037_izuna"
+    }
+   ],
+   "background_id": "BG102",
+   "serif": [
+    "甲賀から。……甲賀は、遠い"
+   ],
+   "sfx": [
+    {
+     "text": "シーン",
+     "intensity": 1
+    }
+   ]
+  }
+ ]
+}

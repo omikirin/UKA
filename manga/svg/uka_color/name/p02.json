@@ -1,0 +1,57 @@
+{
+ "layout_id": "3段4コマ2",
+ "panels": [
+  {
+   "expr_id": "EXP010",
+   "background_id": "BG043",
+   "serif": [
+    {
+     "t": "うん、待つよ",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP011",
+   "serif": [
+    {
+     "t": "待つけどさ",
+     "shape": "標準"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ピキッ",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP012",
+   "serif": [
+    {
+     "t": "おそいっ！！",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ガーン",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "pose_id": "P001_back",
+   "pose_x": 0.5,
+   "background_id": "BG060",
+   "bg_y": 0.35,
+   "serif": [
+    {
+     "t": "誰もいない参道に、声だけが残った。",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

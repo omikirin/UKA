@@ -110,18 +110,31 @@ def balloon(x,y,w,h,spec,pos):
         shape="叫び" if ("!" in text or "!" in text) else "標準"
     # コマ基準のスケーリング
     fs=max(24,min(40,h*0.075))
-    def layout(fs):
-        maxch=max(3,int((h*0.62)/(fs*1.12)))
+    def layout(fs,maxch):
         if "\n" in text: cols=text.split("\n")
         else: cols=[text[i:i+maxch] for i in range(0,len(text),maxch)]
         ncol=len(cols); nrow=max(len(c) for c in cols)
         tw=ncol*fs*1.30; th=nrow*fs*1.14
         rx=tw/2+fs*0.85; ry=th/2+fs*0.85
         return cols,tw,th,rx,ry
-    cols,tw,th,rx,ry=layout(fs)
-    # コマに収まらなければ縮小(雲の膨らみ余裕込みで最大86%)
-    while (2*ry>h*0.86 or 2*rx>w*0.9) and fs>18:
-        fs-=2; cols,tw,th,rx,ry=layout(fs)
+    # 1行に入る字数はフキダシの余白込みでコマの高さから決める。
+    # 以前は h*0.62 固定で、縦に溢れても字を小さくするだけだったため
+    # 最小サイズまで縮んでも入りきらず、最後の何文字かがコマの下に出ていた。
+    def fitted(fs):
+        rowcap=int((h*0.86-fs*1.70)/(fs*1.14))   # 縦に並べられる字数
+        colcap=int((w*0.90-fs*1.70)/(fs*1.30))   # 横に並べられる行数
+        if rowcap<1 or colcap<1: return None
+        n=len([c for c in text if c!="\n"])
+        ncol=max(1,-(-n//rowcap))
+        if "\n" in text: ncol=len(text.split("\n"))
+        if ncol>colcap: return None
+        maxch=max(1,-(-n//ncol))                 # 行数を均して詰める
+        r=layout(fs,maxch)
+        return r if (2*r[4]<=h*0.86 and 2*r[3]<=w*0.90) else None
+    got=fitted(fs)
+    while got is None and fs>14:
+        fs-=2; got=fitted(fs)
+    cols,tw,th,rx,ry=got if got else layout(fs,max(1,int((h*0.62)/(fs*1.12))))
     if shape in ("叫び","トゲ"): rx*=1.02; ry*=1.02
     margin=rx*0.28 if shape in ("雲","叫び","トゲ") else 8
     bx=x+w-2*rx-14-(w-2*rx-28)*pos
