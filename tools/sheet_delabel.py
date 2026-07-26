@@ -92,14 +92,28 @@ def find_labels(gray, rows=0, cols=0, debug=False):
     # セルごとに最も左上の候補を採る（絵の細部が条件を満たしても取り違えにくい）
     if rows and cols:
         H, W = gray.shape
-        ch, cw = H / rows, W / cols
-        best = {}
-        for o in out:
-            key = (min(int(o[1] // ch), rows - 1), min(int(o[0] // cw), cols - 1))
-            cur = best.get(key)
-            if cur is None or (o[1], o[0]) < (cur[1], cur[0]):
-                best[key] = o
-        out = sorted(best.values(), key=lambda o: (o[1], o[0]))
+        # グリッドの升目で割ると外れる。ラベルは絵の上に置かれるので、セルの境界を
+        # またぐ位置に出ることがある（実際に最下段のラベルが1つ上の升目に入った）。
+        # 実際に見つかった位置を y でまとめて「段」を作り、その中で x でまとめる。
+        def split(items, key, k):
+            """items を key の値の「大きい隙間」上位 k-1 箇所で k 個に割る"""
+            items = sorted(items, key=key)
+            if k <= 1 or len(items) <= k:
+                return [[i] for i in items] if len(items) <= k else [items]
+            gaps = sorted(((key(items[i + 1]) - key(items[i]), i)
+                           for i in range(len(items) - 1)), reverse=True)[:k - 1]
+            cuts = sorted(i for _, i in gaps)
+            groups, prev = [], 0
+            for c in cuts:
+                groups.append(items[prev:c + 1]); prev = c + 1
+            groups.append(items[prev:])
+            return [g for g in groups if g]
+
+        picked = []
+        for band in split(out, lambda o: o[1], rows):
+            for grp in split(band, lambda o: o[0], cols):
+                picked.append(min(grp, key=lambda g: (g[1], g[0])))
+        out = sorted(picked, key=lambda o: (o[1], o[0]))
     if debug:
         for o in out:
             print("   ラベル", o)
