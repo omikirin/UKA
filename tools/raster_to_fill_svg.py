@@ -6,6 +6,10 @@
 
   python3 tools/raster_to_fill_svg.py <in.svg|in.png|dir> <out.svg|dir> [--colors 12]
 
+ディレクトリを渡すと、**全部の画素から共通のパレットを1つ作って全カットで使う**。
+1枚ずつ減色すると同じ髪や袴がカットごとに違う色に丸められ、並べたときに
+色味が揃わない。カットごとに最適化したいときだけ --per-file を付ける。
+
 やること:
   1. 埋め込みPNG（またはPNGそのもの）を取り出す
   2. **外周につながる白**だけを透明にする（キャラの中の白は残す。装束や靴下が
@@ -93,7 +97,47 @@ def _trace(img, out, **kw):
     return re.sub(r"</svg>\s*$", "", inner, flags=re.S).strip()
 
 
-def convert(src, dst, colors=12):
+def build_palette(srcs, colors):
+    """複数枚から共通のパレットを作る
+
+    1枚ずつ減色すると、同じ髪・同じ袴でもカットごとに色が少しずつ違う色に
+    丸められ、並べたときに色味が揃わない。全部の画素をまとめて1回だけ
+    減色し、そのパレットを全カットで使い回す。
+    """
+    px = []
+    for s in srcs:
+        im = _cut_background(_load(s))
+        a = np.array(im)
+        mx = a[..., :3].max(axis=2).astype(np.int16)
+        mn = a[..., :3].min(axis=2).astype(np.int16)
+        ink = (mx < INK_LEVEL) & ((mx - mn) < 50) & (a[..., 3] > 0)
+        body = _inpaint_lines(a[..., :3], ink)[a[..., 3] > 0]
+        # 大きい絵に引きずられないよう、1枚あたり同じ枚数だけ抜く
+        idx = np.linspace(0, len(body) - 1, min(len(body), 200000)).astype(int)
+        px.append(body[idx])
+    allpx = np.concatenate(px)
+    strip = Image.fromarray(allpx.reshape(-1, 1, 3).astype(np.uint8))
+    return strip.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
+
+
+def _snap_colors(svg, palette):
+    """SVG中の塗り色を、いちばん近いパレット色に置き換える"""
+    # int16 だと (0-255)^2 が桁あふれして負になり、色が逆に吸着する
+    pal = np.array(palette.getpalette()).reshape(-1, 3).astype(np.int32)
+    used = sorted({i for _, i in (palette.getcolors() or [])})
+    if used:
+        pal = pal[used]
+
+    def rep(m):
+        h = m.group(1)
+        c = np.array([int(h[i:i + 2], 16) for i in (1, 3, 5)], np.int32)
+        k = int(np.argmin(((pal - c) ** 2).sum(axis=1)))
+        return 'fill="#%02x%02x%02x"' % tuple(pal[k])
+
+    return re.sub(r'fill="(#[0-9a-fA-F]{6})"', rep, svg)
+
+
+def convert(src, dst, colors=12, palette=None):
     im = _cut_background(_load(src))
     W, H = im.size
     a = np.array(im)
@@ -107,13 +151,20 @@ def convert(src, dst, colors=12):
     # --- 色面レイヤ（線を消してから減色）
     flat = _inpaint_lines(a[..., :3], ink)
     rgb = Image.fromarray(flat).filter(ImageFilter.MedianFilter(3))
-    q = rgb.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
+    if palette is not None:
+        q = rgb.quantize(palette=palette, dither=Image.NONE)
+    else:
+        q = rgb.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
     fill_rgba = np.array(q.convert("RGB").convert("RGBA"))
     fill_rgba[..., 3] = alpha
     fill = _trace(Image.fromarray(fill_rgba), dst + ".tmp1",
                   colormode="color", mode="spline", filter_speckle=SPECKLE,
                   color_precision=6, layer_difference=16,
                   corner_threshold=60, length_threshold=4.0, splice_threshold=45)
+    # vtracer は指定した色をそのまま使わず、面ごとに色を作り直す。
+    # 共通パレットを渡した意味が無くなるので、出力の色をパレットに吸着させる。
+    if palette is not None:
+        fill = _snap_colors(fill, palette)
     # 色面どうしの髪の毛ほどの隙間を、自分の色のstrokeで塞ぐ
     fill = re.sub(r'fill="(#[0-9a-fA-F]{6})"', r'fill="\1" stroke="\1" stroke-width="1"', fill)
 
@@ -142,11 +193,17 @@ if __name__ == "__main__":
     n = int(sys.argv[sys.argv.index("--colors") + 1]) if "--colors" in sys.argv else 12
     if os.path.isdir(a):
         os.makedirs(b, exist_ok=True)
+        files = []
         for f in sorted(glob.glob(os.path.join(a, "*.svg")) + glob.glob(os.path.join(a, "*.png"))):
             base = os.path.splitext(os.path.basename(f))[0]
             if f.endswith(".png") and os.path.exists(os.path.join(a, base + ".svg")):
                 continue          # 同名のSVGがあるならそちらを使う
-            sz, by = convert(f, os.path.join(b, base + ".svg"), n)
+            files.append((f, base))
+        pal = None if "--per-file" in sys.argv else build_palette([f for f, _ in files], n)
+        if pal is not None:
+            print(f"共通パレット{n}色を{len(files)}枚から作成")
+        for f, base in files:
+            sz, by = convert(f, os.path.join(b, base + ".svg"), n, pal)
             print(f"{base}: {sz[0]}x{sz[1]} → {by/1024:.0f}KB")
     else:
         sz, by = convert(a, b, n)
