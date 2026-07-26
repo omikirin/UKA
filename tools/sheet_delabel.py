@@ -20,6 +20,8 @@
 
 セル数×1個ずつ消えるのが正常（3行5列なら15個）。数が合わないときは
 --debug を付けると見つけた位置を出す。
+絵がラベルの近くを通っていて消し残るときは --loose を付ける（まわりに絵が
+来ていないかの判定を省く。1セル1個に絞る処理は効いたままなので暴走はしない）。
 """
 import sys, os, glob
 import numpy as np
@@ -35,7 +37,7 @@ RING = 9           # まわりの白さを見る幅
 PAD = 3            # 塗りつぶすときの余白
 
 
-def find_labels(gray, rows=0, cols=0, debug=False):
+def find_labels(gray, rows=0, cols=0, debug=False, loose=False):
     ink = gray < INK
     lab, n = ndimage.label(ink)
     objs = ndimage.find_objects(lab)
@@ -85,7 +87,7 @@ def find_labels(gray, rows=0, cols=0, debug=False):
             if (ys2.stop - ys2.start) > H_MAX or (xs2.stop - xs2.start) > W_MAX * 3:
                 near_art = True
                 break
-        if near_art:
+        if near_art and not loose:
             continue
         out.append((x0, y0, x1, y1, len(run)))
     # 1セルに1個だけ残す。ラベルはセルの中でいちばん左上にあるので、
@@ -120,10 +122,10 @@ def find_labels(gray, rows=0, cols=0, debug=False):
     return out
 
 
-def delabel(src, dst, rows=0, cols=0, debug=False):
+def delabel(src, dst, rows=0, cols=0, debug=False, loose=False):
     im = Image.open(src).convert("RGB")
     g = np.array(im.convert("L"))
-    boxes = find_labels(g, rows, cols, debug)
+    boxes = find_labels(g, rows, cols, debug, loose)
     a = np.array(im)
     for x0, y0, x1, y1, _ in boxes:
         a[max(0, y0 - PAD):y1 + PAD, max(0, x0 - PAD):x1 + PAD] = 255
@@ -136,12 +138,13 @@ if __name__ == "__main__":
         raise SystemExit(__doc__)
     a, b = sys.argv[1], sys.argv[2]
     dbg = "--debug" in sys.argv
+    loose = "--loose" in sys.argv
     rows = int(sys.argv[3]) if len(sys.argv) > 4 and sys.argv[3].isdigit() else 0
     cols = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4].isdigit() else 0
     if os.path.isdir(a):
         os.makedirs(b, exist_ok=True)
         for f in sorted(glob.glob(os.path.join(a, "*.png"))):
-            n = delabel(f, os.path.join(b, os.path.basename(f)), rows, cols, dbg)
+            n = delabel(f, os.path.join(b, os.path.basename(f)), rows, cols, dbg, loose)
             print(f"{os.path.basename(f)}: {n}個消した")
     else:
-        print(f"{os.path.basename(a)}: {delabel(a, b, rows, cols, dbg)}個消した")
+        print(f"{os.path.basename(a)}: {delabel(a, b, rows, cols, dbg, loose)}個消した")
