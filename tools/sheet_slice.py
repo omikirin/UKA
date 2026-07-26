@@ -25,11 +25,33 @@ def _cuts(profile, k, min_band=6):
     完全に真っ白な帯を要求すると、隣のカットの線が境界をわずかに越えている
     シートで割れなくなる。閾値を少しずつ緩めて、必要な本数が取れたところで止める。
     """
-    for tol in (0, 1, 2, 4, 8, 16, 32):
-        got = _cuts_at(profile, k, min_band, tol)
-        if len(got) == k - 1:
-            return got
-    return got
+    L = len(profile)
+    ideal = [L * i / k for i in range(1, k)]
+    win = L / k * 0.35          # 等分位置からこれ以上離れた帯は切れ目とみなさない
+    for tol in (0, 1, 2, 4, 8, 16, 32, 64):
+        bands = _bands(profile <= tol, min_band)
+        picked = []
+        for t in ideal:
+            near = [b for b in bands if abs((b[1] + b[2]) / 2 - t) <= win]
+            if not near:
+                break
+            b = max(near)       # いちばん広い帯
+            picked.append((b[1] + b[2]) // 2)
+        if len(picked) == k - 1 and len(set(picked)) == k - 1:
+            return sorted(picked)
+    return []
+
+
+def _bands(empty, min_band):
+    out, s = [], None
+    for i, e in enumerate(empty):
+        if e and s is None:
+            s = i
+        elif not e and s is not None:
+            out.append((i - s, s, i)); s = None
+    if s is not None:
+        out.append((len(empty) - s, s, len(empty)))
+    return [b for b in out if b[1] > 0 and b[2] < len(empty) and b[0] >= min_band]
 
 
 def _cuts_at(profile, k, min_band, tol):

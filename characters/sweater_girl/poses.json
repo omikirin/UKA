@@ -1,0 +1,72 @@
+{
+  "note": "セーターの剣士（仮称）専用のセル辞書。ウカ／イズナの poses.json とは中身が違うので別に持つ。IDは発注シートの通し番号そのまま（C301〜C555）。1ポーズ5アングルで揃っているのは C301-C420 の一部だけで、顔のアップや二人の場面はアングル展開ではないため、連番をそのままIDにしてある。",
+  "id_scheme": "C+通し番号（発注シートのラベルと1対1）",
+  "kinds": {
+    "solo": "彼女ひとり",
+    "pair": "男性キャラと二人",
+    "part": "手・脚など体の一部のアップ（目線合わせの対象外）",
+    "face": "顔・目もと・口もとのアップ",
+    "silhouette": "ベタのシルエット"
+  },
+  "groups": [
+    {"range": "C301-C305", "kind": "solo", "shot": "full", "name": "刀を正眼に構える",       "angles": true},
+    {"range": "C306-C310", "kind": "solo", "shot": "full", "name": "刀を横薙ぎに振る（軌跡つき）", "angles": true},
+    {"range": "C311-C315", "kind": "solo", "shot": "full", "name": "刀を鞘に納める・抜きかけ", "angles": true},
+    {"range": "C316-C320", "kind": "solo", "shot": "full", "name": "手裏剣を投げる",         "angles": true},
+    {"range": "C321-C325", "kind": "solo", "shot": "full", "name": "印を結ぶ",               "angles": true},
+    {"range": "C326-C330", "kind": "solo", "shot": "full", "name": "拳を突き上げて跳ぶ",     "angles": true},
+    {"range": "C331-C335", "kind": "solo", "shot": "full", "name": "低く構える・膝をつく",   "angles": true},
+    {"range": "C336-C340", "kind": "solo", "shot": "full", "name": "のけぞって倒れる",       "angles": true},
+    {"range": "C341-C345", "kind": "solo", "shot": "full", "name": "うつ伏せに倒れる",       "angles": true},
+    {"range": "C346-C350", "kind": "solo", "shot": "full", "name": "傷つき肩で息をする（ロングスカート）", "angles": true},
+
+    {"range": "C351-C355", "kind": "pair", "shot": "full", "name": "二人・向き合って立つ"},
+    {"range": "C356-C360", "kind": "pair", "shot": "full", "name": "二人・並んで歩く"},
+    {"range": "C361-C365", "kind": "pair", "shot": "full", "name": "二人・寄り添って立つ"},
+    {"range": "C366-C370", "kind": "pair", "shot": "full", "name": "二人・手をつないで走る"},
+    {"range": "C371-C375", "kind": "pair", "shot": "full", "name": "二人・抱き合う"},
+    {"range": "C376-C380", "kind": "pair", "shot": "full", "name": "二人・頭をなでる"},
+    {"range": "C381-C385", "kind": "pair", "shot": "full", "name": "二人・肩をつかむ"},
+    {"range": "C386-C390", "kind": "pair", "shot": "full", "name": "二人・距離をあけて立つ"},
+    {"range": "C391-C395", "kind": "pair", "shot": "full", "name": "二人・背中合わせ／腕組み"},
+    {"range": "C396-C400", "kind": "pair", "shot": "full", "name": "二人・握手する"},
+    {"range": "C401-C405", "kind": "pair", "shot": "full", "name": "二人・耳打ちする"},
+    {"range": "C406-C410", "kind": "pair", "shot": "full", "name": "二人・見つめ合う"},
+
+    {"range": "C411-C415", "kind": "part", "shot": "close", "name": "手のアップ・握り拳"},
+    {"range": "C416-C420", "kind": "part", "shot": "close", "name": "手のアップ・開いた手"},
+
+    {"range": "C421-C424", "kind": "face", "shot": "close", "name": "顔のアップ・驚き／口を開ける"},
+    {"range": "C425-C429", "kind": "face", "shot": "close", "name": "顔のアップ・伏し目／うつむき"},
+    {"range": "C430-C435", "kind": "face", "shot": "close", "name": "口もとのアップ"},
+
+    {"range": "C436-C440", "kind": "solo", "shot": "bust", "name": "バストアップ・立ち"},
+    {"range": "C441-C445", "kind": "part", "shot": "close", "name": "脚もとのアップ（歩く）"},
+    {"range": "C446-C450", "kind": "silhouette", "shot": "full", "name": "ベタのシルエット"},
+
+    {"range": "C451-C455", "kind": "pair", "shot": "full", "name": "二人・お姫様抱っこ"},
+    {"range": "C456-C460", "kind": "pair", "shot": "full", "name": "二人・抱き上げる／膝をつく"},
+    {"range": "C461-C465", "kind": "pair", "shot": "full", "name": "二人・抱えて走る"},
+
+    {"range": "C466-C470", "kind": "pair", "shot": "full", "name": "二人・大学の門／地図を見る"},
+    {"range": "C471-C475", "kind": "pair", "shot": "full", "name": "二人・掲示板／自転車／階段"},
+    {"range": "C476-C480", "kind": "pair", "shot": "full", "name": "二人・記念撮影／自販機／芝生"},
+    {"range": "C481-C485", "kind": "pair", "shot": "bust", "name": "二人・机で勉強する"},
+    {"range": "C486-C490", "kind": "pair", "shot": "full", "name": "二人・図書館の書架"},
+    {"range": "C491-C495", "kind": "pair", "shot": "full", "name": "二人・学食／帰り道"},
+
+    {"range": "C496-C500", "kind": "solo", "shot": "full", "name": "四つん這い"},
+    {"range": "C501-C505", "kind": "solo", "shot": "full", "name": "机やトンネルの下をくぐる"},
+    {"range": "C506-C510", "kind": "solo", "shot": "full", "name": "ソファの下を探す・正座"},
+    {"range": "C511-C515", "kind": "solo", "shot": "full", "name": "フカンの立ち・腕組み"},
+    {"range": "C516-C520", "kind": "solo", "shot": "full", "name": "フカンの歩き・走り"},
+    {"range": "C521-C525", "kind": "solo", "shot": "full", "name": "フカンの座り・寝転び"},
+    {"range": "C526-C530", "kind": "solo", "shot": "full", "name": "椅子に座る・机で書く・読む"},
+    {"range": "C531-C535", "kind": "solo", "shot": "full", "name": "机の下・傘・階段"},
+    {"range": "C536-C540", "kind": "pair", "shot": "full", "name": "二人・フカンの並び／ベンチ／寝転び"},
+
+    {"range": "C541-C545", "kind": "solo", "shot": "full", "name": "セーターの裾をまくる（下はTシャツ）"},
+    {"range": "C546-C550", "kind": "solo", "shot": "full", "name": "セーターを脱ぎかける"},
+    {"range": "C551-C555", "kind": "solo", "shot": "full", "name": "セーターを脱いでTシャツ姿"}
+  ]
+}
