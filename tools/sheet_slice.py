@@ -9,6 +9,10 @@
 選んで切る。等分しないので行の高さが違っても正しく割れる。
 
   python3 tools/sheet_slice.py <sheet.png> <行数> <列数> <出力dir> [接頭辞]
+  python3 tools/sheet_slice.py <sheet.png> auto <カット数> <出力dir> [接頭辞]
+
+**行×列は枚によって違う**（5行3列のシートと3行5列のシートが混在していた）。
+auto を渡すと、割り方を両方試してインク量が揃っているほうを選ぶ。
 
 出力は `<接頭辞>r<行>c<列>.png`。読み順（左上から右へ）に並ぶ。
 """
@@ -92,10 +96,51 @@ def slice_sheet(path, rows, cols, outdir, prefix=""):
     return made
 
 
+def guess_grid(path, n=15):
+    """行×列を当てる
+
+    納品シートは枚によって 5行3列だったり 3行5列だったりする。
+    決め打ちで切ると、隣のカットが2つ入ったセルと空のセルができる。
+    両方で切ってみて、セルごとのインク量が揃っているほうを採る。
+    """
+    im = Image.open(path).convert("L")
+    g = np.array(im)
+    ink = (g < INK).astype(np.uint8)
+    best = None
+    for rows in range(1, n + 1):
+        if n % rows:
+            continue
+        cols = n // rows
+        ry = _cuts(ink.sum(axis=1), rows)
+        rx = _cuts(ink.sum(axis=0), cols)
+        if len(ry) != rows - 1 or len(rx) != cols - 1:
+            continue
+        ys = [0] + ry + [g.shape[0]]
+        xs = [0] + rx + [g.shape[1]]
+        fr = []
+        for r in range(rows):
+            for c in range(cols):
+                cell = ink[ys[r]:ys[r + 1], xs[c]:xs[c + 1]]
+                fr.append(cell.mean() if cell.size else 0)
+        fr = np.array(fr)
+        if fr.min() < 0.004:          # ほぼ空のセルがある＝割り方が違う
+            continue
+        score = fr.std() / max(fr.mean(), 1e-6)
+        if best is None or score < best[0]:
+            best = (score, rows, cols)
+    return best[1:] if best else (0, 0)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         raise SystemExit(__doc__)
-    p, rows, cols, outdir = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
+    p, outdir = sys.argv[1], sys.argv[4]
+    if sys.argv[2] == "auto":
+        rows, cols = guess_grid(p, int(sys.argv[3]))
+        if not rows:
+            raise SystemExit(f"{os.path.basename(p)}: 割り方が決まらない")
+    else:
+        rows, cols = int(sys.argv[2]), int(sys.argv[3])
     pre = sys.argv[5] if len(sys.argv) > 5 else ""
     n = slice_sheet(p, rows, cols, outdir, pre)
-    print(f"{os.path.basename(p)}: {len(n)}カットに切った → {outdir}")
+    print(f"{os.path.basename(p)}: {rows}行{cols}列 / {len(n)}カットに切った → {outdir}")
