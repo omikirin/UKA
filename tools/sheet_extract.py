@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """行×列シート抽出(通し番号ラベル自動除去・高精細トレース)
 usage: python3 extract_sheet.py <sheet.png> <ids.json> <rows> <cols> <outdir> <tmpdir>
-env: TARGET_W(作業解像度の目標幅,9000) DUMP_DROPPED(除去成分のPNG出力先)
+env: TARGET_W(作業解像度の目標幅,4600) INK_LEVEL(線とみなす明度,160) DUMP_DROPPED(除去成分のPNG出力先)
 
 番号除去のルール(位置は絵に対する相対で判定する。グリッド座標は当てにしない):
   1) 小型成分で、キャラ本体(最大成分)の上端より上/下端より下の余白帯にある
@@ -30,7 +30,10 @@ pil = pil.resize((pil.width * SC, pil.height * SC), Image.LANCZOS)
 a = np.array(pil)
 dark = (a < 128).mean()
 assert 0.005 < dark < 0.5, f"入力異常: dark={dark:.2%}"
-ink = a < 160
+# 線の濃さの閾値。細かい模様(セーターのリブ編みなど)が薄いグレーで描かれている
+# 素材では、160だと模様が丸ごと落ちる。INK_LEVELで上げられるようにしてある。
+INK_LEVEL = int(os.environ.get("INK_LEVEL", "160"))
+ink = a < INK_LEVEL
 H, W = a.shape
 lab, n = ndimage.label(ink, structure=np.ones((3, 3)))
 sizes = ndimage.sum(ink, lab, range(1, n + 1))
