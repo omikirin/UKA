@@ -1,0 +1,55 @@
+{
+ "layout_id": "3段4コマ4",
+ "panels": [
+  {
+   "expr_id": "EXP007",
+   "background_id": "BG043",
+   "serif": [
+    {
+     "t": "……来た",
+     "shape": "標準"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ハッ",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP008",
+   "serif": [
+    {
+     "t": "おそい",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP014",
+   "serif": [
+    {
+     "t": "って、言おうと思ってたのに",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "expr_id": "EXP015",
+   "background_id": "BG057",
+   "serif": [
+    {
+     "t": "もう、いいや！",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "パァァ",
+     "intensity": 2
+    }
+   ]
+  }
+ ]
+}
