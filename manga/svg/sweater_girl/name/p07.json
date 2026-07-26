@@ -1,0 +1,32 @@
+{
+ "layout_id": "2段2コマ1",
+ "panels": [
+  {
+   "pose_id": "C361",
+   "pose_x": 0.5,
+   "background_id": "BG057",
+   "serif": [
+    {
+     "t": "次は勝つから",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "pose_id": "C480",
+   "pose_x": 0.5,
+   "background_id": "BG046",
+   "bg_y": 0.55,
+   "serif": [
+    {
+     "t": "うちの先輩は、強い。",
+     "shape": "角丸"
+    },
+    {
+     "t": "転ぶけど。",
+     "shape": "角丸"
+    }
+   ]
+  }
+ ]
+}

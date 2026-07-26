@@ -1,0 +1,58 @@
+{
+ "layout_id": "3段4コマ3",
+ "panels": [
+  {
+   "pose_id": "C331",
+   "pose_x": 0.5,
+   "background_id": "BG064",
+   "serif": [
+    {
+     "t": "あれ",
+     "shape": "標準"
+    }
+   ]
+  },
+  {
+   "pose_id": "C336",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "わっ",
+     "shape": "叫び"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ドカッ",
+     "intensity": 3
+    }
+   ]
+  },
+  {
+   "pose_id": "C341",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "……いたい",
+     "shape": "標準"
+    }
+   ],
+   "sfx": [
+    {
+     "text": "ズーン",
+     "intensity": 2
+    }
+   ]
+  },
+  {
+   "pose_id": "C429",
+   "pose_x": 0.5,
+   "serif": [
+    {
+     "t": "見てた？",
+     "shape": "標準"
+    }
+   ]
+  }
+ ]
+}
