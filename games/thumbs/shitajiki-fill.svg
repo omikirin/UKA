@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#f7f5ef"/>
+  <g transform="translate(30,24)">
+    <path d="M10 100 C 0 60, 34 16, 70 24 C 108 32, 116 74, 84 96 C 58 114, 22 116, 10 100 Z" fill="#7fbf95" opacity="0.5"/>
+    <path d="M10 100 C 0 60, 34 16, 70 24 C 108 32, 116 74, 84 96 C 58 114, 22 116, 10 100 Z" fill="none" stroke="#16130f" stroke-width="3"/>
+    <path d="M58 26 C 66 56, 60 84, 42 108" fill="none" stroke="#16130f" stroke-width="2" opacity="0.6"/>
+  </g>
+  <g transform="translate(186,40)">
+    <rect x="0" y="0" width="104" height="26" fill="#c8371e" opacity="0.7"/>
+    <rect x="0" y="34" width="104" height="26" fill="#7bb0dd" opacity="0.7"/>
+    <rect x="0" y="68" width="104" height="26" fill="#f0b757" opacity="0.8"/>
+  </g>
+  <text x="118" y="168" font-family="serif" font-size="17" font-weight="bold" fill="#16130f" text-anchor="middle">したじきFill</text>
+</svg>

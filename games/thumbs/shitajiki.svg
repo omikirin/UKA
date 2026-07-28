@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#f7f5ef"/>
+  <path d="M60 118 C 44 84, 78 34, 122 42 C 168 50, 178 96, 142 114 C 112 128, 76 130, 60 118 Z" fill="#f0b757" opacity="0.55"/>
+  <path d="M60 118 C 44 84, 78 34, 122 42 C 168 50, 178 96, 142 114 C 112 128, 76 130, 60 118 Z" fill="none" stroke="#16130f" stroke-width="3"/>
+  <g fill="#c8371e" opacity="0.75">
+    <circle cx="214" cy="62" r="16"/>
+    <circle cx="252" cy="86" r="16"/>
+    <circle cx="214" cy="110" r="16"/>
+  </g>
+  <path d="M196 62 H 232 M234 86 H 270 M196 110 H 232" stroke="#16130f" stroke-width="2" opacity="0.35"/>
+  <text x="120" y="168" font-family="serif" font-size="18" font-weight="bold" fill="#16130f" text-anchor="middle">したじき</text>
+</svg>
