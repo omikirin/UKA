@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#f7f5ef"/>
+  <g transform="translate(40,26)">
+    <rect x="0" y="52" width="120" height="76" fill="#16130f" opacity="0.14" stroke="#16130f" stroke-width="2"/>
+    <rect x="22" y="30" width="120" height="76" fill="#f7f5ef" opacity="0.85" stroke="#16130f" stroke-width="2"/>
+    <rect x="44" y="8" width="120" height="76" fill="#c8371e" opacity="0.25" stroke="#c8371e" stroke-width="2"/>
+    <circle cx="104" cy="46" r="9" fill="none" stroke="#c8371e" stroke-width="3"/>
+    <path d="M86 46 H122 M104 28 V64" stroke="#c8371e" stroke-width="2"/>
+  </g>
+  <text x="248" y="86" font-family="serif" font-size="30" font-weight="bold" fill="#16130f" text-anchor="middle">SVG</text>
+  <text x="248" y="112" font-family="serif" font-size="15" fill="#16130f" text-anchor="middle" opacity="0.7">1枚に内包</text>
+  <text x="100" y="170" font-family="serif" font-size="18" font-weight="bold" fill="#16130f" text-anchor="middle">かさね</text>
+</svg>

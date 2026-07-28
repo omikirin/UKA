@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>かさね — PNGをレイヤーにしてSVGに内包する</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Antique&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--sumi:#0E1114;--sumi-2:#161B20;--sumi-3:#1E252C;--line:#2C353E;--shironeri:#EFEAE1;--gin:#8C99A5;--wakatake:#5FC9A0;--enji:#D8484F;--kincha:#C9A227}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--sumi);color:var(--shironeri);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:1fr 356px;height:100vh}
+@media (max-width:900px){.app{grid-template-columns:1fr;height:auto}}
+.left{display:flex;flex-direction:column;min-width:0;padding:18px 18px 12px}
+.brand{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.brand h1{font-family:"Zen Antique",serif;font-weight:400;font-size:25px;margin:0;letter-spacing:.06em}
+.brand .sub{color:var(--gin);font-size:11.5px;letter-spacing:.12em}
+.stagebox{position:relative;flex:1;min-height:320px;border:1px solid var(--line);
+  background:repeating-conic-gradient(#1a2027 0% 25%, #12171c 0% 50%) 50%/24px 24px;overflow:hidden}
+#stage{width:100%;height:100%;display:block;touch-action:none}
+.modes{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.status{margin-top:8px;font-family:"Roboto Mono",monospace;font-size:11px;color:var(--gin);min-height:16px}
+.panel{border-left:1px solid var(--line);background:var(--sumi-2);overflow-y:auto;padding:16px 16px 60px}
+.grp{border-top:1px solid var(--line);padding:14px 0 4px}
+.grp:first-child{border-top:none;padding-top:0}
+.grp>h2{font-size:10.5px;letter-spacing:.2em;color:var(--gin);margin:0 0 10px;font-weight:500}
+.row{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.row label{flex:1;font-size:12px;color:#C6CFD8}
+.row .val{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--wakatake);width:52px;text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:112px;flex:none}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:#3A4650}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-5px;border-radius:50%;background:var(--shironeri)}
+input[type=range]::-moz-range-track{height:2px;background:#3A4650}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border:none;border-radius:50%;background:var(--shironeri)}
+input[type=text],input[type=number]{background:var(--sumi-3);border:1px solid var(--line);color:var(--shironeri);font-family:inherit;font-size:12px;padding:5px 7px}
+input[type=number]{width:66px;font-family:"Roboto Mono",monospace}
+input.n4{width:54px}
+button{font-family:inherit;font-size:12px;color:var(--shironeri);background:var(--sumi-3);border:1px solid var(--line);padding:7px 11px;cursor:pointer}
+button:hover{border-color:#4A5A67}
+button:focus-visible,input:focus-visible{outline:2px solid var(--wakatake);outline-offset:1px}
+button.main{background:var(--wakatake);color:#0B1512;border-color:var(--wakatake);font-weight:700}
+button.small{padding:4px 7px;font-size:11px}
+button[aria-pressed=true]{background:var(--kincha);color:#171102;font-weight:700;border-color:var(--kincha)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.note{font-size:11px;color:var(--gin);line-height:1.65;margin:2px 0 8px}
+.list{display:flex;flex-direction:column;gap:4px}
+.item{display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--sumi-3);padding:4px 6px}
+.item.active{border-color:var(--kincha);box-shadow:inset 0 0 0 1px var(--kincha)}
+.item .nm{flex:1;min-width:0;background:transparent;border:none;color:var(--shironeri);font-size:12px;padding:2px}
+.item .nm:focus{outline:1px solid var(--wakatake)}
+.item .eye{width:22px;flex:none;text-align:center;cursor:pointer;color:var(--gin);font-size:12px}
+.item .eye.on{color:var(--wakatake)}
+.item .pv{font-family:"Roboto Mono",monospace;font-size:9.5px;color:var(--kincha)}
+.szinfo{font-family:"Roboto Mono",monospace;font-size:11px;color:var(--gin)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="left">
+    <div class="brand">
+      <h1>かさね</h1>
+      <span class="sub">PNGを重ねて、1枚のSVGにレイヤーごと内包する</span>
+    </div>
+    <div class="stagebox">
+      <svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600"></svg>
+    </div>
+    <div class="modes">
+      <button id="mMove" aria-pressed="true">レイヤーを動かす</button>
+      <button id="mFrame" aria-pressed="false">枠をいじる</button>
+      <button id="mPivot" aria-pressed="false">軸を置く</button>
+      <button id="btnFit" class="small">カンバスを内容に合わせる</button>
+    </div>
+    <div class="status" id="status">PNGを何枚か読み込んでください。書き出したSVGを読み込み直すこともできます。</div>
+  </div>
+
+  <aside class="panel">
+    <div class="grp">
+      <h2>読み込み</h2>
+      <input type="file" id="inFile" accept="image/png,image/jpeg,image/webp,.svg,image/svg+xml" multiple style="font-size:11px;color:var(--gin)">
+      <div class="note">複数選択できます。ファイル名がレイヤー名になります。以前ここで書き出したSVGを入れると、レイヤーに戻して続きから編集できます。</div>
+      <div class="row"><label for="inCW">カンバス</label>
+        <input type="number" id="inCW" value="1920"><input type="number" id="inCH" value="1080"></div>
+    </div>
+
+    <div class="grp">
+      <h2>レイヤー（上が前面）</h2>
+      <div class="list" id="layerList"></div>
+      <div class="btns" style="margin-top:8px">
+        <button class="small" id="btnUp">▲ 前へ</button>
+        <button class="small" id="btnDown">▼ 後ろへ</button>
+        <button class="small" id="btnDel">選択を削除</button>
+      </div>
+      <div class="row"><label>位置 x／y</label>
+        <input type="number" class="n4" id="inLX"><input type="number" class="n4" id="inLY"></div>
+      <div class="row"><label>大きさ w／h</label>
+        <input type="number" class="n4" id="inLW"><input type="number" class="n4" id="inLH"></div>
+      <div class="row"><label for="inOp">不透明度</label><input type="range" id="inOp" min="0" max="1" step="0.05" value="1"><span class="val" id="vOp">1.00</span></div>
+      <div class="btns"><button class="small" id="btnPivClear">軸を消す</button><button class="small" id="btnReset">位置と大きさを戻す</button></div>
+    </div>
+
+    <div class="grp">
+      <h2>枠で切り出す</h2>
+      <div class="note">選択中のレイヤーを、枠の形に切り分けて別レイヤーにします。位置は元のまま保たれるので、重ねると元の絵に戻ります。</div>
+      <div class="btns"><button class="small" id="btnAddFrame">枠を足す</button><button class="small" id="btnCut" >枠でレイヤーに切り出す</button></div>
+      <div class="list" id="frameList"></div>
+      <label class="row" style="gap:7px;cursor:pointer"><input type="checkbox" id="inWhite" style="accent-color:var(--wakatake);width:15px;height:15px"><span style="font-size:12px;color:#C6CFD8">切り出すとき、縁から続く白を透明にする</span></label>
+      <label class="row" style="gap:7px;cursor:pointer"><input type="checkbox" id="inHideSrc" checked style="accent-color:var(--wakatake);width:15px;height:15px"><span style="font-size:12px;color:#C6CFD8">切り出したら元のレイヤーを隠す</span></label>
+      <div class="row"><label for="inTol2">白と見なす明るさ</label><input type="range" id="inTol2" min="200" max="255" step="1" value="242"><span class="val" id="vTol2">242</span></div>
+    </div>
+
+    <div class="grp">
+      <h2>書き出し</h2>
+      <div class="btns">
+        <button id="btnSvg" class="main">まとめてSVGにする</button>
+        <button class="small" id="btnPngs">レイヤーを個別PNGで保存</button>
+      </div>
+      <div class="btns"><button class="small" id="btnCode">SVGのコードを出す</button><button class="small" id="btnCopy">コピー</button></div>
+      <textarea id="outCode" spellcheck="false" hidden style="width:100%;min-height:90px;background:var(--sumi-3);border:1px solid var(--line);color:var(--shironeri);font-family:'Roboto Mono',monospace;font-size:10px"></textarea>
+      <div class="szinfo" id="szinfo">—</div>
+      <div class="note">&lt;g id="レイヤー名"&gt; の中に &lt;image&gt; を1枚ずつ入れます。軸を置いたレイヤーには data-pivot="x,y" が付くので、後段のリグ側で肩や首として使えます。</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+window.addEventListener('error',e=>{
+  const s=document.getElementById('status');
+  if(s){ s.textContent='止まりました: '+(e.message||e.type); s.style.color='#D8484F'; }
+});
+const SVGNS="http://www.w3.org/2000/svg", XLINK="http://www.w3.org/1999/xlink";
+const $=id=>document.getElementById(id);
+const el=(n,a={})=>{const e=document.createElementNS(SVGNS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+let layers=[];            // 先頭が前面
+let frames=[];
+let sel=0, selFrame=-1, mode='move';
+let CW=1920, CH=1080;
+let uid=1;
+
+const stage=$('stage');
+const layerG=el('g'), overlay=el('g',{fill:'none'});
+const bgRect=el('rect',{x:0,y:0,width:CW,height:CH,fill:'#0b0e12',stroke:'#2C353E','stroke-width':2});
+stage.append(bgRect,layerG,overlay);
+
+/* ---------- 描画 ---------- */
+function draw(){
+  stage.setAttribute('viewBox',`0 0 ${CW} ${CH}`);
+  bgRect.setAttribute('width',CW); bgRect.setAttribute('height',CH);
+  layerG.innerHTML='';
+  [...layers].reverse().forEach(L=>{
+    if(!L.visible) return;
+    const im=el('image',{x:L.x,y:L.y,width:L.w,height:L.h,opacity:L.opacity,
+      'image-rendering':'auto',preserveAspectRatio:'none'});
+    im.setAttribute('href',L.src); im.setAttributeNS(XLINK,'xlink:href',L.src);
+    layerG.appendChild(im);
+  });
+  overlay.innerHTML='';
+  // 選択レイヤーの枠
+  const L=layers[sel];
+  if(L) overlay.appendChild(el('rect',{x:L.x,y:L.y,width:L.w,height:L.h,
+    stroke:'#5FC9A0','stroke-width':2,'stroke-dasharray':'10 7'}));
+  // 軸
+  layers.forEach(l=>{ if(!l.pivot) return;
+    const [x,y]=l.pivot;
+    overlay.appendChild(el('circle',{cx:x,cy:y,r:8,stroke:'#C9A227','stroke-width':3}));
+    overlay.appendChild(el('path',{d:`M${x-18} ${y} H${x+18} M${x} ${y-18} V${y+18}`,stroke:'#C9A227','stroke-width':2}));
+  });
+  // 枠
+  frames.forEach((f,i)=>{
+    overlay.appendChild(el('rect',{x:f.x,y:f.y,width:f.w,height:f.h,
+      stroke:i===selFrame?'#FFD27F':'#7FB4FF','stroke-width':3,'stroke-dasharray':'12 8'}));
+    overlay.appendChild(el('rect',{x:f.x+f.w-18,y:f.y+f.h-18,width:18,height:18,
+      fill:i===selFrame?'#FFD27F':'#7FB4FF',stroke:'none'}));
+  });
+  renderLayerList(); renderFrameList(); updateFields(); updateSize();
+}
+function renderLayerList(){
+  const host=$('layerList'); host.innerHTML='';
+  layers.forEach((L,i)=>{
+    const row=document.createElement('div');
+    row.className='item'+(i===sel?' active':'');
+    const eye=document.createElement('span');
+    eye.className='eye'+(L.visible?' on':''); eye.textContent=L.visible?'●':'○';
+    eye.addEventListener('click',e=>{e.stopPropagation(); L.visible=!L.visible; draw();});
+    const nm=document.createElement('input'); nm.className='nm'; nm.value=L.name;
+    nm.addEventListener('input',()=>L.name=nm.value);
+    nm.addEventListener('focus',()=>{sel=i; draw();});
+    const pv=document.createElement('span'); pv.className='pv';
+    pv.textContent=L.pivot?`軸${L.pivot[0]},${L.pivot[1]}`:'';
+    row.append(eye,nm,pv);
+    row.addEventListener('click',()=>{sel=i; draw();});
+    host.appendChild(row);
+  });
+  if(!layers.length) host.innerHTML='<div class="note">まだ何もありません。</div>';
+}
+function renderFrameList(){
+  const host=$('frameList'); host.innerHTML='';
+  frames.forEach((f,i)=>{
+    const row=document.createElement('div');
+    row.className='item'+(i===selFrame?' active':'');
+    const nm=document.createElement('input'); nm.className='nm'; nm.value=f.name;
+    nm.addEventListener('input',()=>f.name=nm.value);
+    const del=document.createElement('button'); del.className='small'; del.textContent='×';
+    del.addEventListener('click',e=>{e.stopPropagation(); frames.splice(i,1); selFrame=-1; draw();});
+    row.append(nm,del);
+    row.addEventListener('click',()=>{selFrame=i; draw();});
+    host.appendChild(row);
+  });
+}
+function updateFields(){
+  const L=layers[sel];
+  ['inLX','inLY','inLW','inLH'].forEach(id=>$(id).disabled=!L);
+  if(!L) return;
+  $('inLX').value=Math.round(L.x); $('inLY').value=Math.round(L.y);
+  $('inLW').value=Math.round(L.w); $('inLH').value=Math.round(L.h);
+  $('inOp').value=L.opacity; $('vOp').textContent=Number(L.opacity).toFixed(2);
+}
+function updateSize(){
+  const bytes=layers.reduce((s,L)=>s+L.src.length*0.75,0);
+  $('szinfo').textContent=`レイヤー ${layers.length}枚 / 内包データ 約 ${(bytes/1024/1024).toFixed(2)} MB`;
+}
+function status(t,bad){ const s=$('status'); s.textContent=t; s.style.color=bad?'var(--enji)':'var(--gin)'; }
+
+/* ---------- 読み込み ---------- */
+$('inFile').addEventListener('change',async e=>{
+  const files=[...e.target.files]; if(!files.length) return;
+  for(const f of files){
+    if(/svg/i.test(f.type)||/\.svg$/i.test(f.name)) await loadSvg(await f.text());
+    else await addImage(await readAsDataURL(f), f.name.replace(/\.[^.]+$/,''));
+  }
+  if(layers.length && (CW<10||CH<10)) fit();
+  draw();
+});
+function readAsDataURL(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(fr.result);
+    fr.onerror=()=>rej(new Error('読めませんでした'));
+    fr.readAsDataURL(file);
+  });
+}
+function addImage(src,name,box){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      layers.unshift({id:uid++,name:name||('レイヤー'+uid),src,img,
+        x:box?box.x:0, y:box?box.y:0, w:box?box.w:img.naturalWidth, h:box?box.h:img.naturalHeight,
+        opacity:1, visible:true, pivot:box&&box.pivot?box.pivot:null});
+      sel=0; res();
+    };
+    img.onerror=()=>{ status('画像を読み込めませんでした: '+name,true); res(); };
+    img.src=src;
+  });
+}
+async function loadSvg(text){
+  const root=new DOMParser().parseFromString(text,'image/svg+xml').documentElement;
+  const vb=(root.getAttribute('viewBox')||'').split(/[\s,]+/).map(Number);
+  if(vb.length===4){ CW=vb[2]; CH=vb[3]; $('inCW').value=CW; $('inCH').value=CH; }
+  const imgs=[...root.querySelectorAll('image')];
+  if(!imgs.length){ status('このSVGには内包画像がありませんでした。',true); return; }
+  for(const im of imgs.reverse()){          // 後ろのものから積む
+    const g=im.closest('g');
+    const src=im.getAttribute('href')||im.getAttributeNS(XLINK,'href');
+    if(!src) continue;
+    const pv=g&&g.getAttribute('data-pivot');
+    await addImage(src, (g&&g.getAttribute('id'))||'レイヤー', {
+      x:parseFloat(im.getAttribute('x'))||0, y:parseFloat(im.getAttribute('y'))||0,
+      w:parseFloat(im.getAttribute('width'))||0, h:parseFloat(im.getAttribute('height'))||0,
+      pivot:pv?pv.split(',').map(Number):null});
+    const L=layers[0];
+    if(!L.w) { L.w=L.img.naturalWidth; L.h=L.img.naturalHeight; }
+    if(g&&g.getAttribute('opacity')) L.opacity=parseFloat(g.getAttribute('opacity'));
+  }
+  status(`SVGから ${imgs.length} レイヤーを読み込みました。`);
+}
+
+/* ---------- カンバス ---------- */
+$('inCW').addEventListener('input',e=>{CW=Math.max(1,+e.target.value||1); draw();});
+$('inCH').addEventListener('input',e=>{CH=Math.max(1,+e.target.value||1); draw();});
+function fit(){
+  if(!layers.length) return;
+  let x1=0,y1=0;
+  layers.forEach(L=>{ x1=Math.max(x1,L.x+L.w); y1=Math.max(y1,L.y+L.h); });
+  CW=Math.round(x1); CH=Math.round(y1);
+  $('inCW').value=CW; $('inCH').value=CH;
+}
+$('btnFit').addEventListener('click',()=>{fit(); draw();});
+
+/* ---------- レイヤー操作 ---------- */
+$('btnUp').addEventListener('click',()=>{ if(sel>0){ [layers[sel-1],layers[sel]]=[layers[sel],layers[sel-1]]; sel--; draw(); }});
+$('btnDown').addEventListener('click',()=>{ if(sel<layers.length-1){ [layers[sel+1],layers[sel]]=[layers[sel],layers[sel+1]]; sel++; draw(); }});
+$('btnDel').addEventListener('click',()=>{ if(layers[sel]){ layers.splice(sel,1); sel=Math.max(0,sel-1); draw(); }});
+$('btnPivClear').addEventListener('click',()=>{ if(layers[sel]){ layers[sel].pivot=null; draw(); }});
+$('btnReset').addEventListener('click',()=>{
+  const L=layers[sel]; if(!L) return;
+  L.x=0; L.y=0; L.w=L.img.naturalWidth; L.h=L.img.naturalHeight; draw();
+});
+[['inLX','x'],['inLY','y'],['inLW','w'],['inLH','h']].forEach(([id,key])=>{
+  $(id).addEventListener('input',e=>{ const L=layers[sel]; if(!L) return;
+    L[key]=parseFloat(e.target.value)||0; draw(); });
+});
+$('inOp').addEventListener('input',e=>{ const L=layers[sel]; if(!L) return;
+  L.opacity=parseFloat(e.target.value); $('vOp').textContent=L.opacity.toFixed(2); draw(); });
+
+/* ---------- モード ---------- */
+const modeBtns={move:$('mMove'),frame:$('mFrame'),pivot:$('mPivot')};
+Object.entries(modeBtns).forEach(([m,b])=>b.addEventListener('click',()=>{
+  mode=m; Object.entries(modeBtns).forEach(([k,x])=>x.setAttribute('aria-pressed',String(k===m))); }));
+
+/* ---------- ドラッグ ---------- */
+let drag=null;
+function toArt(e){
+  const p=stage.createSVGPoint(); p.x=e.clientX; p.y=e.clientY;
+  const q=p.matrixTransform(stage.getScreenCTM().inverse());
+  return {x:q.x,y:q.y};
+}
+stage.addEventListener('pointerdown',e=>{
+  const p=toArt(e);
+  if(mode==='pivot'){
+    const L=layers[sel]; if(!L) return;
+    L.pivot=[Math.round(p.x),Math.round(p.y)]; draw(); return;
+  }
+  if(mode==='frame'){
+    for(let i=frames.length-1;i>=0;i--){
+      const f=frames[i];
+      const onHandle=p.x>=f.x+f.w-24&&p.x<=f.x+f.w+8&&p.y>=f.y+f.h-24&&p.y<=f.y+f.h+8;
+      const inside=p.x>=f.x&&p.x<=f.x+f.w&&p.y>=f.y&&p.y<=f.y+f.h;
+      if(onHandle||inside){
+        selFrame=i; drag={kind:onHandle?'resize':'frame',i,ox:p.x,oy:p.y,f:{...f}};
+        stage.setPointerCapture(e.pointerId); draw(); return;
+      }
+    }
+    return;
+  }
+  const L=layers[sel]; if(!L) return;
+  drag={kind:'layer',ox:p.x,oy:p.y,lx:L.x,ly:L.y};
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const p=toArt(e), dx=p.x-drag.ox, dy=p.y-drag.oy;
+  if(drag.kind==='layer'){ const L=layers[sel]; L.x=Math.round(drag.lx+dx); L.y=Math.round(drag.ly+dy); }
+  else if(drag.kind==='frame'){ const f=frames[drag.i]; f.x=Math.round(drag.f.x+dx); f.y=Math.round(drag.f.y+dy); }
+  else { const f=frames[drag.i]; f.w=Math.max(8,Math.round(drag.f.w+dx)); f.h=Math.max(8,Math.round(drag.f.h+dy)); }
+  draw();
+});
+stage.addEventListener('pointerup',()=>{drag=null;});
+stage.addEventListener('pointercancel',()=>{drag=null;});
+
+/* ---------- 枠 ---------- */
+$('btnAddFrame').addEventListener('click',()=>{
+  const n=frames.length;
+  frames.push({name:'パーツ'+(n+1), x:Math.round(CW*0.1+n*30), y:Math.round(CH*0.1+n*30),
+    w:Math.round(CW*0.28), h:Math.round(CH*0.34)});
+  selFrame=frames.length-1; mode='frame';
+  Object.entries(modeBtns).forEach(([k,x])=>x.setAttribute('aria-pressed',String(k==='frame')));
+  draw();
+});
+$('inTol2').addEventListener('input',e=>$('vTol2').textContent=e.target.value);
+
+$('btnCut').addEventListener('click',async ()=>{
+  const L=layers[sel];
+  if(!L){ status('切り出す元のレイヤーを選んでください。',true); return; }
+  if(!frames.length){ status('先に枠を足してください。',true); return; }
+  const thr=+$('inTol2').value, doWhite=$('inWhite').checked;
+  const made=[];
+  for(const f of frames){
+    try{
+      const src=cropLayer(L,f,doWhite,thr);
+      if(src) made.push({src,name:f.name,box:{x:f.x,y:f.y,w:f.w,h:f.h}});
+    }catch(err){ status('切り出せませんでした: '+err.message,true); return; }
+  }
+  for(const m of made.reverse()) await addImage(m.src,m.name,m.box);
+  if($('inHideSrc').checked){
+    const src=layers.find(l=>l.id===L.id); if(src) src.visible=false;
+  }
+  status(`${made.length}枚に切り出しました。`);
+  draw();
+});
+function cropLayer(L,f,doWhite,thr){
+  const cv=document.createElement('canvas');
+  cv.width=Math.max(1,Math.round(f.w)); cv.height=Math.max(1,Math.round(f.h));
+  const ctx=cv.getContext('2d',{willReadFrequently:true});
+  // レイヤーの表示位置・大きさのまま、枠の分だけずらして描く
+  ctx.drawImage(L.img, L.x-f.x, L.y-f.y, L.w, L.h);
+  if(doWhite) whiteOut(ctx,cv.width,cv.height,thr);
+  return cv.toDataURL('image/png');
+}
+/* 縁から続く白だけを透明にする（囲まれた白は残す） */
+function whiteOut(ctx,w,h,thr){
+  const id=ctx.getImageData(0,0,w,h), d=id.data;
+  const isW=i=>{ const r=d[i*4],g=d[i*4+1],b=d[i*4+2];
+    return d[i*4+3]>0 && r>=thr&&g>=thr&&b>=thr && Math.max(r,g,b)-Math.min(r,g,b)<12; };
+  const seen=new Uint8Array(w*h); const st=[];
+  for(let x=0;x<w;x++){ st.push(x); st.push((h-1)*w+x); }
+  for(let y=0;y<h;y++){ st.push(y*w); st.push(y*w+w-1); }
+  while(st.length){
+    const p=st.pop();
+    if(p<0||p>=w*h||seen[p]||!isW(p)) continue;
+    seen[p]=1; d[p*4+3]=0;
+    const x=p%w;
+    st.push(p-w,p+w);
+    if(x>0) st.push(p-1);
+    if(x<w-1) st.push(p+1);
+  }
+  ctx.putImageData(id,0,0);
+}
+
+/* ---------- 書き出し ---------- */
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function buildSvg(only){
+  const body=[];
+  [...layers].reverse().forEach(L=>{
+    if(only!=null && L.id!==only) return;
+    const attrs=[`id="${esc(L.name)}"`];
+    if(L.pivot) attrs.push(`data-pivot="${L.pivot[0]},${L.pivot[1]}"`);
+    if(L.opacity!==1) attrs.push(`opacity="${L.opacity}"`);
+    if(!L.visible) attrs.push(`style="display:none"`);
+    body.push(`<g ${attrs.join(' ')}>`+
+      `<image x="${L.x}" y="${L.y}" width="${L.w}" height="${L.h}" preserveAspectRatio="none" `+
+      `href="${L.src}" xlink:href="${L.src}"/></g>`);
+  });
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="${SVGNS}" xmlns:xlink="${XLINK}" `+
+    `width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}">\n`+body.join('\n')+`\n</svg>\n`;
+}
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+  (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+async function saveFile(blob,name){
+  // 1) 共有シート（iPhone/iPad はこれが確実）
+  if(IOS && navigator.canShare){
+    try{
+      const file=new File([blob],name,{type:blob.type});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:name});
+        status('共有シートから「ファイルに保存」を選んでください。');
+        return;
+      }
+    }catch(err){ /* 共有がだめなら次へ */ }
+  }
+  // 2) ふつうのダウンロード（アンカーはDOMに入れてから押す）
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=name; a.rel='noopener';
+  document.body.appendChild(a);
+  try{ a.click(); status('保存しました: '+name); }
+  catch(err){ /* 3) 別タブで開く */
+    const w=window.open(url,'_blank');
+    if(!w){ status('保存できませんでした。「SVGのコードを出す」からコピーしてください。',true); }
+  }
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),8000);
+}
+async function dataUrlToBlob(u){ return await (await fetch(u)).blob(); }
+$('btnSvg').addEventListener('click',async ()=>{
+  if(!layers.length){ status('レイヤーがありません。',true); return; }
+  try{
+    const text=buildSvg(null);
+    status('SVGを作りました（'+(text.length/1024/1024).toFixed(2)+'MB）。保存に進みます…');
+    await saveFile(new Blob([text],{type:'image/svg+xml'}),'kasane_layers.svg');
+  }catch(err){ status('SVGを作れませんでした: '+(err&&err.message||err),true); }
+});
+$('btnPngs').addEventListener('click',async ()=>{
+  for(const L of layers){
+    try{ await saveFile(await dataUrlToBlob(L.src), L.name+'.png'); }
+    catch(err){ status('保存できませんでした: '+L.name,true); }
+  }
+});
+$('btnCode').addEventListener('click',()=>{
+  if(!layers.length){ status('レイヤーがありません。',true); return; }
+  const t=$('outCode'); t.hidden=false; t.value=buildSvg(null);
+  status('このコードを .svg として保存すれば同じものになります。');
+});
+$('btnCopy').addEventListener('click',async ()=>{
+  const t=$('outCode');
+  if(!t.value){ t.hidden=false; t.value=buildSvg(null); }
+  try{ await navigator.clipboard.writeText(t.value); status('コピーしました。'); }
+  catch(err){ t.select(); status('選択しました。手でコピーしてください。',true); }
+});
+
+draw();
+</script>
+</body>
+</html>

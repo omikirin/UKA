@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>かたどり — PNGから線画SVGを起こす</title>
+<style>
+  :root{
+    --sumi:#14181f; --sumi-2:#1b2129; --sumi-3:#222a34;
+    --hairline:#2c3644; --kinari:#e9e2d3; --kinari-dim:#8d94a1;
+    --hanada:#4c8fbf; --shu:#c8503c;
+    --washi-a:#cfc7b6; --washi-b:#bdb4a1;
+    --mincho:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+    --gothic:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{height:100%;margin:0}
+  body{background:var(--sumi);color:var(--kinari);font-family:var(--gothic);font-size:13px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
+  button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--hanada);outline-offset:2px}
+
+  #app{display:grid;grid-template-columns:176px 1fr 276px;grid-template-rows:52px 1fr 26px;height:100%}
+  header{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid var(--hairline);background:var(--sumi-2)}
+  .brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+  .brand h1{margin:0;font-family:var(--mincho);font-size:21px;font-weight:600;letter-spacing:.34em;white-space:nowrap}
+  .brand p{margin:0;color:var(--kinari-dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .spacer{flex:1}
+
+  .btn{background:var(--sumi-3);border:1px solid var(--hairline);border-radius:2px;padding:6px 12px;white-space:nowrap}
+  .btn:hover{border-color:#40506a}
+  .btn.primary{background:var(--hanada);border-color:var(--hanada);color:#0d1218;font-weight:600}
+  .btn.primary:hover{background:#5fa2d2}
+  .btn.danger{color:#e79c90}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.sm{padding:4px 8px;font-size:11.5px}
+
+  #strip{border-right:1px solid var(--hairline);background:#11151b;overflow-y:auto;padding:10px 10px 40px}
+  .eyebrow{font-family:var(--mincho);font-size:11px;letter-spacing:.28em;color:var(--kinari-dim);padding:2px 0 8px;border-bottom:1px solid var(--hairline);margin-bottom:10px}
+  .slip{display:block;width:100%;text-align:left;padding:0;margin:0 0 8px;background:var(--washi-a);border:1px solid #0c0f14;border-radius:1px;position:relative;overflow:hidden}
+  .slip canvas{display:block;width:100%;height:auto;background:var(--washi-a)}
+  .slip .cap{display:flex;align-items:center;gap:5px;padding:3px 6px;background:#0f1319;color:var(--kinari-dim);font-family:var(--mono);font-size:10px}
+  .slip .cap b{color:var(--hanada);font-weight:600}
+  .slip .cap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .slip[aria-current="true"]{border-color:var(--hanada);box-shadow:0 0 0 2px rgba(76,143,191,.45)}
+  .slip[aria-current="true"] .cap{color:var(--kinari)}
+  #strip .empty{color:var(--kinari-dim);font-size:11.5px}
+
+  #viewport{overflow:auto;background:#31363d;position:relative;display:grid;place-items:center}
+  #board{position:relative;flex:none;margin:32px;box-shadow:0 6px 30px rgba(0,0,0,.5);background:repeating-conic-gradient(var(--washi-a) 0 25%,var(--washi-b) 0 50%) 0 0/16px 16px}
+  #board canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #frames{position:absolute;inset:0;touch-action:none}
+  .frame{position:absolute;border:1px solid rgba(76,143,191,.95);background:rgba(76,143,191,.08);cursor:move}
+  .frame.sel{border-color:#ffdf6e;background:rgba(255,223,110,.1);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+  .frame .tag{position:absolute;top:-1px;left:-1px;background:rgba(12,15,20,.85);color:#cfe6f5;font-family:var(--mono);font-size:10px;padding:1px 5px;white-space:nowrap;pointer-events:none}
+  .frame.sel .tag{color:#ffdf6e}
+  .frame .h{position:absolute;width:11px;height:11px;background:#0c0f14;border:1px solid #ffdf6e}
+  .frame:not(.sel) .h{display:none}
+  .h[data-h="nw"]{left:-6px;top:-6px;cursor:nwse-resize}
+  .h[data-h="ne"]{right:-6px;top:-6px;cursor:nesw-resize}
+  .h[data-h="sw"]{left:-6px;bottom:-6px;cursor:nesw-resize}
+  .h[data-h="se"]{right:-6px;bottom:-6px;cursor:nwse-resize}
+  .h[data-h="n"]{left:50%;margin-left:-5px;top:-6px;cursor:ns-resize}
+  .h[data-h="s"]{left:50%;margin-left:-5px;bottom:-6px;cursor:ns-resize}
+  .h[data-h="w"]{top:50%;margin-top:-5px;left:-6px;cursor:ew-resize}
+  .h[data-h="e"]{top:50%;margin-top:-5px;right:-6px;cursor:ew-resize}
+  #rubber{position:absolute;border:1px dashed #ffdf6e;background:rgba(255,223,110,.08);pointer-events:none;display:none}
+
+  #empty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;padding:24px}
+  #empty .fr{border:1px dashed #6a7583;padding:34px 46px;border-radius:2px;background:rgba(17,21,27,.35)}
+  #empty h2{font-family:var(--mincho);font-size:19px;letter-spacing:.2em;margin:0 0 6px;color:#e2e7ee}
+  #empty p{margin:0 0 14px;color:#9aa3b0;font-size:12px}
+  #viewport.dragging{background:#3a4450}
+
+  #panel{border-left:1px solid var(--hairline);background:var(--sumi-2);overflow-y:auto;padding:12px 14px 60px}
+  .sec{margin-bottom:18px}
+  .row{display:flex;align-items:center;gap:8px;margin:9px 0}
+  .row label{flex:none;color:var(--kinari-dim);font-size:11.5px;width:104px}
+  .row output{font-family:var(--mono);font-size:11px;width:44px;text-align:right;color:#c3cbd6}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--hanada)}
+  input[type=number],input[type=text]{background:var(--sumi);border:1px solid var(--hairline);border-radius:2px;padding:5px 6px;font-family:var(--mono);width:100%}
+  .seg{display:flex;border:1px solid var(--hairline);border-radius:2px;overflow:hidden}
+  .seg button{flex:1;background:var(--sumi-3);border:0;padding:6px 3px;font-size:11.5px}
+  .seg button+button{border-left:1px solid var(--hairline)}
+  .seg button[aria-pressed="true"]{background:rgba(76,143,191,.2);color:#cfe6f5;font-weight:600}
+  .check{display:flex;align-items:center;gap:8px;margin:7px 0;color:#c3cbd6}
+  .check input{accent-color:var(--hanada);width:15px;height:15px}
+  .note{color:var(--kinari-dim);font-size:11px;margin:6px 0 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .stackb{display:grid;gap:6px}
+  .stat{font-family:var(--mono);font-size:10.5px;color:var(--kinari-dim);border-left:2px solid var(--hairline);padding-left:8px;margin-top:8px;white-space:pre-line}
+
+  footer{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid var(--hairline);background:#11151b;color:var(--kinari-dim);font-family:var(--mono);font-size:10.5px}
+  footer .spacer{flex:1}
+  footer button{background:none;border:1px solid var(--hairline);border-radius:2px;padding:1px 7px;font-family:var(--mono);font-size:10.5px}
+  #toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:#0c0f14;border:1px solid var(--hairline);border-left:3px solid var(--hanada);padding:9px 15px;border-radius:2px;max-width:70vw;opacity:0;pointer-events:none;transition:opacity .18s;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9}
+  #toast.on{opacity:1}
+  #busy{position:fixed;inset:0;background:rgba(10,13,18,.6);display:none;place-content:center;justify-items:center;z-index:10}
+  #busy.on{display:grid}
+  #busy div{font-family:var(--mincho);letter-spacing:.3em;font-size:15px}
+  @media (max-width:960px){#app{grid-template-columns:132px 1fr 244px}.brand p{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>かたどり</h1>
+      <p>PNGを二値にして、輪郭を線画SVGに起こす</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" id="open">PNGを開く</button>
+    <input type="file" id="picker" accept="image/*" hidden>
+  </header>
+
+  <nav id="strip">
+    <div class="eyebrow">枠</div>
+    <div id="list"><p class="empty">枠がないときは画像全体を1枚として書き出します。</p></div>
+  </nav>
+
+  <main id="viewport">
+    <div id="board" hidden>
+      <canvas id="view"></canvas>
+      <div id="frames"><div id="rubber"></div></div>
+    </div>
+    <div id="empty">
+      <div class="fr">
+        <h2>PNGをここへ落とす</h2>
+        <p>貼り付け（Ctrl+V）でも取り込めます。線画シートなら枠で切り分けて1枚ずつSVGに。</p>
+        <button class="btn" id="open2">ファイルを選ぶ</button>
+      </div>
+    </div>
+  </main>
+
+  <aside id="panel">
+    <div class="sec">
+      <div class="eyebrow">見せかた</div>
+      <div class="seg" id="show">
+        <button data-show="src" aria-pressed="true">元画像</button>
+        <button data-show="mask" aria-pressed="false">二値</button>
+        <button data-show="vec" aria-pressed="false">ベクター</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">解像度を上げる</div>
+      <div class="row">
+        <label for="scale">拡大</label>
+        <input type="range" id="scale" min="1" max="4" step="0.5" value="2">
+        <output id="scaleV">2.0×</output>
+      </div>
+      <div class="row">
+        <label for="blur">ぼかす</label>
+        <input type="range" id="blur" min="0" max="30" value="6">
+        <output id="blurV">0.6</output>
+      </div>
+      <p class="note">拡大してからぼかして二値化すると、階段状のギザギザが曲線になります。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">二値化</div>
+      <div class="seg" id="inkmode">
+        <button data-ink="auto" aria-pressed="true">自動</button>
+        <button data-ink="dark" aria-pressed="false">暗さ</button>
+        <button data-ink="alpha" aria-pressed="false">不透明度</button>
+      </div>
+      <div class="row">
+        <label for="thr">しきい値</label>
+        <input type="range" id="thr" min="1" max="254" value="128">
+        <output id="thrV">128</output>
+      </div>
+      <div class="row">
+        <label for="morph">線の太さ</label>
+        <input type="range" id="morph" min="-3" max="3" value="0">
+        <output id="morphV">0</output>
+      </div>
+      <div class="row">
+        <label for="speck">ゴミを掃く</label>
+        <input type="range" id="speck" min="0" max="400" value="24">
+        <output id="speckV">24</output>
+      </div>
+      <label class="check"><input type="checkbox" id="inv"><span>白い線を拾う（明暗を逆に）</span></label>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">ベクター化</div>
+      <div class="row">
+        <label for="tolr">直線にまとめる</label>
+        <input type="range" id="tolr" min="2" max="40" value="12">
+        <output id="tolrV">1.2</output>
+      </div>
+      <div class="row">
+        <label for="corner">角を残す</label>
+        <input type="range" id="corner" min="10" max="170" value="72">
+        <output id="cornerV">72°</output>
+      </div>
+      <label class="check"><input type="checkbox" id="curves" checked><span>曲線でつなぐ（切るとポリゴン）</span></label>
+      <button class="btn" id="trace" style="width:100%;margin-top:8px">ベクターに起こす</button>
+      <div class="stat" id="tstat">まだ起こしていません</div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">枠</div>
+      <div class="stackb">
+        <button class="btn" id="fAuto">自動で割る（余白で切る）</button>
+        <div class="three">
+          <input type="number" id="gRow" min="1" max="20" value="2" aria-label="行">
+          <input type="number" id="gCol" min="1" max="20" value="3" aria-label="列">
+          <button class="btn sm" id="fGrid">等分</button>
+        </div>
+        <div class="two">
+          <button class="btn" id="fWhole">全体を1枠</button>
+          <button class="btn danger" id="fClear">枠を消す</button>
+        </div>
+      </div>
+      <p class="note">画面上でドラッグすると枠が増えます。選ぶと8つのつまみで大きさを変えられます。</p>
+      <div id="fedit" hidden>
+        <div class="row" style="margin-top:12px"><label for="fname">名前</label><input type="text" id="fname" spellcheck="false"></div>
+        <div class="two">
+          <button class="btn sm" id="fFit">中身にぴったり</button>
+          <button class="btn sm danger" id="fDel">この枠を削除</button>
+        </div>
+        <div class="stat" id="fstat"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">書き出し</div>
+      <div class="row">
+        <label for="pad">枠の余白</label>
+        <input type="range" id="pad" min="0" max="80" value="8">
+        <output id="padV">8px</output>
+      </div>
+      <label class="check"><input type="checkbox" id="bake" checked><span>塗り色を黒で固定（切るとcurrentColor）</span></label>
+      <div class="stackb" style="margin-top:8px">
+        <button class="btn primary" id="exp1">選んだ枠を書き出す</button>
+        <button class="btn" id="expAll">枠ごとに全部書き出す</button>
+      </div>
+      <p class="note">1枠＝1SVG。塗りは fill-rule="evenodd" の1パスなので、そのまま「したじき」で塗れます。</p>
+    </div>
+  </aside>
+
+  <footer>
+    <span id="stat">PNGを開いてください</span>
+    <div class="spacer"></div>
+    <button id="zoomOut">−</button><span id="zoomV">100%</span><button id="zoomIn">＋</button>
+    <button id="zoomFit">全体</button><button id="zoom1">1:1</button>
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="busy"><div>かたどり中…</div></div>
+
+<script>
+"use strict";
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const MAXPX = 22e6;
+
+const S = {
+  name:"lineart", src:null,           /* 元画像 canvas */
+  up:null, mask:null, mW:0, mH:0, sc:2,  /* 拡大後の二値 */
+  blur:0.6, ink:"auto", thr:128, morph:0, speck:24, inv:false,
+  tol:1.2, corner:72, curves:true,
+  show:"src", zoom:1, pad:8, bake:true,
+  frames:[], sel:null, seq:0,
+  traced:null            /* {frames:[{id,d,pts}], whole:d} */
+};
+
+let toastT;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),3400); }
+function cv(w,h){ const c=document.createElement("canvas"); c.width=w; c.height=h; return c; }
+const busy = on => $("#busy").classList.toggle("on", on);
+const wait = ()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+/* ---------------- 取り込み ---------------- */
+async function decode(blob){
+  /* サンドボックス内では blob: URL が使えないので、ImageBitmap → data: の順で読む */
+  if(typeof createImageBitmap === "function"){
+    try{ return await createImageBitmap(blob); }catch(e){}
+  }
+  const url = await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=()=>rej(new Error("ファイルを読み取れません"));
+    r.readAsDataURL(blob);
+  });
+  const img=new Image();
+  await new Promise((res,rej)=>{
+    img.onload=res;
+    img.onerror=()=>rej(new Error("画像として読めません（PNG / JPEG / WebP のみ）"));
+    img.src=url;
+  });
+  return img;
+}
+async function loadBlob(blob, name){
+  let src;
+  try{ src = await decode(blob); }
+  catch(e){ toast(e.message); busy(false); return; }
+  const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+  if(!w || !h){ toast("画像の大きさが取れませんでした"); return; }
+  S.src = cv(w,h);
+  S.src.getContext("2d").drawImage(src,0,0);
+  if(src.close) src.close();
+  S.name = (name||"lineart").replace(/\.[a-z0-9]+$/i,"");
+  S.frames = []; S.sel = null; S.traced = null;
+  $("#empty").hidden = true; $("#board").hidden = false;
+  clampScale();
+  await rebuild();
+  fit();
+  toast(`${w}×${h}px を読み込みました`);
+}
+function clampScale(){
+  if(!S.src) return;
+  const px = S.src.width*S.src.height;
+  const max = Math.sqrt(MAXPX/px);
+  if(S.sc > max){
+    S.sc = Math.max(1, Math.floor(max*2)/2);
+    $("#scale").value = S.sc; $("#scaleV").textContent = S.sc.toFixed(1)+"×";
+    toast(`画像が大きいので拡大を ${S.sc.toFixed(1)}× に抑えました`);
+  }
+}
+
+/* ---------------- 二値化 ---------------- */
+async function rebuild(){
+  if(!S.src) return;
+  busy(true); await wait();
+  try{
+    const W = Math.max(1,Math.round(S.src.width*S.sc)), H = Math.max(1,Math.round(S.src.height*S.sc));
+    S.up = cv(W,H); S.mW = W; S.mH = H;
+    const c = S.up.getContext("2d");
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    if(S.blur>0) c.filter = `blur(${(S.blur*S.sc).toFixed(2)}px)`;
+    c.drawImage(S.src,0,0,W,H);
+    c.filter = "none";
+
+    const d = c.getImageData(0,0,W,H).data;
+    let hasAlpha = false;
+    for(let o=3;o<d.length;o+=4){ if(d[o]<250){ hasAlpha=true; break; } }
+    const mode = S.ink==="auto" ? (hasAlpha ? "alpha" : "dark") : S.ink;
+    const m = new Uint8Array(W*H);
+    for(let p=0,o=0;p<W*H;p++,o+=4){
+      const a = d[o+3];
+      let v;
+      if(mode==="alpha") v = a;
+      else{
+        const lum = d[o]*0.299 + d[o+1]*0.587 + d[o+2]*0.114;
+        v = (a/255)*(255-lum);
+      }
+      if(S.inv) v = 255 - v;
+      m[p] = v >= S.thr ? 1 : 0;
+    }
+    S.mask = m;
+    if(S.morph) morph(S.morph);
+    if(S.speck) despeckle(Math.round(S.speck*S.sc*S.sc));
+    S.traced = null;
+    $("#tstat").textContent = "しきい値が変わりました。もう一度起こしてください";
+  } finally { busy(false); }
+  draw(); renderList(); status();
+}
+function morph(n){
+  const grow = n>0, times = Math.abs(n), W=S.mW, H=S.mH;
+  for(let t=0;t<times;t++){
+    const src = S.mask, out = new Uint8Array(W*H);
+    for(let y=0;y<H;y++){
+      const r=y*W;
+      for(let x=0;x<W;x++){
+        const p=r+x, v=src[p];
+        const l = x>0?src[p-1]:0, rr = x<W-1?src[p+1]:0, u = y>0?src[p-W]:0, dn = y<H-1?src[p+W]:0;
+        out[p] = grow ? (v|l|rr|u|dn) : (v&l&rr&u&dn&(x>0&&x<W-1&&y>0&&y<H-1?1:0));
+      }
+    }
+    S.mask = out;
+  }
+}
+/* 小さな島と小さな穴を掃く */
+function despeckle(minArea){
+  const W=S.mW,H=S.mH,N=W*H,m=S.mask;
+  const seen = new Uint8Array(N);
+  const st = new Int32Array(N);
+  const comp = new Int32Array(1024);
+  for(let want=1;want>=0;want--){
+    seen.fill(0);
+    for(let s=0;s<N;s++){
+      if(seen[s] || m[s]!==want) continue;
+      let top=0, n=0, touches=false;
+      st[top++]=s; seen[s]=1;
+      const bag=[];
+      while(top){
+        const p=st[--top]; bag.push(p); n++;
+        const x=p%W, y=(p-x)/W;
+        if(x===0||y===0||x===W-1||y===H-1) touches=true;
+        if(x>0   && !seen[p-1] && m[p-1]===want){ seen[p-1]=1; st[top++]=p-1; }
+        if(x<W-1 && !seen[p+1] && m[p+1]===want){ seen[p+1]=1; st[top++]=p+1; }
+        if(y>0   && !seen[p-W] && m[p-W]===want){ seen[p-W]=1; st[top++]=p-W; }
+        if(y<H-1 && !seen[p+W] && m[p+W]===want){ seen[p+W]=1; st[top++]=p+W; }
+      }
+      if(n < minArea && !(want===0 && touches)) for(const p of bag) m[p] = want?0:1;
+    }
+  }
+  void comp;
+}
+
+/* ---------------- 輪郭を追う ---------------- */
+/* 塗り画素の境界を格子上の閉ループとして取り出す（穴は evenodd で抜ける） */
+function contours(rx,ry,rw,rh){
+  const W=S.mW,H=S.mH,m=S.mask;
+  const at=(x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:m[(y+ry)*W+(x+rx)];
+  const K=rw+1;
+  const key=(x,y)=>y*K+x;
+  const out = new Map();
+  const push=(x1,y1,x2,y2)=>{
+    const k=key(x1,y1);
+    let a=out.get(k); if(!a){ a=[]; out.set(k,a); }
+    a.push({x1,y1,x2,y2,used:false});
+  };
+  for(let y=0;y<rh;y++){
+    for(let x=0;x<rw;x++){
+      if(!at(x,y)) continue;
+      if(!at(x,y-1)) push(x,y,x+1,y);
+      if(!at(x+1,y)) push(x+1,y,x+1,y+1);
+      if(!at(x,y+1)) push(x+1,y+1,x,y+1);
+      if(!at(x-1,y)) push(x,y+1,x,y);
+    }
+  }
+  const loops=[];
+  for(const [,arr] of out){
+    for(const e0 of arr){
+      if(e0.used) continue;
+      const pts=[[e0.x1,e0.y1]];
+      let e=e0; e.used=true;
+      let dx=e.x2-e.x1, dy=e.y2-e.y1;
+      for(let guard=0; guard<4e6; guard++){
+        pts.push([e.x2,e.y2]);
+        const cand=(out.get(key(e.x2,e.y2))||[]).filter(c=>!c.used);
+        if(!cand.length) break;
+        let next=cand[0];
+        if(cand.length>1){
+          /* まっすぐ → 右 → 左 の順で選び、斜め接触をほどく */
+          const score=c=>{
+            const cx=c.x2-c.x1, cy=c.y2-c.y1;
+            if(cx===dx&&cy===dy) return 0;
+            if(cx===-dy&&cy===dx) return 1;
+            return 2;
+          };
+          next = cand.reduce((a,b)=>score(b)<score(a)?b:a);
+        }
+        next.used=true; e=next; dx=e.x2-e.x1; dy=e.y2-e.y1;
+        if(e.x2===e0.x1 && e.y2===e0.y1){ pts.push([e.x2,e.y2]); break; }
+      }
+      if(pts.length>4) loops.push(dedupe(pts));
+    }
+  }
+  return loops;
+}
+function dedupe(p){
+  const o=[];
+  for(const q of p){ const l=o[o.length-1]; if(!l||l[0]!==q[0]||l[1]!==q[1]) o.push(q); }
+  if(o.length>1){ const a=o[0], b=o[o.length-1]; if(a[0]===b[0]&&a[1]===b[1]) o.pop(); }
+  return o;
+}
+/* 折れ線を間引く（閉ループ） */
+function simplify(pts, tol){
+  if(pts.length<4) return pts;
+  let anchor=0, best=-1;
+  const cx = pts.reduce((s,p)=>s+p[0],0)/pts.length, cy = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+  pts.forEach((p,i)=>{ const d=(p[0]-cx)**2+(p[1]-cy)**2; if(d>best){best=d;anchor=i;} });
+  const rot = pts.slice(anchor).concat(pts.slice(0,anchor));
+  const half = Math.floor(rot.length/2);
+  const a = rdp(rot.slice(0,half+1), tol);
+  const b = rdp(rot.slice(half), tol);
+  const out = a.concat(b.slice(1));
+  if(out.length>2){ const f=out[0], l=out[out.length-1]; if(f[0]===l[0]&&f[1]===l[1]) out.pop(); }
+  const cleaned = pruneCollinear(out, tol);
+  return cleaned.length>=3 ? cleaned : rot;
+}
+/* 閉ループの継ぎ目に残る「まっすぐな点」を落とす */
+function pruneCollinear(pts, tol){
+  let p = pts;
+  for(let pass=0; pass<2; pass++){
+    if(p.length<=3) break;
+    const keep = new Uint8Array(p.length).fill(1);
+    for(let i=0;i<p.length;i++){
+      let prev=(i-1+p.length)%p.length, next=(i+1)%p.length;
+      while(!keep[prev] && prev!==i) prev=(prev-1+p.length)%p.length;
+      while(!keep[next] && next!==i) next=(next+1)%p.length;
+      const [x1,y1]=p[prev], [x2,y2]=p[next], [x,y]=p[i];
+      const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy);
+      if(len<1e-6) continue;
+      const d=Math.abs((x-x1)*dy-(y-y1)*dx)/len;
+      if(d<=tol*0.6 && keep.reduce((s,v)=>s+v,0)>3) keep[i]=0;
+    }
+    const next = p.filter((_,i)=>keep[i]);
+    if(next.length===p.length) break;
+    p = next;
+  }
+  return p;
+}
+function rdp(pts, tol){
+  if(pts.length<3) return pts.slice();
+  const keep = new Uint8Array(pts.length); keep[0]=keep[pts.length-1]=1;
+  const stack=[[0,pts.length-1]];
+  while(stack.length){
+    const [i,j]=stack.pop();
+    if(j-i<2) continue;
+    const [x1,y1]=pts[i], [x2,y2]=pts[j];
+    const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy)||1;
+    let m=-1, mi=i;
+    for(let k=i+1;k<j;k++){
+      const d=Math.abs((pts[k][0]-x1)*dy-(pts[k][1]-y1)*dx)/len;
+      if(d>m){ m=d; mi=k; }
+    }
+    if(m>tol){ keep[mi]=1; stack.push([i,mi],[mi,j]); }
+  }
+  return pts.filter((_,i)=>keep[i]);
+}
+/* 折れ線 → パス（角は残し、それ以外は三次曲線でなめらかに） */
+function toPath(pts, sx, sy, ox, oy, smooth, cornerDeg){
+  const n = pts.length;
+  if(n<3) return "";
+  const P = pts.map(p=>[p[0]*sx+ox, p[1]*sy+oy]);
+  const num = v => Math.round(v*100)/100;
+  if(!smooth){
+    let d = `M${num(P[0][0])} ${num(P[0][1])}`;
+    for(let i=1;i<n;i++) d += `L${num(P[i][0])} ${num(P[i][1])}`;
+    return d+"Z";
+  }
+  const cos0 = Math.cos(cornerDeg*Math.PI/180);
+  const corner = new Uint8Array(n);
+  for(let i=0;i<n;i++){
+    const a=P[(i-1+n)%n], b=P[i], c=P[(i+1)%n];
+    const v1=[b[0]-a[0],b[1]-a[1]], v2=[c[0]-b[0],c[1]-b[1]];
+    const l1=Math.hypot(...v1)||1, l2=Math.hypot(...v2)||1;
+    const dot=(v1[0]*v2[0]+v1[1]*v2[1])/(l1*l2);
+    if(dot < cos0) corner[i]=1;                      /* 曲がりが急 = 角 */
+    if(l1>Math.max(6,l2*4) && l2>6) corner[i]=1;      /* 長い直線の継ぎ目も角扱い */
+  }
+  let d = `M${num(P[0][0])} ${num(P[0][1])}`;
+  const ctrl = (from, tangent, seg) => {
+    const t = Math.hypot(tangent[0], tangent[1]) || 1;
+    const cap = Math.min(t/6, Math.hypot(seg[0]-from[0], seg[1]-from[1])/3);
+    return [from[0] + tangent[0]/t*cap, from[1] + tangent[1]/t*cap];
+  };
+  for(let i=0;i<n;i++){
+    const p0=P[(i-1+n)%n], p1=P[i], p2=P[(i+1)%n], p3=P[(i+2)%n];
+    if(corner[i] && corner[(i+1)%n]){ d += `L${num(p2[0])} ${num(p2[1])}`; continue; }
+    const c1 = corner[i] ? p1 : ctrl(p1, [p2[0]-p0[0], p2[1]-p0[1]], p2);
+    const c2 = corner[(i+1)%n] ? p2 : ctrl(p2, [p1[0]-p3[0], p1[1]-p3[1]], p1);
+    d += `C${num(c1[0])} ${num(c1[1])} ${num(c2[0])} ${num(c2[1])} ${num(p2[0])} ${num(p2[1])}`;
+  }
+  return d+"Z";
+}
+
+/* ---------------- 枠 → パス ---------------- */
+function regionOf(fr){
+  const pad = S.pad;
+  const x = Math.max(0, Math.floor((fr ? fr.x-pad : 0)));
+  const y = Math.max(0, Math.floor((fr ? fr.y-pad : 0)));
+  const w = Math.min(S.src.width-x,  Math.ceil((fr ? fr.w+pad*2 : S.src.width)));
+  const h = Math.min(S.src.height-y, Math.ceil((fr ? fr.h+pad*2 : S.src.height)));
+  return {x,y,w,h};
+}
+function tracePiece(fr){
+  const r = regionOf(fr);
+  const rx = Math.round(r.x*S.sc), ry = Math.round(r.y*S.sc);
+  const rw = Math.min(S.mW-rx, Math.round(r.w*S.sc)), rh = Math.min(S.mH-ry, Math.round(r.h*S.sc));
+  const loops = contours(rx,ry,rw,rh);
+  let pts=0, ds=[];
+  for(const raw of loops){
+    const s = simplify(raw, S.tol*S.sc);
+    if(s.length<3) continue;
+    pts += s.length;
+    ds.push(toPath(s, 1/S.sc, 1/S.sc, r.x, r.y, S.curves, S.corner));
+  }
+  return {rect:r, d:ds.join(" "), loops:loops.length, pts};
+}
+async function traceAll(){
+  if(!S.src){ return; }
+  busy(true); await wait();
+  try{
+    const list = S.frames.length ? S.frames : [null];
+    const res = [];
+    for(const fr of list) res.push(Object.assign({id:fr?fr.id:0, name:fr?fr.name:S.name}, tracePiece(fr)));
+    S.traced = res;
+    const L = res.reduce((s,r)=>s+r.loops,0), P = res.reduce((s,r)=>s+r.pts,0);
+    $("#tstat").textContent = `${res.length}枚 ／ 輪郭 ${L}本 ／ 節点 ${P}`;
+  } finally { busy(false); }
+  if(S.show==="vec") draw();
+  renderList();
+}
+function pathOf(id){ return S.traced ? S.traced.find(t=>t.id===id) : null; }
+
+/* ---------------- 描画 ---------------- */
+function draw(){
+  const b=$("#board"), c=$("#view");
+  if(!S.src){ b.hidden=true; return; }
+  const W=S.src.width, H=S.src.height;
+  c.width=W; c.height=H;
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,W,H);
+  if(S.show==="src"){ ctx.drawImage(S.src,0,0); }
+  else if(S.show==="mask" && S.mask){
+    const img=ctx.createImageData(W,H), d=img.data;
+    for(let y=0;y<H;y++){
+      const my=Math.min(S.mH-1, Math.round(y*S.sc));
+      for(let x=0;x<W;x++){
+        const on=S.mask[my*S.mW + Math.min(S.mW-1,Math.round(x*S.sc))];
+        const o=(y*W+x)*4;
+        d[o]=d[o+1]=d[o+2]=0; d[o+3]=on?255:0;
+      }
+    }
+    ctx.putImageData(img,0,0);
+  }
+  else if(S.show==="vec"){
+    if(!S.traced){ ctx.drawImage(S.src,0,0); ctx.fillStyle="rgba(20,24,31,.55)"; ctx.fillRect(0,0,W,H); }
+    else{
+      ctx.fillStyle="#14181f";
+      for(const t of S.traced){ if(t.d) ctx.fill(new Path2D(t.d), "evenodd"); }
+    }
+  }
+  applyZoom();
+  drawFrames();
+}
+function applyZoom(){
+  if(!S.src) return;
+  $("#board").style.width = Math.round(S.src.width*S.zoom)+"px";
+  $("#board").style.height = Math.round(S.src.height*S.zoom)+"px";
+  $("#zoomV").textContent = Math.round(S.zoom*100)+"%";
+  drawFrames();
+}
+function fit(){
+  if(!S.src) return;
+  const vp=$("#viewport").getBoundingClientRect();
+  S.zoom = Math.min((vp.width-90)/S.src.width, (vp.height-90)/S.src.height, 4);
+  if(!isFinite(S.zoom)||S.zoom<=0) S.zoom=1;
+  applyZoom();
+}
+function drawFrames(){
+  const host=$("#frames");
+  [...host.querySelectorAll(".frame")].forEach(n=>n.remove());
+  S.frames.forEach((f,i)=>{
+    const el=document.createElement("div");
+    el.className="frame"+(f.id===S.sel?" sel":"");
+    el.dataset.id=f.id;
+    el.style.left=(f.x*S.zoom)+"px"; el.style.top=(f.y*S.zoom)+"px";
+    el.style.width=(f.w*S.zoom)+"px"; el.style.height=(f.h*S.zoom)+"px";
+    const tag=document.createElement("div"); tag.className="tag";
+    tag.textContent=`${String(i+1).padStart(2,"0")} ${f.name} ${Math.round(f.w)}×${Math.round(f.h)}`;
+    el.appendChild(tag);
+    for(const h of ["nw","n","ne","e","se","s","sw","w"]){
+      const d=document.createElement("div"); d.className="h"; d.dataset.h=h; el.appendChild(d);
+    }
+    host.appendChild(el);
+  });
+}
+function status(){
+  $("#stat").textContent = S.src
+    ? `${S.name}　${S.src.width}×${S.src.height}px　→ 二値 ${S.mW}×${S.mH}px　枠 ${S.frames.length}`
+    : "PNGを開いてください";
+}
+
+/* ---------------- 枠一覧 ---------------- */
+function renderList(){
+  const box=$("#list"); box.textContent="";
+  if(!S.frames.length){
+    const p=document.createElement("p"); p.className="empty";
+    p.textContent = S.src ? "枠なし＝画像全体を1枚として書き出します。" : "枠がないときは画像全体を1枚として書き出します。";
+    box.appendChild(p); syncEdit(); return;
+  }
+  S.frames.forEach((f,i)=>{
+    const b=document.createElement("button");
+    b.className="slip"; b.setAttribute("aria-current", String(f.id===S.sel));
+    const tw=132, th=Math.max(12, Math.round(tw*f.h/f.w));
+    const c=cv(tw,th); c.style.width="100%";
+    const ctx=c.getContext("2d");
+    ctx.fillStyle="#cfc7b6"; ctx.fillRect(0,0,tw,th);
+    const t=pathOf(f.id);
+    if(S.traced && t && t.d){
+      ctx.save();
+      ctx.scale(tw/f.w, tw/f.w);
+      ctx.translate(-f.x, -f.y);
+      ctx.fillStyle="#14181f"; ctx.fill(new Path2D(t.d),"evenodd");
+      ctx.restore();
+    }else{
+      ctx.drawImage(S.src, f.x, f.y, f.w, f.h, 0,0, tw, th);
+    }
+    b.appendChild(c);
+    const cap=document.createElement("div"); cap.className="cap";
+    const n=document.createElement("b"); n.textContent=String(i+1).padStart(2,"0");
+    const s=document.createElement("span"); s.textContent=f.name;
+    cap.append(n,s); b.appendChild(cap);
+    b.addEventListener("click", ()=>{ S.sel=f.id; renderList(); drawFrames(); });
+    box.appendChild(b);
+  });
+  syncEdit();
+}
+function syncEdit(){
+  const f=S.frames.find(x=>x.id===S.sel);
+  $("#fedit").hidden = !f;
+  if(!f) return;
+  $("#fname").value = f.name;
+  const t=pathOf(f.id);
+  $("#fstat").textContent = `${Math.round(f.x)},${Math.round(f.y)}　${Math.round(f.w)}×${Math.round(f.h)}px`
+    + (t ? `\n輪郭 ${t.loops}本 ／ 節点 ${t.pts}` : "");
+}
+function addFrame(x,y,w,h,name){
+  const f={id:++S.seq, x,y,w,h, name:name||`cut${String(S.frames.length+1).padStart(2,"0")}`};
+  S.frames.push(f); S.sel=f.id; S.traced=null;
+  renderList(); drawFrames(); status();
+  return f;
+}
+
+/* ---------------- 自動割り（余白で切る X-Y cut） ---------------- */
+function inkProfile(rx,ry,rw,rh,axis){
+  const W=S.mW,m=S.mask;
+  const len = axis==="y"?rh:rw;
+  const prof = new Int32Array(len);
+  for(let y=0;y<rh;y++){
+    const row=(y+ry)*W;
+    for(let x=0;x<rw;x++){
+      if(m[row+x+rx]) prof[axis==="y"?y:x]++;
+    }
+  }
+  return prof;
+}
+function cutRuns(prof, minGap, minRun){
+  const runs=[]; let s=-1;
+  for(let i=0;i<prof.length;i++){
+    if(prof[i]>0){ if(s<0) s=i; }
+    else if(s>=0){
+      let j=i; while(j<prof.length && prof[j]===0) j++;
+      if(j-i >= minGap || j>=prof.length){ if(i-s>=minRun) runs.push([s,i]); s=-1; i=j-1; }
+      else i=j-1;
+    }
+  }
+  if(s>=0 && prof.length-s>=minRun) runs.push([s,prof.length]);
+  return runs;
+}
+function autoFrames(){
+  if(!S.src||!S.mask) return;
+  const gap = Math.max(6, Math.round(Math.min(S.mW,S.mH)*0.02));
+  const minRun = Math.max(8, Math.round(Math.min(S.mW,S.mH)*0.04));
+  const found=[];
+  const rows = cutRuns(inkProfile(0,0,S.mW,S.mH,"y"), gap, minRun);
+  for(const [y0,y1] of rows){
+    const cols = cutRuns(inkProfile(0,y0,S.mW,y1-y0,"x"), gap, minRun);
+    for(const [x0,x1] of cols){
+      /* 列の中でもう一度縦に詰める */
+      const sub = cutRuns(inkProfile(x0,y0,x1-x0,y1-y0,"y"), gap, minRun);
+      for(const [sy0,sy1] of (sub.length?sub:[[0,y1-y0]])){
+        found.push({x:x0, y:y0+sy0, w:x1-x0, h:sy1-sy0});
+      }
+    }
+  }
+  if(!found.length){ toast("余白で切れませんでした。しきい値か「ゴミを掃く」を調整してみてください"); return; }
+  S.frames=[]; S.sel=null; S.seq=0; S.traced=null;
+  found.forEach((r,i)=>addFrame(r.x/S.sc, r.y/S.sc, r.w/S.sc, r.h/S.sc, `cut${String(i+1).padStart(2,"0")}`));
+  toast(`${found.length}枠に割りました`);
+}
+function fitFrame(f){
+  if(!S.mask) return;
+  const rx=Math.round(f.x*S.sc), ry=Math.round(f.y*S.sc);
+  const rw=Math.min(S.mW-rx,Math.round(f.w*S.sc)), rh=Math.min(S.mH-ry,Math.round(f.h*S.sc));
+  let x0=rw,y0=rh,x1=-1,y1=-1;
+  for(let y=0;y<rh;y++){
+    const row=(y+ry)*S.mW;
+    for(let x=0;x<rw;x++) if(S.mask[row+x+rx]){
+      if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+    }
+  }
+  if(x1<0){ toast("枠の中に線がありません"); return; }
+  f.x = f.x + x0/S.sc; f.y = f.y + y0/S.sc;
+  f.w = (x1-x0+1)/S.sc; f.h = (y1-y0+1)/S.sc;
+  S.traced=null; renderList(); drawFrames();
+}
+
+/* ---------------- 書き出し ---------------- */
+function buildSVG(t){
+  const r=t.rect;
+  const fill = S.bake ? "#000000" : "currentColor";
+  return [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.round(r.w)} ${Math.round(r.h)}" width="${Math.round(r.w)}" height="${Math.round(r.h)}">`,
+    `<!-- かたどり: ${S.name} / ${t.name} -->`,
+    `<g transform="translate(${-Math.round(r.x)} ${-Math.round(r.y)})">`,
+    `<path fill="${fill}" fill-rule="evenodd" d="${t.d}"/>`,
+    `</g></svg>`
+  ].join("\n");
+}
+function hrefFor(text, mime){
+  try{
+    const u = URL.createObjectURL(new Blob([text],{type:mime}));
+    if(!/^blob:null/.test(u)) return u;   /* 出所不明オリジンでは blob: が使えない */
+    URL.revokeObjectURL(u);
+  }catch(e){}
+  return "data:"+mime+";charset=utf-8,"+encodeURIComponent(text);
+}
+function download(name, text){
+  const a=document.createElement("a");
+  a.href=hrefFor(text, "image/svg+xml");
+  a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  if(a.href.startsWith("blob:")) setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+async function exportOne(){
+  if(!S.traced) await traceAll();
+  if(!S.traced) return;
+  const t = S.frames.length ? pathOf(S.sel) : S.traced[0];
+  if(!t){ toast("枠を選んでください"); return; }
+  download(`${S.name}_${t.name}.svg`, buildSVG(t));
+}
+async function exportAll(){
+  if(!S.traced) await traceAll();
+  if(!S.traced) return;
+  for(const t of S.traced){
+    if(!t.d){ continue; }
+    download(`${S.name}_${t.name}.svg`, buildSVG(t));
+    await new Promise(r=>setTimeout(r,320));
+  }
+  toast(`${S.traced.length}枚を書き出しました。止まるときはブラウザの複数ダウンロードを許可してください。`);
+}
+
+/* ---------------- 枠のドラッグ ---------------- */
+const host=$("#frames");
+let drag=null;
+function toImg(e){
+  const r=$("#board").getBoundingClientRect();
+  return { x:(e.clientX-r.left)/S.zoom, y:(e.clientY-r.top)/S.zoom };
+}
+host.addEventListener("pointerdown", e=>{
+  if(!S.src || e.button!==0) return;
+  const handle=e.target.closest(".h"), frameEl=e.target.closest(".frame");
+  const p=toImg(e);
+  host.setPointerCapture(e.pointerId);
+  if(handle && frameEl){
+    const f=S.frames.find(x=>x.id===+frameEl.dataset.id);
+    drag={mode:"resize", h:handle.dataset.h, f, o:{...f}, p};
+  }else if(frameEl){
+    const f=S.frames.find(x=>x.id===+frameEl.dataset.id);
+    S.sel=f.id; renderList(); drawFrames();
+    drag={mode:"move", f, o:{...f}, p};
+  }else{
+    drag={mode:"new", p};
+    const rb=$("#rubber"); rb.style.display="block";
+    rb.style.left=(p.x*S.zoom)+"px"; rb.style.top=(p.y*S.zoom)+"px";
+    rb.style.width="0px"; rb.style.height="0px";
+  }
+});
+host.addEventListener("pointermove", e=>{
+  if(!drag) return;
+  const p=toImg(e), W=S.src.width, H=S.src.height;
+  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+  if(drag.mode==="new"){
+    const x=cl(Math.min(p.x,drag.p.x),0,W), y=cl(Math.min(p.y,drag.p.y),0,H);
+    const w=cl(Math.abs(p.x-drag.p.x),0,W-x), h=cl(Math.abs(p.y-drag.p.y),0,H-y);
+    const rb=$("#rubber");
+    rb.style.left=(x*S.zoom)+"px"; rb.style.top=(y*S.zoom)+"px";
+    rb.style.width=(w*S.zoom)+"px"; rb.style.height=(h*S.zoom)+"px";
+    drag.rect={x,y,w,h};
+    return;
+  }
+  const f=drag.f, o=drag.o, dx=p.x-drag.p.x, dy=p.y-drag.p.y;
+  if(drag.mode==="move"){
+    f.x=cl(o.x+dx,0,W-o.w); f.y=cl(o.y+dy,0,H-o.h);
+  }else{
+    let x1=o.x, y1=o.y, x2=o.x+o.w, y2=o.y+o.h;
+    if(drag.h.includes("w")) x1=cl(o.x+dx,0,x2-4);
+    if(drag.h.includes("e")) x2=cl(o.x+o.w+dx,x1+4,W);
+    if(drag.h.includes("n")) y1=cl(o.y+dy,0,y2-4);
+    if(drag.h.includes("s")) y2=cl(o.y+o.h+dy,y1+4,H);
+    f.x=x1; f.y=y1; f.w=x2-x1; f.h=y2-y1;
+  }
+  S.traced=null; placeFrame(drag.f); syncEdit();
+});
+function placeFrame(f){
+  const el = host.querySelector(`.frame[data-id="${f.id}"]`);
+  if(!el){ drawFrames(); return; }
+  el.style.left=(f.x*S.zoom)+"px"; el.style.top=(f.y*S.zoom)+"px";
+  el.style.width=(f.w*S.zoom)+"px"; el.style.height=(f.h*S.zoom)+"px";
+  const tag = el.querySelector(".tag");
+  if(tag) tag.textContent = `${String(S.frames.indexOf(f)+1).padStart(2,"0")} ${f.name} ${Math.round(f.w)}×${Math.round(f.h)}`;
+}
+host.addEventListener("pointerup", ()=>{
+  if(!drag) return;
+  if(drag.mode==="new"){
+    $("#rubber").style.display="none";
+    const r=drag.rect;
+    if(r && r.w>6 && r.h>6) addFrame(r.x,r.y,r.w,r.h);
+    else { S.sel=null; renderList(); drawFrames(); }
+  }else{
+    renderList();
+  }
+  drag=null;
+});
+
+/* ---------------- 配線 ---------------- */
+$("#open").onclick = $("#open2").onclick = ()=>$("#picker").click();
+$("#picker").onchange = e=>{ const f=e.target.files[0]; if(f) loadBlob(f, f.name); e.target.value=""; };
+const vp=$("#viewport");
+vp.addEventListener("dragover", e=>{ e.preventDefault(); vp.classList.add("dragging"); });
+vp.addEventListener("dragleave", ()=>vp.classList.remove("dragging"));
+vp.addEventListener("drop", e=>{
+  e.preventDefault(); vp.classList.remove("dragging");
+  const f=[...e.dataTransfer.files].find(x=>/^image\//.test(x.type));
+  if(f) loadBlob(f, f.name); else toast("画像ファイルを落としてください");
+});
+addEventListener("paste", e=>{
+  const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith("image/"));
+  if(it){ const b=it.getAsFile(); if(b) loadBlob(b, "paste"); }
+});
+
+let reT;
+function later(){ clearTimeout(reT); reT=setTimeout(rebuild, 220); }
+function slider(id, key, fmt, post){
+  const el=$(id), out=$(id+"V");
+  el.addEventListener("input", ()=>{
+    S[key] = post ? post(+el.value) : +el.value;
+    out.textContent = fmt(+el.value);
+  });
+  return el;
+}
+slider("#scale","sc",v=>v.toFixed(1)+"×").addEventListener("change", ()=>{ clampScale(); later(); });
+slider("#blur","blur",v=>(v/10).toFixed(1),v=>v/10).addEventListener("change", later);
+slider("#thr","thr",v=>v).addEventListener("change", later);
+slider("#morph","morph",v=>(v>0?"+":"")+v).addEventListener("change", later);
+slider("#speck","speck",v=>v).addEventListener("change", later);
+slider("#tolr","tol",v=>(v/10).toFixed(1),v=>v/10).addEventListener("change", ()=>{ S.traced=null; if(S.show==="vec") draw(); });
+slider("#corner","corner",v=>v+"°").addEventListener("change", ()=>{ S.traced=null; if(S.show==="vec") draw(); });
+slider("#pad","pad",v=>v+"px").addEventListener("change", ()=>{ S.traced=null; });
+$("#inv").onchange = e=>{ S.inv=e.target.checked; later(); };
+$("#curves").onchange = e=>{ S.curves=e.target.checked; S.traced=null; };
+$("#bake").onchange = e=>{ S.bake=e.target.checked; };
+$("#show").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.show=b.dataset.show;
+  [...$("#show").children].forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  if(S.show==="vec" && !S.traced) traceAll(); else draw();
+});
+$("#inkmode").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.ink=b.dataset.ink;
+  [...$("#inkmode").children].forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  later();
+});
+$("#trace").onclick = ()=>{ traceAll().then(()=>{ S.show="vec";
+  [...$("#show").children].forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.show==="vec")));
+  draw(); }); };
+$("#fAuto").onclick = autoFrames;
+$("#fWhole").onclick = ()=>{ if(!S.src) return; S.frames=[]; S.seq=0; addFrame(0,0,S.src.width,S.src.height,"whole"); };
+$("#fClear").onclick = ()=>{ S.frames=[]; S.sel=null; S.traced=null; renderList(); drawFrames(); status(); };
+$("#fGrid").onclick = ()=>{
+  if(!S.src) return;
+  const r=Math.max(1,Math.min(20,+$("#gRow").value|0)), c=Math.max(1,Math.min(20,+$("#gCol").value|0));
+  S.frames=[]; S.sel=null; S.seq=0; S.traced=null;
+  const w=S.src.width/c, h=S.src.height/r;
+  let n=0;
+  for(let i=0;i<r;i++) for(let j=0;j<c;j++) addFrame(j*w, i*h, w, h, `cut${String(++n).padStart(2,"0")}`);
+  toast(`${r}×${c} に割りました`);
+};
+$("#fname").addEventListener("input", e=>{
+  const f=S.frames.find(x=>x.id===S.sel); if(!f) return;
+  f.name = e.target.value.replace(/[^\w\-.ぁ-んァ-ヶ一-龠]/g,"_").slice(0,40) || "cut";
+  drawFrames();
+});
+$("#fname").addEventListener("change", renderList);
+$("#fFit").onclick = ()=>{ const f=S.frames.find(x=>x.id===S.sel); if(f) fitFrame(f); };
+$("#fDel").onclick = ()=>{
+  S.frames = S.frames.filter(f=>f.id!==S.sel);
+  S.sel=null; S.traced=null; renderList(); drawFrames(); status();
+};
+$("#exp1").onclick = exportOne;
+$("#expAll").onclick = exportAll;
+
+$("#zoomIn").onclick=()=>{ S.zoom=Math.min(8,S.zoom*1.25); applyZoom(); };
+$("#zoomOut").onclick=()=>{ S.zoom=Math.max(.05,S.zoom/1.25); applyZoom(); };
+$("#zoomFit").onclick=fit;
+$("#zoom1").onclick=()=>{ S.zoom=1; applyZoom(); };
+vp.addEventListener("wheel", e=>{
+  if(!S.src || !(e.ctrlKey||e.metaKey)) return;
+  e.preventDefault();
+  S.zoom=Math.max(.05,Math.min(8, S.zoom*(e.deltaY<0?1.12:1/1.12)));
+  applyZoom();
+},{passive:false});
+addEventListener("keydown", e=>{
+  if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if((e.key==="Delete"||e.key==="Backspace") && S.sel){ e.preventDefault(); $("#fDel").click(); }
+  if(e.key==="Enter"){ e.preventDefault(); $("#trace").click(); }
+});
+addEventListener("resize", applyZoom);
+addEventListener("error", e=>{ busy(false); toast("エラー: "+(e.message||e.error)); });
+addEventListener("unhandledrejection", e=>{ busy(false); toast("エラー: "+(e.reason&&e.reason.message||e.reason)); });
+</script>
+</body>
+</html>
