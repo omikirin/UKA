@@ -203,6 +203,21 @@
     </div>
 
     <div class="sec">
+      <div class="eyebrow">円で閉じて1本にする</div>
+      <div class="row" style="margin-top:0">
+        <label for="closeR">円の半径</label><input type="range" id="closeR" min="0" max="48" value="0"><output id="closeRV">切</output>
+      </div>
+      <div class="seg" id="closeOut">
+        <button data-out="fill" aria-pressed="true">塗りで出す</button>
+        <button data-out="stroke" aria-pressed="false">線で出す</button>
+      </div>
+      <div class="row">
+        <label for="closeW">線の太さ</label><input type="range" id="closeW" min="1" max="60" value="6"><output id="closeWV">6</output>
+      </div>
+      <p class="note">半径Rの円を外側に転がして、届かない所を形にします。Rを大きくするほど細かい線を拾わなくなり、隙間は自動でつながって1本の閉じた形になります。</p>
+    </div>
+
+    <div class="sec">
       <div class="eyebrow">枠</div>
       <div class="stackb">
         <button class="btn" id="fAuto">自動で割る（余白で切る）</button>
@@ -264,7 +279,7 @@ const S = {
   up:null, mask:null, mW:0, mH:0, sc:2,  /* 拡大後の二値 */
   blur:0.6, ink:"auto", thr:128, morph:0, speck:24, inv:false,
   tol:1.2, corner:72, curves:true,
-  show:"src", zoom:1, pad:8, bake:true,
+  show:"src", zoom:1, pad:8, bake:true, closeR:0, closeOut:"fill", closeW:6,
   frames:[], sel:null, seq:0,
   traced:null            /* {frames:[{id,d,pts}], whole:d} */
 };
@@ -403,11 +418,38 @@ function despeckle(minArea){
   void comp;
 }
 
+/* ---------------- 円で閉じる ---------------- */
+function chamfer(mask,W,H){
+  const d=new Float32Array(W*H);
+  for(let p=0;p<W*H;p++) d[p]= mask[p]?0:1e9;
+  const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?1e9:d[y*W+x];
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const p=y*W+x; if(!d[p]) continue;
+    d[p]=Math.min(d[p],at(x-1,y)+3,at(x,y-1)+3,at(x-1,y-1)+4,at(x+1,y-1)+4); }
+  for(let y=H-1;y>=0;y--) for(let x=W-1;x>=0;x--){ const p=y*W+x; if(!d[p]) continue;
+    d[p]=Math.min(d[p],at(x+1,y)+3,at(x,y+1)+3,at(x+1,y+1)+4,at(x-1,y+1)+4); }
+  for(let p=0;p<W*H;p++) d[p]/=3;
+  return d;
+}
+/* 半径Rの円を転がす＝太らせてから同じだけ痩せさせる */
+function rollClose(mask,W,H,R){
+  const dOut=chamfer(mask,W,H);
+  const A=new Uint8Array(W*H);
+  for(let p=0;p<W*H;p++) A[p]= dOut[p]<=R?1:0;
+  const notA=new Uint8Array(W*H);
+  for(let p=0;p<W*H;p++) notA[p]=A[p]?0:1;
+  const dIn=chamfer(notA,W,H);
+  const out=new Uint8Array(W*H);
+  for(let p=0;p<W*H;p++) out[p]= (A[p]&&dIn[p]>=R)?1:0;
+  return out;
+}
+
 /* ---------------- 輪郭を追う ---------------- */
 /* 塗り画素の境界を格子上の閉ループとして取り出す（穴は evenodd で抜ける） */
-function contours(rx,ry,rw,rh){
+function contours(rx,ry,rw,rh,local){
   const W=S.mW,H=S.mH,m=S.mask;
-  const at=(x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:m[(y+ry)*W+(x+rx)];
+  const at= local
+    ? (x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:local[y*rw+x]
+    : (x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:m[(y+ry)*W+(x+rx)];
   const K=rw+1;
   const key=(x,y)=>y*K+x;
   const out = new Map();
@@ -585,7 +627,7 @@ async function traceAll(){
     for(const fr of list) res.push(Object.assign({id:fr?fr.id:0, name:fr?fr.name:S.name}, tracePiece(fr)));
     S.traced = res;
     const L = res.reduce((s,r)=>s+r.loops,0), P = res.reduce((s,r)=>s+r.pts,0);
-    $("#tstat").textContent = `${res.length}枚 ／ 輪郭 ${L}本 ／ 節点 ${P}`;
+    $("#tstat").textContent = `${res.length}枚 ／ 輪郭 ${L}本 ／ 節点 ${P}` + (S.closeR>0?` ／ 円${S.closeR}pxで閉じた`:"");
   } finally { busy(false); }
   if(S.show==="vec") draw();
   renderList();
@@ -615,6 +657,10 @@ function draw(){
   }
   else if(S.show==="vec"){
     if(!S.traced){ ctx.drawImage(S.src,0,0); ctx.fillStyle="rgba(20,24,31,.55)"; ctx.fillRect(0,0,W,H); }
+    else if(S.closeR>0 && S.closeOut==="stroke"){
+      ctx.strokeStyle="#14181f"; ctx.lineWidth=S.closeW; ctx.lineJoin="round"; ctx.lineCap="round";
+      for(const t of S.traced){ if(t.d) ctx.stroke(new Path2D(t.d)); }
+    }
     else{
       ctx.fillStyle="#14181f";
       for(const t of S.traced){ if(t.d) ctx.fill(new Path2D(t.d), "evenodd"); }
@@ -681,7 +727,10 @@ function renderList(){
       ctx.save();
       ctx.scale(tw/f.w, tw/f.w);
       ctx.translate(-f.x, -f.y);
-      ctx.fillStyle="#14181f"; ctx.fill(new Path2D(t.d),"evenodd");
+      if(S.closeR>0&&S.closeOut==="stroke"){
+        ctx.strokeStyle="#14181f"; ctx.lineWidth=S.closeW; ctx.lineJoin="round"; ctx.lineCap="round";
+        ctx.stroke(new Path2D(t.d));
+      }else{ ctx.fillStyle="#14181f"; ctx.fill(new Path2D(t.d),"evenodd"); }
       ctx.restore();
     }else{
       ctx.drawImage(S.src, f.x, f.y, f.w, f.h, 0,0, tw, th);
@@ -779,7 +828,18 @@ function fitFrame(f){
 /* ---------------- 書き出し ---------------- */
 function buildSVG(t){
   const r=t.rect;
-  const fill = S.bake ? "#000000" : "currentColor";
+  const col = S.bake ? "#000000" : "currentColor";
+  if(S.closeR>0 && S.closeOut==="stroke"){
+    return [
+      `<?xml version="1.0" encoding="UTF-8"?>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.round(r.w)} ${Math.round(r.h)}" width="${Math.round(r.w)}" height="${Math.round(r.h)}">`,
+      `<!-- かたどり: 円で閉じた1本 R=${S.closeR}px / ${S.name} / ${t.name} -->`,
+      `<g transform="translate(${-Math.round(r.x)} ${-Math.round(r.y)})">`,
+      `<path fill="none" stroke="${col}" stroke-width="${S.closeW}" stroke-linejoin="round" stroke-linecap="round" d="${t.d}"/>`,
+      `</g></svg>`
+    ].join("\n");
+  }
+  const fill = col;
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.round(r.w)} ${Math.round(r.h)}" width="${Math.round(r.w)}" height="${Math.round(r.h)}">`,
@@ -928,6 +988,18 @@ slider("#speck","speck",v=>v).addEventListener("change", later);
 slider("#tolr","tol",v=>(v/10).toFixed(1),v=>v/10).addEventListener("change", ()=>{ S.traced=null; if(S.show==="vec") draw(); });
 slider("#corner","corner",v=>v+"°").addEventListener("change", ()=>{ S.traced=null; if(S.show==="vec") draw(); });
 slider("#pad","pad",v=>v+"px").addEventListener("change", ()=>{ S.traced=null; });
+slider("#closeR","closeR",v=>v?v+"px":"切").addEventListener("change", ()=>{
+  S.traced=null;
+  if(S.show==="vec") traceAll().then(draw);
+});
+slider("#closeW","closeW",v=>v).addEventListener("change", ()=>{ if(S.show==="vec") draw(); });
+$("#closeOut").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.closeOut=b.dataset.out;
+  [...$("#closeOut").children].forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  if(S.show==="vec") draw();
+  renderList();
+});
 $("#inv").onchange = e=>{ S.inv=e.target.checked; later(); };
 $("#curves").onchange = e=>{ S.curves=e.target.checked; S.traced=null; };
 $("#bake").onchange = e=>{ S.bake=e.target.checked; };

@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>したじきFill — 区画をSVGのfillで塗る</title>
+<style>
+  :root{
+    --sumi:#14181f; --sumi-2:#1b2129; --sumi-3:#222a34;
+    --hairline:#2c3644; --kinari:#e9e2d3; --kinari-dim:#8d94a1;
+    --hanada:#4c8fbf; --shu:#c8503c;
+    --washi-a:#cfc7b6; --washi-b:#bdb4a1;
+    --mincho:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+    --gothic:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{height:100%;margin:0}
+  body{background:var(--sumi);color:var(--kinari);font-family:var(--gothic);font-size:13px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
+  button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--hanada);outline-offset:2px}
+
+  #app{display:grid;grid-template-columns:168px 1fr 288px;grid-template-rows:52px 1fr 26px;height:100%}
+  header{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 16px;border-bottom:1px solid var(--hairline);background:var(--sumi-2)}
+  .brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+  .brand h1{margin:0;font-family:var(--mincho);font-size:21px;font-weight:600;letter-spacing:.3em;white-space:nowrap}
+  .brand em{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--hanada);border:1px solid var(--hairline);border-radius:2px;padding:1px 6px}
+  .brand p{margin:0;color:var(--kinari-dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .spacer{flex:1}
+
+  .btn{background:var(--sumi-3);border:1px solid var(--hairline);border-radius:2px;padding:6px 12px;white-space:nowrap}
+  .btn:hover{border-color:#40506a}
+  .btn.primary{background:var(--hanada);border-color:var(--hanada);color:#0d1218;font-weight:600}
+  .btn.primary:hover{background:#5fa2d2}
+  .btn.danger{color:#e79c90}
+  .btn.sm{padding:4px 7px;font-size:11.5px}
+  .btn:disabled{opacity:.35;cursor:default}
+
+  #strip{border-right:1px solid var(--hairline);background:#11151b;overflow-y:auto;padding:10px 10px 40px}
+  .eyebrow{font-family:var(--mincho);font-size:11px;letter-spacing:.28em;color:var(--kinari-dim);padding:2px 0 8px;border-bottom:1px solid var(--hairline);margin-bottom:10px}
+  .tanzaku{display:block;width:100%;text-align:left;padding:0;margin:0 0 8px;background:var(--washi-a);border:1px solid #0c0f14;border-radius:1px;position:relative;overflow:hidden}
+  .tanzaku canvas{display:block;width:100%;height:auto;background:repeating-conic-gradient(var(--washi-a) 0 25%,var(--washi-b) 0 50%) 0 0/12px 12px}
+  .tanzaku .cap{display:flex;align-items:center;gap:5px;padding:4px 6px;background:#0f1319;color:var(--kinari-dim);font-size:10.5px;font-family:var(--mono)}
+  .tanzaku .cap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tanzaku .dot{width:6px;height:6px;border-radius:50%;background:#3a4453;flex:none}
+  .tanzaku.painted .dot{background:var(--hanada)}
+  .tanzaku[aria-current="true"]{border-color:var(--hanada);box-shadow:0 0 0 2px rgba(76,143,191,.45)}
+  .tanzaku .kill{position:absolute;top:3px;right:3px;width:20px;height:20px;line-height:1;background:rgba(12,15,20,.72);border:0;border-radius:2px;color:#e9e2d3;opacity:0}
+  .tanzaku:hover .kill{opacity:1}
+  @keyframes ripple{from{box-shadow:0 0 0 0 rgba(76,143,191,.7)}to{box-shadow:0 0 0 10px rgba(76,143,191,0)}}
+  .tanzaku.ripple{animation:ripple .45s ease-out}
+  @media (prefers-reduced-motion:reduce){.tanzaku.ripple{animation:none}}
+
+  #viewport{overflow:auto;background:#31363d;position:relative;display:grid;place-items:center}
+  #stack{position:relative;flex:none;margin:32px;box-shadow:0 6px 30px rgba(0,0,0,.5);background:repeating-conic-gradient(var(--washi-a) 0 25%,var(--washi-b) 0 50%) 0 0/16px 16px}
+  #stack.plain{background:var(--washi-a)}
+  #stack canvas{position:absolute;inset:0;width:100%;height:100%}
+  #stack.zoomed canvas.c-fill,#stack.zoomed canvas.c-line{image-rendering:pixelated}
+  #stack canvas#detail{position:absolute;inset:auto;right:auto;bottom:auto;pointer-events:none;image-rendering:auto}
+  #hit{position:absolute;inset:0;touch-action:none;cursor:crosshair}
+  #hit.hand{cursor:grab}
+  #empty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;padding:24px;color:#c4cbd6}
+  #empty .fr{border:1px dashed #6a7583;padding:34px 46px;border-radius:2px;background:rgba(17,21,27,.35)}
+  #empty h2{font-family:var(--mincho);font-size:19px;letter-spacing:.2em;margin:0 0 6px}
+  #empty p{margin:0 0 14px;color:#9aa3b0;font-size:12px}
+  #viewport.dragging{background:#3a4450}
+
+  #panel{border-left:1px solid var(--hairline);background:var(--sumi-2);overflow-y:auto;padding:12px 14px 60px}
+  .sec{margin-bottom:18px}
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .tool{display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid var(--hairline);border-radius:2px;background:var(--sumi-3)}
+  .tool[aria-pressed="true"]{background:rgba(76,143,191,.16);border-color:var(--hanada);color:#cfe6f5}
+  .tool i{font-style:normal;font-family:var(--mincho);font-size:15px;width:16px;text-align:center}
+  .tool kbd{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--kinari-dim)}
+  .seg{display:flex;border:1px solid var(--hairline);border-radius:2px;overflow:hidden}
+  .seg button{flex:1;background:var(--sumi-3);border:0;padding:6px 4px;font-size:11.5px}
+  .seg button+button{border-left:1px solid var(--hairline)}
+  .seg button[aria-pressed="true"]{background:rgba(76,143,191,.2);color:#cfe6f5;font-weight:600}
+  .row{display:flex;align-items:center;gap:8px;margin:9px 0}
+  .row label{flex:none;color:var(--kinari-dim);font-size:11.5px;width:100px}
+  .row output{font-family:var(--mono);font-size:11px;width:42px;text-align:right;color:#c3cbd6}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--hanada)}
+  input[type=color]{width:44px;height:30px;padding:0;background:none;border:1px solid var(--hairline);border-radius:2px}
+  input[type=text]{background:var(--sumi);border:1px solid var(--hairline);border-radius:2px;padding:5px 6px;font-family:var(--mono);width:100%}
+  .swatches{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-top:8px}
+  .swatches button{height:20px;border:1px solid rgba(0,0,0,.5);border-radius:1px;padding:0}
+  .swatches button[data-cur="1"]{box-shadow:0 0 0 2px var(--hanada)}
+  .check{display:flex;align-items:center;gap:8px;margin:7px 0;color:#c3cbd6}
+  .check input{accent-color:var(--hanada);width:15px;height:15px}
+  .note{color:var(--kinari-dim);font-size:11px;margin:6px 0 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .stackb{display:grid;gap:6px}
+  .flag{display:inline-block;font-family:var(--mono);font-size:10px;border:1px solid var(--hairline);border-radius:1px;padding:1px 5px;color:#9fd0ea;margin-top:6px}
+
+  #layers{border:1px solid var(--hairline);border-radius:2px;overflow:hidden;background:#11151b}
+  .lay{display:flex;align-items:center;gap:6px;padding:5px 7px;border-bottom:1px solid #232c37;cursor:pointer}
+  .lay:last-child{border-bottom:0}
+  .lay[aria-current="true"]{background:rgba(76,143,191,.18)}
+  .lay .eye{width:20px;height:20px;flex:none;border:1px solid var(--hairline);border-radius:2px;background:var(--sumi-3);font-size:10px;line-height:1;padding:0;color:#cfe6f5}
+  .lay .eye[data-on="0"]{color:#4a545f}
+  .lay .sw{width:14px;height:14px;flex:none;border:1px solid rgba(0,0,0,.6);border-radius:1px}
+  .lay .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+  .lay .kd{font-family:var(--mono);font-size:9.5px;color:var(--kinari-dim);flex:none}
+  .lay.line .nm,.lay.silh .nm{font-family:var(--mincho);letter-spacing:.08em}
+  .lay .op{font-family:var(--mono);font-size:9.5px;color:var(--kinari-dim);flex:none;width:32px;text-align:right}
+  #groups{border:1px solid var(--hairline);border-radius:2px;overflow:hidden;background:#11151b}
+  .grp{display:flex;align-items:center;gap:7px;padding:5px 7px;border-bottom:1px solid #232c37}
+  .grp:last-child{border-bottom:0}
+  .grp .chip{width:22px;height:16px;flex:none;border:1px solid rgba(0,0,0,.6);border-radius:1px;padding:0}
+  .grp .hexv{font-family:var(--mono);font-size:10.5px;flex:1;color:#c3cbd6}
+  .grp .cnt{font-family:var(--mono);font-size:10px;color:var(--kinari-dim)}
+  .grp .go{border:1px solid var(--hairline);background:var(--sumi-3);border-radius:2px;font-size:10.5px;padding:1px 6px}
+  #groups .none{color:var(--kinari-dim);font-size:11.5px;padding:8px}
+
+  footer{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid var(--hairline);background:#11151b;color:var(--kinari-dim);font-family:var(--mono);font-size:10.5px}
+  footer .spacer{flex:1}
+  footer button{background:none;border:1px solid var(--hairline);border-radius:2px;padding:1px 7px;font-family:var(--mono);font-size:10.5px}
+  #toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:#0c0f14;border:1px solid var(--hairline);border-left:3px solid var(--hanada);padding:9px 15px;border-radius:2px;max-width:70vw;opacity:0;pointer-events:none;transition:opacity .18s;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9}
+  #toast.on{opacity:1}
+  #busy{position:fixed;inset:0;background:rgba(10,13,18,.6);display:none;place-content:center;justify-items:center;z-index:10}
+  #busy.on{display:grid}
+  #busy div{font-family:var(--mincho);letter-spacing:.3em;font-size:15px}
+  #measure{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;left:-9999px}
+  @media (max-width:960px){#app{grid-template-columns:120px 1fr 252px}.brand p{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>したじき</h1><em>Fill</em>
+      <p>区画を読んで、塗りもSVGのパスで出す</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" id="open">線画SVGを開く</button>
+    <input type="file" id="picker" accept=".svg,image/svg+xml" multiple hidden>
+  </header>
+
+  <nav id="strip">
+    <div class="eyebrow">ひらいた線画</div>
+    <div id="list"></div>
+  </nav>
+
+  <main id="viewport">
+    <div id="stack" hidden>
+      <canvas class="c-fill"></canvas>
+      <canvas class="c-line"></canvas>
+      <canvas class="c-over"></canvas>
+      <canvas id="detail" hidden></canvas>
+      <canvas class="c-ref"></canvas>
+      <canvas class="c-hi"></canvas>
+      <div id="hit"></div>
+    </div>
+    <div id="empty">
+      <div class="fr">
+        <h2>線画をここへ落とす</h2>
+        <p>区画に切って、色を置いて、パスとして書き出します。PNGは1枚も入りません。</p>
+        <button class="btn" id="open2">ファイルを選ぶ</button>
+      </div>
+    </div>
+  </main>
+
+  <aside id="panel">
+    <div class="sec">
+      <div class="eyebrow">道具</div>
+      <div class="tools" id="tools">
+        <button class="tool" data-tool="fill" aria-pressed="true"><i>区</i>色を置く<kbd>A</kbd></button>
+        <button class="tool" data-tool="clear" aria-pressed="false"><i>消</i>色を外す<kbd>E</kbd></button>
+        <button class="tool" data-tool="pick" aria-pressed="false"><i>採</i>色をひろう<kbd>I</kbd></button>
+        <button class="tool" data-tool="same" aria-pressed="false"><i>同</i>同色をまとめて<kbd>S</kbd></button>
+        <button class="tool" data-tool="ref" aria-pressed="false"><i>見</i>見本を動かす<kbd>M</kbd></button>
+        <button class="tool" data-tool="erase" aria-pressed="false"><i>拭</i>線を消す<kbd>D</kbd></button>
+        <button class="tool" data-tool="eraseBlob" aria-pressed="false"><i>塊</i>線の塊を消す<kbd>F</kbd></button>
+      </div>
+      <p class="note">「同色をまとめて」は、クリックした区画と同じ色の区画すべてを今の色に置き換えます。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">線を消す</div>
+      <div class="row" style="margin-top:0">
+        <label for="eraseW">消しゴムの太さ</label><input type="range" id="eraseW" min="2" max="200" value="24"><output id="eraseWV">24</output>
+      </div>
+      <div class="stackb">
+        <button class="btn" id="eraseEdge">外周につながる線を消す</button>
+        <button class="btn danger" id="eraseUndoAll">消したのを全部もどす</button>
+      </div>
+      <p class="note" id="eraseStat">線を消すと区画の区切りも変わります。消した跡があるファイルは、書き出し時に線をパスへ起こし直します（塗りと同じくベクターのまま）。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">線を読む</div>
+      <div class="row">
+        <label for="barrier">線とみなす濃さ</label><input type="range" id="barrier" min="8" max="220" value="70"><output id="barrierV">70</output>
+      </div>
+      <div class="row">
+        <label for="close">すき間をふさぐ</label><input type="range" id="close" min="0" max="8" value="2"><output id="closeV">2px</output>
+      </div>
+      <div class="row">
+        <label for="minA">小さい区画は無視</label><input type="range" id="minA" min="0" max="2000" step="20" value="120"><output id="minAV">120</output>
+      </div>
+      <div class="stackb">
+        <button class="btn" id="reseg">線を読み直す</button>
+        <button class="btn primary" id="autoBase">囲まれた区画をぜんぶ今の色で</button>
+        <button class="btn" id="autoColor">区画ごとに違う色を割る</button>
+      </div>
+      <label class="check"><input type="checkbox" id="broadcast"><span>同じ構図の全ファイルへ一斉に</span></label>
+      <p class="note" id="segStat">まだ読んでいません</p>
+      <p class="note">読み方を変えても置いた色は場所で引き継がれます。気に入らなければCtrl+Zで設定ごと戻せます。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">色</div>
+      <div class="row" style="margin-top:0">
+        <input type="color" id="color" value="#f2c9a8">
+        <input type="text" id="hex" value="#F2C9A8" spellcheck="false" style="width:88px">
+      </div>
+      <div class="swatches" id="swatches"></div>
+      <div class="eyebrow" style="border:0;padding:10px 0 4px">つかった色</div>
+      <div class="swatches" id="recent"></div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">レイヤー</div>
+      <div id="layers"></div>
+      <div class="four" style="margin-top:6px">
+        <button class="btn sm" id="lAdd" title="追加">＋</button>
+        <button class="btn sm" id="lDup" title="複製">複</button>
+        <button class="btn sm" id="lUp" title="上へ">▲</button>
+        <button class="btn sm" id="lDown" title="下へ">▼</button>
+      </div>
+      <div class="row"><label for="lname">名前</label><input type="text" id="lname" spellcheck="false"></div>
+      <div class="row"><label for="lop">不透明度</label><input type="range" id="lop" min="0" max="100" value="100"><output id="lopV">100%</output></div>
+      <div class="two">
+        <button class="btn sm" id="lMerge">下と結合</button>
+        <button class="btn sm danger" id="lDel">削除</button>
+      </div>
+      <div id="silhBox" hidden>
+        <div class="eyebrow" style="border:0;padding:10px 0 4px">白ベタ（線を覆う下地）</div>
+        <div class="row" style="margin-top:0">
+          <input type="color" id="silhColor" value="#ffffff">
+          <input type="text" id="silhHex" value="#FFFFFF" spellcheck="false" style="width:88px">
+        </div>
+        <div class="row">
+          <label for="silhPad">ふくらみ</label><input type="range" id="silhPad" min="-6" max="8" value="1"><output id="silhPadV">1px</output>
+        </div>
+        <button class="btn sm" id="silhRedo" style="width:100%">形を作り直す</button>
+        <p class="note" id="silhStat"></p>
+      </div>
+      <p class="note">線画レイヤーも並べ替えられます。線より上の層は線の上に乗ります。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">置いた色</div>
+      <div id="groups"></div>
+      <p class="note">同じ色の区画は1つのパスにまとまります。色見本を押すとその色を全部まとめて変えられます。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">見本から着色</div>
+      <div class="stackb">
+        <button class="btn" id="openRef">見本の色画像をひらく</button>
+        <input type="file" id="refPicker" accept="image/*" hidden>
+      </div>
+      <div id="refBox" hidden>
+        <canvas id="refThumb" style="width:100%;height:auto;display:block;margin:8px 0;border:1px solid var(--hairline);background:#0f1319"></canvas>
+        <div class="seg" id="refFit">
+          <button data-fit="stretch" aria-pressed="true">引き伸ばす</button>
+          <button data-fit="contain" aria-pressed="false">比率を保つ</button>
+        </div>
+        <div class="row">
+          <label for="refScale">見本の大きさ</label><input type="range" id="refScale" min="20" max="300" step="1" value="100"><output id="refScaleV">100%</output>
+        </div>
+        <div class="row">
+          <label for="refOp">重ねる濃さ</label><input type="range" id="refOp" min="10" max="100" value="50"><output id="refOpV">50%</output>
+        </div>
+        <div class="two">
+          <button class="btn sm" id="refReset">位置をもどす</button>
+          <button class="btn sm" id="refFlip">左右反転</button>
+        </div>
+        <p class="note" id="refPos">見本を動かす(M)を選ぶと、画面をドラッグで移動・ホイールで拡縮。矢印キーで1px、Shift+矢印で10px。</p>
+        <div class="seg" id="refPick" style="margin-top:6px">
+          <button data-pick="mode" aria-pressed="true">最も広い色</button>
+          <button data-pick="light" aria-pressed="false">明るめ</button>
+          <button data-pick="median" aria-pressed="false">中央値</button>
+        </div>
+        <div class="row">
+          <label for="shrink">内側だけ見る</label><input type="range" id="shrink" min="0" max="8" value="2"><output id="shrinkV">2px</output>
+        </div>
+        <label class="check"><input type="checkbox" id="skipInk" checked><span>線の画素は色見から除く</span></label>
+        <label class="check"><input type="checkbox" id="skipBg" checked><span>外側（背景）は塗らない</span></label>
+        <div class="stackb" style="margin-top:6px">
+          <button class="btn primary" id="colorize">見本の色を区画に流し込む</button>
+          <button class="btn" id="colorizeAll">同じ見本で全ファイルを着色</button>
+        </div>
+        <div class="row">
+          <label for="mergeC">近い色をまとめる</label><input type="range" id="mergeC" min="0" max="80" value="24"><output id="mergeCV">24</output>
+        </div>
+        <button class="btn sm" id="doMerge" style="width:100%">いまの色を整理する</button>
+        <label class="check"><input type="checkbox" id="showRef"><span>見本を重ねて見る</span></label>
+      </div>
+      <p class="note">かたどりで線画に起こす前の元画像を入れると、区画ごとに代表色を吸って一気に着色します。</p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">パスの起こしかた</div>
+      <div class="row">
+        <label for="tolr">直線にまとめる</label><input type="range" id="tolr" min="2" max="40" value="10"><output id="tolrV">1.0</output>
+      </div>
+      <div class="row">
+        <label for="corner">角を残す</label><input type="range" id="corner" min="10" max="170" value="72"><output id="cornerV">72°</output>
+      </div>
+      <div class="row">
+        <label for="grow">線の下へはみ出す</label><input type="range" id="grow" min="0" max="6" value="2"><output id="growV">2px</output>
+      </div>
+      <label class="check"><input type="checkbox" id="curves" checked><span>曲線でつなぐ</span></label>
+      <p class="note" id="pathStat"></p>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">表示</div>
+      <label class="check"><input type="checkbox" id="key" checked><span>線画の白地を透かす</span></label>
+      <label class="check"><input type="checkbox" id="hideLine"><span>線を隠して塗りだけ見る</span></label>
+      <label class="check"><input type="checkbox" id="plainBg"><span>透明部分を市松柄にしない</span></label>
+      <div id="flags"></div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">直す</div>
+      <div class="two">
+        <button class="btn" id="undo">元に戻す</button>
+        <button class="btn" id="redo">やり直す</button>
+      </div>
+      <div class="two" style="margin-top:6px">
+        <button class="btn danger" id="clearAll">この層の色を外す</button>
+        <button class="btn" id="copyAll">色を全ファイルへ</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="eyebrow">書き出し</div>
+      <div class="seg" id="mode">
+        <button data-mode="both" aria-pressed="true">塗り＋線</button>
+        <button data-mode="fill" aria-pressed="false">塗りだけ</button>
+      </div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="useCss" checked><span>色を&lt;style&gt;にまとめる（後で変えやすい）</span></label>
+      <div class="stackb" style="margin-top:8px">
+        <button class="btn primary" id="exp1">このSVGを書き出す</button>
+        <button class="btn" id="expAll">全ファイルを書き出す</button>
+      </div>
+      <p class="note">出るのは &lt;path fill&gt; と線のベクターだけ。拡大しても劣化せず、色はあとから差し替えられます。</p>
+    </div>
+  </aside>
+
+  <footer>
+    <span id="stat">線画を開いてください</span>
+    <div class="spacer"></div>
+    <button id="zoomOut">−</button><span id="zoomV">100%</span><button id="zoomIn">＋</button>
+    <button id="zoomFit">全体</button><button id="zoom1">1:1</button><button id="zoom4">400%</button>
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="busy"><div>読みとり中…</div></div>
+<div id="measure" aria-hidden="true"></div>
+
+<script>
+"use strict";
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+const MAXPX = 1400, MINPX = 768, HIST = 30;
+
+const S = {
+  files: [], active: null,
+  tool: "fill", color: "#f2c9a8",
+  barrier: 70, close: 2, minArea: 120,
+  tol: 1.0, corner: 72, grow: 2, curves: true,
+  broadcast: false, key: true, hideLine: false, plainBg: false,
+  eraseW: 24,
+  refFit: "stretch", refPick: "mode", refX: 0, refY: 0, refScale: 1, refFlip: false, refOp: .5, shrink: 2, skipInk: true, skipBg: true, mergeC: 24, showRef: false,
+  mode: "both", useCss: true, zoom: 1, recent: [], spaceDown: false
+};
+const PALETTE = ["#f2c9a8","#e8ab86","#c9765a","#8c4b3a","#f7e7d3","#ffffff",
+                 "#2b2f38","#7d8794","#c9d4de","#3d6ea8","#6fb2d6","#a7d9ce",
+                 "#6b8f5a","#c7d98a","#e5d45c","#d9853f","#a8577f","#5b4a8c"];
+
+let toastT;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),3400); }
+function cv(w,h){ const c=document.createElement("canvas"); c.width=w; c.height=h; return c; }
+function hexToRgb(h){ const m=/^#?([0-9a-f]{6})$/i.exec(String(h).trim()); if(!m) return [0,0,0]; const n=parseInt(m[1],16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function rgbToHex(r,g,b){ return "#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join(""); }
+function active(){ return S.files.find(f=>f.id===S.active) || null; }
+const busy = on => $("#busy").classList.toggle("on", on);
+const wait = ()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+/* ---------------- SVGを読む ---------------- */
+let seq=0;
+function parseViewBox(root){
+  const v=root.getAttribute("viewBox");
+  if(v){
+    const n=v.trim().split(/[\s,]+/).map(Number);
+    if(n.length===4&&n.every(isFinite)&&n[2]>0&&n[3]>0) return {x:n[0],y:n[1],w:n[2],h:n[3]};
+  }
+  const num=a=>a?parseFloat(String(a).replace(/[^0-9.\-]/g,"")):NaN;
+  const w=num(root.getAttribute("width")), h=num(root.getAttribute("height"));
+  if(isFinite(w)&&isFinite(h)&&w>0&&h>0) return {x:0,y:0,w,h};
+  return {x:0,y:0,w:1000,h:1000,guess:true};
+}
+function measureBBox(root){
+  const box=$("#measure"); box.textContent=""; box.appendChild(root);
+  let b=null; try{ b=root.getBBox(); }catch(e){}
+  box.removeChild(root);
+  if(!b||!(b.width>0&&b.height>0)) return null;
+  const pad=Math.max(b.width,b.height)*0.02;
+  return {x:b.x-pad,y:b.y-pad,w:b.width+pad*2,h:b.height+pad*2};
+}
+function isLightFill(css){
+  if(!css||css==="none"||css==="transparent") return false;
+  const m=/rgba?\(([^)]+)\)/.exec(css);
+  if(!m) return /^#?(f{3,6}|white)$/i.test(css);
+  const p=m[1].split(",").map(parseFloat);
+  if(p.length>3&&p[3]<0.6) return false;
+  return (0.299*p[0]+0.587*p[1]+0.114*p[2])>222;
+}
+function stripBackground(root,vb){
+  const box=$("#measure"); box.textContent=""; box.appendChild(root);
+  let removed=false; const area=vb.w*vb.h;
+  const drawable=[...root.querySelectorAll("rect,polygon,polyline,path,circle,ellipse,line,image,text,use")];
+  for(const el of [...root.querySelectorAll("rect,polygon,path")]){
+    if(drawable.length<2) break;          /* 中身が1つだけなら、それは背景板ではなく絵そのもの */
+    let b; try{ b=el.getBBox(); }catch(e){ continue; }
+    if(!(b.width>=vb.w*0.985&&b.height>=vb.h*0.985&&b.width*b.height>=area*0.96)) continue;
+    if(el.tagName.toLowerCase()==="path" && (el.getAttribute("fill-rule")==="evenodd" || (el.getAttribute("d")||"").length>400)) continue; /* 穴あき1枚絵は残す */
+    if(isLightFill(getComputedStyle(el).fill)){ el.remove(); removed=true; drawable.splice(drawable.indexOf(el),1); }
+  }
+  box.removeChild(root);
+  return removed;
+}
+async function rasterize(root,W,H){
+  const c=root.cloneNode(true);
+  c.setAttribute("xmlns",NS); c.setAttribute("width",W); c.setAttribute("height",H);
+  const url="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(c));
+  const img=new Image();
+  await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error("SVGを画像として描けません")); img.src=url; });
+  const out=cv(W,H); out.getContext("2d").drawImage(img,0,0,W,H); return out;
+}
+function inkMap(canvas){
+  const {width:W,height:H}=canvas;
+  const d=canvas.getContext("2d").getImageData(0,0,W,H).data;
+  const ink=new Uint8Array(W*H);
+  for(let p=0,o=0;p<W*H;p++,o+=4){
+    const a=d[o+3]/255, lum=d[o]*0.299+d[o+1]*0.587+d[o+2]*0.114;
+    ink[p]=Math.round(a*(255-lum));
+  }
+  return ink;
+}
+function keyedCanvas(canvas,ink){
+  const {width:W,height:H}=canvas, ctx=canvas.getContext("2d");
+  const img=ctx.getImageData(0,0,W,H), d=img.data;
+  for(let p=0,o=0;p<W*H;p++,o+=4){
+    const a=ink[p];
+    if(a===0){ d[o]=d[o+1]=d[o+2]=d[o+3]=0; continue; }
+    if(d[o+3]===0){ d[o]=d[o+1]=d[o+2]=0; }
+    d[o+3]=a;
+  }
+  const out=cv(W,H); out.getContext("2d").putImageData(img,0,0); return out;
+}
+function hasSolidBorder(canvas){
+  const {width:W,height:H}=canvas;
+  const d=canvas.getContext("2d").getImageData(0,0,W,H).data;
+  let n=0,light=0;
+  const at=(x,y)=>{ const o=(y*W+x)*4; n++; const lum=d[o]*0.299+d[o+1]*0.587+d[o+2]*0.114; if(d[o+3]>250&&lum>210) light++; };
+  for(let x=0;x<W;x+=Math.max(1,Math.floor(W/40))){ at(x,0); at(x,H-1); }
+  for(let y=0;y<H;y+=Math.max(1,Math.floor(H/40))){ at(0,y); at(W-1,y); }
+  return n>0&&light/n>0.8;
+}
+function makeFill(f,name){ return {id:++f.lseq, kind:"fill", name, visible:true, opacity:1, fill:[]}; }
+function makeSilh(f){ return {id:++f.lseq, kind:"silh", name:"白ベタ", visible:true, opacity:1, color:"#ffffff", pad:1, d:null, dKey:""}; }
+function curL(f){ return f&&f.layers ? (f.layers.find(l=>l.id===f.sel)||null) : null; }
+/* f.fill は「いま選んでいる塗り層」の色表を指す */
+function defineFill(f){
+  Object.defineProperty(f,"fill",{
+    configurable:true,
+    get(){ const l=curL(f); return (l&&l.kind==="fill")?l.fill:(f._scratch||(f._scratch=[])); },
+    set(v){ const l=curL(f); if(l&&l.kind==="fill"){ l.fill.length=0; for(let i=0;i<v.length;i++) l.fill[i]=v[i]; } }
+  });
+}
+function lineIndex(f){ return f.layers.findIndex(l=>l.kind==="line"); }
+/* 線に囲まれた内側ぜんぶ＝シルエット。外周から届かない所を塗る */
+function silhPath(f,l){
+  const key=`${S.barrier}/${S.close}/${l.pad}/${f.erase.length}`;
+  if(l.dKey===key) return l.d;
+  const W=f.W,H=f.H,N=W*H;
+  let solid=new Uint8Array(N);
+  for(let p=0;p<N;p++) solid[p]= f.ink[p]>=S.barrier?1:0;
+  for(let t=0;t<S.close;t++){
+    const s2=new Uint8Array(N);
+    for(let y=0;y<H;y++){ const r=y*W;
+      for(let x=0;x<W;x++){ const q=r+x;
+        s2[q]= solid[q]|(x>0?solid[q-1]:0)|(x<W-1?solid[q+1]:0)|(y>0?solid[q-W]:0)|(y<H-1?solid[q+W]:0); } }
+    solid=s2;
+  }
+  const out=new Uint8Array(N), st=new Int32Array(N); let top=0;
+  const seed=q=>{ if(!out[q]&&!solid[q]){ out[q]=1; st[top++]=q; } };
+  for(let x=0;x<W;x++){ seed(x); seed((H-1)*W+x); }
+  for(let y=0;y<H;y++){ seed(y*W); seed(y*W+W-1); }
+  while(top){
+    const q=st[--top], x=q%W, y=(q-x)/W;
+    if(x>0) seed(q-1); if(x<W-1) seed(q+1);
+    if(y>0) seed(q-W); if(y<H-1) seed(q+W);
+  }
+  let m=new Uint8Array(N);
+  for(let q=0;q<N;q++) if(!out[q]) m[q]=1;
+  const pad=l.pad|0, grow=pad>0;
+  for(let t=0;t<Math.abs(pad);t++){
+    const n=new Uint8Array(N);
+    for(let y=0;y<H;y++){ const r=y*W;
+      for(let x=0;x<W;x++){ const q=r+x;
+        const a=m[q], le=x>0?m[q-1]:(grow?0:1), ri=x<W-1?m[q+1]:(grow?0:1),
+              up=y>0?m[q-W]:(grow?0:1), dn=y<H-1?m[q+W]:(grow?0:1);
+        n[q]= grow ? (a|le|ri|up|dn) : (a&le&ri&up&dn);
+      } }
+    m=n;
+  }
+  let area=0;
+  for(let q=0;q<N;q++) if(m[q]) area++;
+  const get=(x,y)=>(x<0||y<0||x>=W||y>=H)?0:m[y*W+x];
+  const sx=f.vb.w/f.W, sy=f.vb.h/f.H;
+  const ds=[];
+  for(const loop of contoursOf(get,W,H)){
+    const sp=simplify(loop,Math.max(1,S.tol));
+    if(sp.length>=3) ds.push(toPath(sp,sx,sy,f.vb.x,f.vb.y,S.curves,S.corner));
+  }
+  l.d=ds.join(" "); l.dKey=key; l.area=area; l.loops=ds.length;
+  return l.d;
+}
+function groupsOfLayer(f,l){
+  const map=new Map();
+  if(!l.fill) return map;
+  l.fill.forEach((c,id)=>{ if(!c) return; if(!map.has(c)) map.set(c,[]); map.get(c).push(id); });
+  return map;
+}
+/* viewBox座標に入っているctxへ、線より下／上の層を描く */
+function drawLayerRange(ctx,f,from,to){
+  for(let i=from;i<to;i++){
+    const l=f.layers[i];
+    if(!l||!l.visible||l.kind==="line") continue;
+    ctx.globalAlpha=l.opacity;
+    if(l.kind==="silh"){
+      const d=silhPath(f,l);
+      if(d){ ctx.fillStyle=l.color; ctx.fill(new Path2D(d),"evenodd"); }
+    }else{
+      for(const [color,ids] of groupsOfLayer(f,l)){
+        ctx.fillStyle=color;
+        for(const id of ids){ const r=pathOf(f,id); if(r.d) ctx.fill(new Path2D(r.d),"evenodd"); }
+      }
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+async function addFile(name,text){
+  const doc=new DOMParser().parseFromString(text,"image/svg+xml");
+  if(doc.querySelector("parsererror")) throw new Error("SVGとして読めません");
+  if(!doc.documentElement||doc.documentElement.nodeName.toLowerCase()!=="svg") throw new Error("svg要素がありません");
+  const root=document.importNode(doc.documentElement,true);
+  root.querySelectorAll("script,foreignObject").forEach(n=>n.remove());
+  root.querySelectorAll("*").forEach(el=>{ for(const a of [...el.attributes]) if(/^on/i.test(a.name)) el.removeAttribute(a.name); });
+  /* currentColor が画面のUI色を拾わないよう、黒に固定してから扱う */
+  if(!/(^|;)\s*color\s*:/.test(root.getAttribute("style")||"")) root.style.color="#000000";
+  let vb=parseViewBox(root);
+  if(vb.guess){ const b=measureBBox(root); if(b) vb=b; }
+  vb={x:+vb.x.toFixed(2),y:+vb.y.toFixed(2),w:+vb.w.toFixed(2),h:+vb.h.toFixed(2)};
+  root.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  const long=Math.max(vb.w,vb.h);
+  const sc=Math.min(MAXPX,Math.max(MINPX,Math.round(long)))/long;
+  const W=Math.max(1,Math.round(vb.w*sc)), H=Math.max(1,Math.round(vb.h*sc));
+  const strippedBg=stripBackground(root,vb);
+  const raw=await rasterize(root,W,H);
+  const ink=inkMap(raw);
+  const raw0=cv(W,H); raw0.getContext("2d").drawImage(raw,0,0);
+  const f={ id:++seq, name:name.replace(/\.svg$/i,""), root, vb, W, H,
+    raw, ink, raw0, ink0:ink.slice(), erase:[],
+    keyed:keyedCanvas(raw,ink), opaqueBg:hasSolidBorder(raw), strippedBg,
+    seg:null, paths:new Map(), pathKey:"", undo:[], redo:[], thumb:null, lseq:0, layers:[] };
+  f.layers=[ makeSilh(f), makeFill(f,"下塗り"), {id:++f.lseq, kind:"line", name:"線画", visible:true, opacity:1} ];
+  f.sel=f.layers[1].id;
+  defineFill(f);
+  S.files.push(f);
+  return f;
+}
+async function loadFiles(list){
+  let ok=0, first=null;
+  busy(true); await wait();
+  for(const file of list){
+    if(!/\.svg$/i.test(file.name)&&file.type!=="image/svg+xml"){ toast(`${file.name} はSVGではないので飛ばしました`); continue; }
+    try{ const f=await addFile(file.name, await file.text()); ok++; first=first||f; }
+    catch(e){ toast(`${file.name}：${e.message}`); }
+  }
+  busy(false);
+  if(ok) S.active=first.id;
+  renderList(); mount();
+  if(ok){
+    fit();
+    for(const f of S.files){ if(!f.seg){ segment(f,false); const sl=f.layers.find(l=>l.kind==="silh"); if(sl) silhPath(f,sl); } }
+    draw();
+  }
+  status();
+}
+
+/* ---------------- 区画に切る ---------------- */
+function segment(f,keepColors){
+  if(!f) return null;
+  const key=`${S.barrier}/${S.close}`;
+  if(f.seg&&f.seg.key===key){ segStat(f); return f.seg; }
+  const fillLayers = (f.layers||[]).filter(l=>l.kind==="fill");
+  const anyColor = fillLayers.some(l=>l.fill.some(Boolean));
+  const oldLab = (keepColors && f.seg && anyColor) ? f.seg.lab : null;
+  const oldFills = fillLayers.map(l=>l.fill);
+  const W=f.W,H=f.H,N=W*H;
+  let solid=new Uint8Array(N);
+  for(let p=0;p<N;p++) solid[p]= f.ink[p]>=S.barrier?1:0;
+  for(let t=0;t<S.close;t++){
+    const s2=new Uint8Array(N);
+    for(let y=0;y<H;y++){
+      const r=y*W;
+      for(let x=0;x<W;x++){
+        const p=r+x;
+        s2[p]= solid[p]|(x>0?solid[p-1]:0)|(x<W-1?solid[p+1]:0)|(y>0?solid[p-W]:0)|(y<H-1?solid[p+W]:0);
+      }
+    }
+    solid=s2;
+  }
+  const lab=new Int32Array(N).fill(-1);
+  const st=new Int32Array(N);
+  const regions=[];
+  for(let s=0;s<N;s++){
+    if(solid[s]||lab[s]>=0) continue;
+    const id=regions.length;
+    let top=0,area=0,edge=false,x0=W,y0=H,x1=0,y1=0;
+    st[top++]=s; lab[s]=id;
+    while(top){
+      const p=st[--top]; area++;
+      const x=p%W, y=(p-x)/W;
+      if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+      if(x===0||y===0||x===W-1||y===H-1) edge=true;
+      if(x>0&&!solid[p-1]&&lab[p-1]<0){ lab[p-1]=id; st[top++]=p-1; }
+      if(x<W-1&&!solid[p+1]&&lab[p+1]<0){ lab[p+1]=id; st[top++]=p+1; }
+      if(y>0&&!solid[p-W]&&lab[p-W]<0){ lab[p-W]=id; st[top++]=p-W; }
+      if(y<H-1&&!solid[p+W]&&lab[p+W]<0){ lab[p+W]=id; st[top++]=p+W; }
+    }
+    regions.push({id,area,edge,box:{x0,y0,x1,y1}});
+  }
+  /* 線の画素も近い区画へ配る＝区画が隙間なく敷き詰まる */
+  let q=[];
+  for(let p=0;p<N;p++) if(lab[p]>=0) q.push(p);
+  while(q.length){
+    const nq=[];
+    for(const p of q){
+      const x=p%W, y=(p-x)/W, id=lab[p], r=regions[id].box;
+      const put=(np,nx,ny)=>{ lab[np]=id; nq.push(np);
+        if(nx<r.x0)r.x0=nx; if(nx>r.x1)r.x1=nx; if(ny<r.y0)r.y0=ny; if(ny>r.y1)r.y1=ny; };
+      if(x>0&&lab[p-1]<0) put(p-1,x-1,y);
+      if(x<W-1&&lab[p+1]<0) put(p+1,x+1,y);
+      if(y>0&&lab[p-W]<0) put(p-W,x,y-1);
+      if(y<H-1&&lab[p+W]<0) put(p+W,x,y+1);
+    }
+    q=nq;
+  }
+  f.seg={key,lab,regions};
+  for(const l of fillLayers) l.fill=new Array(regions.length).fill(null);
+  f.paths=new Map(); f.pathKey="";
+  /* 区切りが変わっても、前の色を場所で引き継ぐ */
+  if(oldLab){
+    let kept=0;
+    fillLayers.forEach((l,li)=>{
+      const old=oldFills[li];
+      const tally=regions.map(()=>new Map());
+      for(let p=0;p<N;p++){
+        const nid=lab[p]; if(nid<0) continue;
+        const oid=oldLab[p]; if(oid<0) continue;
+        const c=old[oid]; if(!c) continue;
+        const m=tally[nid]; m.set(c,(m.get(c)||0)+1);
+      }
+      regions.forEach((r,i)=>{
+        let best=null,bn=0;
+        for(const [c,n] of tally[i]) if(n>bn){ bn=n; best=c; }
+        if(best && bn>=r.area*0.5){ l.fill[i]=best; kept++; }   /* 半分以上を覆っていた色だけ引き継ぐ */
+      });
+    });
+    if(kept) f.keptNote=kept;
+  }
+  segStat(f);
+  return f.seg;
+}
+function segStat(f){
+  if(!f||!f.seg){ $("#segStat").textContent="まだ読んでいません"; return; }
+  const inner=f.seg.regions.filter(r=>!r.edge&&r.area>=S.minArea).length;
+  const done=f.fill.filter(Boolean).length;
+  $("#segStat").textContent=`区画 ${f.seg.regions.length}　囲まれた区画 ${inner}　この層で色を置いた区画 ${done}`;
+}
+function segColor(i){
+  const h=(i*137.508)%360, s=46, l=64, a=s*Math.min(l,100-l)/100;
+  const g=n=>{ const k=(n+h/30)%12; return Math.round(255*(l/100-a/100*Math.max(-1,Math.min(k-3,Math.min(9-k,1))))); };
+  return rgbToHex(g(0),g(8),g(4));
+}
+
+/* ---------------- 区画 → パス ---------------- */
+function contoursOf(get,rw,rh){
+  const K=rw+1, key=(x,y)=>y*K+x;
+  const out=new Map();
+  const push=(x1,y1,x2,y2)=>{ const k=key(x1,y1); let a=out.get(k); if(!a){a=[];out.set(k,a);} a.push({x1,y1,x2,y2,used:false}); };
+  for(let y=0;y<rh;y++) for(let x=0;x<rw;x++){
+    if(!get(x,y)) continue;
+    if(!get(x,y-1)) push(x,y,x+1,y);
+    if(!get(x+1,y)) push(x+1,y,x+1,y+1);
+    if(!get(x,y+1)) push(x+1,y+1,x,y+1);
+    if(!get(x-1,y)) push(x,y+1,x,y);
+  }
+  const loops=[];
+  for(const [,arr] of out){
+    for(const e0 of arr){
+      if(e0.used) continue;
+      const pts=[[e0.x1,e0.y1]];
+      let e=e0; e.used=true;
+      let dx=e.x2-e.x1, dy=e.y2-e.y1;
+      for(let guard=0;guard<4e6;guard++){
+        pts.push([e.x2,e.y2]);
+        const cand=(out.get(key(e.x2,e.y2))||[]).filter(c=>!c.used);
+        if(!cand.length) break;
+        let next=cand[0];
+        if(cand.length>1){
+          const score=c=>{ const cx=c.x2-c.x1, cy=c.y2-c.y1;
+            if(cx===dx&&cy===dy) return 0;
+            if(cx===-dy&&cy===dx) return 1;
+            return 2; };
+          next=cand.reduce((a,b)=>score(b)<score(a)?b:a);
+        }
+        next.used=true; e=next; dx=e.x2-e.x1; dy=e.y2-e.y1;
+        if(e.x2===e0.x1&&e.y2===e0.y1){ pts.push([e.x2,e.y2]); break; }
+      }
+      if(pts.length>4) loops.push(dedupe(pts));
+    }
+  }
+  return loops;
+}
+function dedupe(p){
+  const o=[];
+  for(const q of p){ const l=o[o.length-1]; if(!l||l[0]!==q[0]||l[1]!==q[1]) o.push(q); }
+  if(o.length>1){ const a=o[0],b=o[o.length-1]; if(a[0]===b[0]&&a[1]===b[1]) o.pop(); }
+  return o;
+}
+function rdp(pts,tol){
+  if(pts.length<3) return pts.slice();
+  const keep=new Uint8Array(pts.length); keep[0]=keep[pts.length-1]=1;
+  const st=[[0,pts.length-1]];
+  while(st.length){
+    const [i,j]=st.pop();
+    if(j-i<2) continue;
+    const [x1,y1]=pts[i],[x2,y2]=pts[j];
+    const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
+    let m=-1,mi=i;
+    for(let k=i+1;k<j;k++){
+      const d=Math.abs((pts[k][0]-x1)*dy-(pts[k][1]-y1)*dx)/len;
+      if(d>m){ m=d; mi=k; }
+    }
+    if(m>tol){ keep[mi]=1; st.push([i,mi],[mi,j]); }
+  }
+  return pts.filter((_,i)=>keep[i]);
+}
+function pruneCollinear(pts,tol){
+  let p=pts;
+  for(let pass=0;pass<2;pass++){
+    if(p.length<=3) break;
+    const keep=new Uint8Array(p.length).fill(1);
+    let alive=p.length;
+    for(let i=0;i<p.length;i++){
+      let prev=(i-1+p.length)%p.length, next=(i+1)%p.length;
+      while(!keep[prev]&&prev!==i) prev=(prev-1+p.length)%p.length;
+      while(!keep[next]&&next!==i) next=(next+1)%p.length;
+      const [x1,y1]=p[prev],[x2,y2]=p[next],[x,y]=p[i];
+      const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);
+      if(len<1e-6) continue;
+      const d=Math.abs((x-x1)*dy-(y-y1)*dx)/len;
+      if(d<=tol*0.6&&alive>3){ keep[i]=0; alive--; }
+    }
+    const nx=p.filter((_,i)=>keep[i]);
+    if(nx.length===p.length) break;
+    p=nx;
+  }
+  return p;
+}
+function simplify(pts,tol){
+  if(pts.length<4) return pts;
+  const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length, cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;
+  let anchor=0,best=-1;
+  pts.forEach((p,i)=>{ const d=(p[0]-cx)**2+(p[1]-cy)**2; if(d>best){best=d;anchor=i;} });
+  const rot=pts.slice(anchor).concat(pts.slice(0,anchor));
+  const half=Math.floor(rot.length/2);
+  const out=rdp(rot.slice(0,half+1),tol).concat(rdp(rot.slice(half),tol).slice(1));
+  if(out.length>2){ const a=out[0],b=out[out.length-1]; if(a[0]===b[0]&&a[1]===b[1]) out.pop(); }
+  const c=pruneCollinear(out,tol);
+  return c.length>=3?c:rot;
+}
+function toPath(pts,sx,sy,ox,oy,smooth,cornerDeg){
+  const n=pts.length; if(n<3) return "";
+  const P=pts.map(p=>[p[0]*sx+ox, p[1]*sy+oy]);
+  const num=v=>Math.round(v*100)/100;
+  if(!smooth){
+    let d=`M${num(P[0][0])} ${num(P[0][1])}`;
+    for(let i=1;i<n;i++) d+=`L${num(P[i][0])} ${num(P[i][1])}`;
+    return d+"Z";
+  }
+  const cos0=Math.cos(cornerDeg*Math.PI/180);
+  const corner=new Uint8Array(n);
+  for(let i=0;i<n;i++){
+    const a=P[(i-1+n)%n],b=P[i],c=P[(i+1)%n];
+    const v1=[b[0]-a[0],b[1]-a[1]], v2=[c[0]-b[0],c[1]-b[1]];
+    const l1=Math.hypot(...v1)||1, l2=Math.hypot(...v2)||1;
+    if((v1[0]*v2[0]+v1[1]*v2[1])/(l1*l2)<cos0) corner[i]=1;
+    if(l1>Math.max(6,l2*4)&&l2>6) corner[i]=1;
+  }
+  const ctrl=(from,tan,seg)=>{
+    const t=Math.hypot(tan[0],tan[1])||1;
+    const cap=Math.min(t/6, Math.hypot(seg[0]-from[0],seg[1]-from[1])/3);
+    return [from[0]+tan[0]/t*cap, from[1]+tan[1]/t*cap];
+  };
+  let d=`M${num(P[0][0])} ${num(P[0][1])}`;
+  for(let i=0;i<n;i++){
+    const p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
+    if(corner[i]&&corner[(i+1)%n]){ d+=`L${num(p2[0])} ${num(p2[1])}`; continue; }
+    const c1=corner[i]?p1:ctrl(p1,[p2[0]-p0[0],p2[1]-p0[1]],p2);
+    const c2=corner[(i+1)%n]?p2:ctrl(p2,[p1[0]-p3[0],p1[1]-p3[1]],p1);
+    d+=`C${num(c1[0])} ${num(c1[1])} ${num(c2[0])} ${num(c2[1])} ${num(p2[0])} ${num(p2[1])}`;
+  }
+  return d+"Z";
+}
+/* 区画idのパス（viewBox座標）。tol/角/はみ出しが変わったら作り直す */
+function pathOf(f,id){
+  const key=`${S.tol}/${S.corner}/${S.grow}/${S.curves?1:0}/${f.seg.key}`;
+  if(f.pathKey!==key){ f.paths=new Map(); f.pathKey=key; }
+  if(f.paths.has(id)) return f.paths.get(id);
+  const r=f.seg.regions[id], g=S.grow, pad=g+2;
+  const rx=Math.max(0,r.box.x0-pad), ry=Math.max(0,r.box.y0-pad);
+  const rw=Math.min(f.W-rx, r.box.x1-r.box.x0+1+pad*2), rh=Math.min(f.H-ry, r.box.y1-r.box.y0+1+pad*2);
+  let m=new Uint8Array(rw*rh);
+  for(let y=0;y<rh;y++){
+    const row=(y+ry)*f.W;
+    for(let x=0;x<rw;x++) if(f.seg.lab[row+x+rx]===id) m[y*rw+x]=1;
+  }
+  for(let t=0;t<g;t++){
+    const n=new Uint8Array(rw*rh);
+    for(let y=0;y<rh;y++) for(let x=0;x<rw;x++){
+      const p=y*rw+x;
+      n[p]= m[p]|(x>0?m[p-1]:0)|(x<rw-1?m[p+1]:0)|(y>0?m[p-rw]:0)|(y<rh-1?m[p+rw]:0);
+    }
+    m=n;
+  }
+  const get=(x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:m[y*rw+x];
+  const sx=f.vb.w/f.W, sy=f.vb.h/f.H;
+  const ox=f.vb.x+rx*sx, oy=f.vb.y+ry*sy;
+  const ds=[];
+  let pts=0;
+  for(const raw of contoursOf(get,rw,rh)){
+    const s=simplify(raw, S.tol);
+    if(s.length<3) continue;
+    pts+=s.length;
+    ds.push(toPath(s,sx,sy,ox,oy,S.curves,S.corner));
+  }
+  const rec={d:ds.join(" "), pts};
+  f.paths.set(id,rec);
+  return rec;
+}
+function groupsOf(f){
+  const map=new Map();
+  if(!f.seg) return map;
+  f.fill.forEach((c,id)=>{
+    if(!c) return;
+    if(!map.has(c)) map.set(c,[]);
+    map.get(c).push(id);
+  });
+  return map;
+}
+
+/* ---------------- 見本画像から着色 ---------------- */
+let lastRefBitmap=null;
+async function decodeImage(blob){
+  if(typeof createImageBitmap==="function"){
+    try{ return await createImageBitmap(blob); }catch(e){}
+  }
+  const url=await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result); r.onerror=()=>rej(new Error("ファイルを読み取れません"));
+    r.readAsDataURL(blob);
+  });
+  const img=new Image();
+  await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error("画像として読めません")); img.src=url; });
+  return img;
+}
+/* 見本を線画の画素サイズに合わせて置く（位置・大きさ・反転つき） */
+function alignRef(f, src){
+  if(src) f.refSrc=src;
+  const s=f.refSrc; if(!s) return;
+  const c=f.ref&&f.ref.width===f.W ? f.ref : cv(f.W,f.H);
+  const ctx=c.getContext("2d");
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,f.W,f.H);
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality="high";
+  const w=s.width||s.naturalWidth, h=s.height||s.naturalHeight;
+  let dw,dh;
+  if(S.refFit==="contain"){ const k=Math.min(f.W/w,f.H/h); dw=w*k; dh=h*k; }
+  else { dw=f.W; dh=f.H; }
+  dw*=S.refScale; dh*=S.refScale;
+  const x=(f.W-dw)/2 + S.refX, y=(f.H-dh)/2 + S.refY;
+  ctx.save();
+  if(S.refFlip){ ctx.translate(x+dw,y); ctx.scale(-1,1); ctx.drawImage(s,0,0,dw,dh); }
+  else ctx.drawImage(s,x,y,dw,dh);
+  ctx.restore();
+  f.ref=c;
+  f.refData=null;                      /* 色を吸うときに読み直す */
+  $("#refPos").textContent=`位置 ${Math.round(S.refX)}, ${Math.round(S.refY)}　大きさ ${Math.round(S.refScale*100)}%${S.refFlip?"　左右反転":""}`;
+}
+function ensureRefData(f){
+  if(!f.ref) return false;
+  if(!f.refData) f.refData=f.ref.getContext("2d").getImageData(0,0,f.W,f.H).data;
+  return true;
+}
+function applyRefToAll(){
+  for(const f of S.files) if(f.refSrc) alignRef(f);
+}
+async function loadRef(blob){
+  let src;
+  try{ src=await decodeImage(blob); }catch(e){ toast(e.message); return; }
+  lastRefBitmap=src;
+  const f=active();
+  if(!f){ toast("先に線画SVGをひらいてください"); return; }
+  alignRef(f,src);
+  showRefThumb(f);
+  S.showRef=true; $("#showRef").checked=true;
+  toast("見本を読み込みました。ズレていたら「見本を動かす」(M)で合わせてください");
+  draw();
+}
+function showRefThumb(f){
+  $("#refBox").hidden=!f||!f.ref;
+  if(!f||!f.ref) return;
+  const c=$("#refThumb"), tw=248, th=Math.max(1,Math.round(tw*f.H/f.W));
+  c.width=tw; c.height=th;
+  c.getContext("2d").drawImage(f.ref,0,0,tw,th);
+}
+/* 区画の代表色＝内側の画素を16段階に量子化して最多の色群の平均 */
+function regionColor(f, id){
+  const r=f.seg.regions[id], W=f.W, s=S.shrink;
+  const d=f.refData, lab=f.seg.lab;
+  const bins=new Map();
+  let fallR=0,fallG=0,fallB=0,fallN=0;
+  for(let y=r.box.y0;y<=r.box.y1;y++){
+    const row=y*W;
+    for(let x=r.box.x0;x<=r.box.x1;x++){
+      const p=row+x;
+      if(lab[p]!==id) continue;
+      const o=p*4;
+      if(d[o+3]<128) continue;
+      fallR+=d[o]; fallG+=d[o+1]; fallB+=d[o+2]; fallN++;
+      if(S.skipInk && f.ink[p]>=S.barrier) continue;
+      if(s>0){
+        if(x-s<0||x+s>=W||y-s<0||y+s>=f.H) continue;
+        if(lab[p-s]!==id||lab[p+s]!==id||lab[p-s*W]!==id||lab[p+s*W]!==id) continue;
+      }
+      const key=((d[o]>>4)<<8)|((d[o+1]>>4)<<4)|(d[o+2]>>4);
+      let b=bins.get(key);
+      if(!b){ b={n:0,r:0,g:0,bl:0}; bins.set(key,b); }
+      b.n++; b.r+=d[o]; b.g+=d[o+1]; b.bl+=d[o+2];
+    }
+  }
+  let best=null;
+  if(S.refPick==="light"){
+    let maxN=0;
+    for(const b of bins.values()) if(b.n>maxN) maxN=b.n;
+    let bestLum=-1;
+    for(const b of bins.values()){
+      if(b.n < maxN*0.15) continue;   /* 面積の少ない光沢は拾わない */
+      const lum=(b.r*0.299+b.g*0.587+b.bl*0.114)/b.n;
+      if(lum>bestLum){ bestLum=lum; best=b; }
+    }
+  }else if(S.refPick==="median"){
+    const ch=[[],[],[]];
+    for(const b of bins.values()){
+      const w=Math.max(1,Math.round(b.n/8));
+      for(let i=0;i<w;i++){ ch[0].push(b.r/b.n); ch[1].push(b.g/b.n); ch[2].push(b.bl/b.n); }
+    }
+    if(ch[0].length){
+      const med=a=>{ a.sort((x,y)=>x-y); return Math.round(a[a.length>>1]); };
+      return rgbToHex(med(ch[0]),med(ch[1]),med(ch[2]));
+    }
+  }else{
+    for(const b of bins.values()) if(!best||b.n>best.n) best=b;
+  }
+  if(!best) for(const b of bins.values()) if(!best||b.n>best.n) best=b;
+  if(best) return rgbToHex(Math.round(best.r/best.n),Math.round(best.g/best.n),Math.round(best.bl/best.n));
+  if(fallN) return rgbToHex(Math.round(fallR/fallN),Math.round(fallG/fallN),Math.round(fallB/fallN));
+  return null;
+}
+function colorizeFrom(f){
+  if(!ensureRefData(f)) return 0;
+  const L=curL(f); if(!L||L.kind!=="fill") return 0;
+  segment(f);
+  pushHist(f);
+  let n=0;
+  for(const r of f.seg.regions){
+    if(S.skipBg && r.edge) continue;
+    if(r.area<S.minArea) continue;
+    const c=regionColor(f,r.id);
+    if(c){ f.fill[r.id]=c; n++; }
+  }
+  if(!n) f.undo.pop();
+  else if(S.mergeC>0) mergeColors(f,S.mergeC,true);
+  return n;
+}
+/* 近い色をまとめて、平坦なパレットにする */
+function mergeColors(f, thr, quiet){
+  const list=[];
+  f.fill.forEach((c,id)=>{ if(c) list.push({id, c:hexToRgb(c), area:f.seg.regions[id].area}); });
+  if(!list.length) return 0;
+  if(!quiet) pushHist(f);
+  list.sort((a,b)=>b.area-a.area);
+  const clusters=[];
+  for(const it of list){
+    let hit=null;
+    for(const cl of clusters){
+      const d=Math.hypot(cl.r/cl.w-it.c[0], cl.g/cl.w-it.c[1], cl.b/cl.w-it.c[2]);
+      if(d<=thr){ hit=cl; break; }
+    }
+    if(hit){ hit.r+=it.c[0]*it.area; hit.g+=it.c[1]*it.area; hit.b+=it.c[2]*it.area; hit.w+=it.area; hit.ids.push(it.id); }
+    else clusters.push({r:it.c[0]*it.area, g:it.c[1]*it.area, b:it.c[2]*it.area, w:it.area, ids:[it.id]});
+  }
+  for(const cl of clusters){
+    const hex=rgbToHex(Math.round(cl.r/cl.w),Math.round(cl.g/cl.w),Math.round(cl.b/cl.w));
+    for(const id of cl.ids) f.fill[id]=hex;
+  }
+  return clusters.length;
+}
+
+/* ---------------- 線を消す ---------------- */
+/* 消した形は解析画素の座標で持ち、書き出し時にviewBox座標へ直してマスクにする */
+function eraseBBox(it){
+  if(it.t==="s"){
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(const [x,y] of it.pts){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+    const m=it.w/2+2;
+    return {x0:x0-m,y0:y0-m,x1:x1+m,y1:y1+m};
+  }
+  return it.box;
+}
+function shapeOn(ctx,it){
+  if(it.t==="s"){
+    ctx.lineWidth=it.w; ctx.lineCap="round"; ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.moveTo(it.pts[0][0],it.pts[0][1]);
+    for(let i=1;i<it.pts.length;i++) ctx.lineTo(it.pts[i][0],it.pts[i][1]);
+    if(it.pts.length===1) ctx.lineTo(it.pts[0][0]+0.01,it.pts[0][1]);
+    ctx.stroke();
+  }else ctx.fill(new Path2D(it.d));
+}
+function applyErase(f,it){
+  for(const c of [f.raw,f.keyed]){
+    const ctx=c.getContext("2d");
+    ctx.save();
+    ctx.globalCompositeOperation="destination-out";
+    ctx.strokeStyle="#000"; ctx.fillStyle="#000";
+    shapeOn(ctx,it);
+    ctx.restore();
+  }
+  /* 消えた画素のinkを0にして、区画分けにも効かせる */
+  const b=eraseBBox(it);
+  const x0=Math.max(0,Math.floor(b.x0)), y0=Math.max(0,Math.floor(b.y0));
+  const x1=Math.min(f.W-1,Math.ceil(b.x1)), y1=Math.min(f.H-1,Math.ceil(b.y1));
+  const bw=x1-x0+1, bh=y1-y0+1;
+  if(bw<1||bh<1) return;
+  const t=cv(bw,bh), tc=t.getContext("2d");
+  tc.translate(-x0,-y0);
+  tc.strokeStyle="#fff"; tc.fillStyle="#fff";
+  shapeOn(tc,it);
+  const d=tc.getImageData(0,0,bw,bh).data;
+  if(!f.eraseMask) f.eraseMask=new Uint8Array(f.W*f.H);
+  for(let y=0;y<bh;y++){
+    const row=(y+y0)*f.W;
+    for(let x=0;x<bw;x++) if(d[(y*bw+x)*4+3]>8){ f.ink[row+x+x0]=0; f.eraseMask[row+x+x0]=1; }
+  }
+  f.eraseD=null; f.lineVec=null;
+}
+function rebuildLine(f){
+  const ctx=f.raw.getContext("2d");
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,f.W,f.H);
+  ctx.drawImage(f.raw0,0,0);
+  f.ink=f.ink0.slice();
+  f.keyed=keyedCanvas(f.raw,f.ink);
+  f.eraseMask=new Uint8Array(f.W*f.H); f.eraseD=null; f.lineVec=null;
+  for(const it of f.erase) applyErase(f,it);
+  f.seg=null; f.paths=new Map(); f.pathKey="";
+  eraseStat(f);
+}
+function eraseStat(f){
+  $("#eraseStat").textContent = (f&&f.erase.length)
+    ? `消した跡 ${f.erase.length}件（線は書き出し時にパスへ起こし直します）`
+    : "線を消すと区画の区切りも変わります。消した跡があるファイルは、書き出し時に線をパスへ起こし直します（塗りと同じくベクターのまま）。";
+}
+/* つながった線のかたまり（8近傍）を拾う */
+function inkBlobAt(f,sx,sy){
+  const W=f.W,H=f.H,bar=S.barrier;
+  if(sx<0||sy<0||sx>=W||sy>=H) return null;
+  if(f.ink[sy*W+sx]<bar) return null;
+  const seen=new Uint8Array(W*H), st=new Int32Array(W*H);
+  let top=0, n=0, x0=W,y0=H,x1=0,y1=0;
+  const px=[];
+  st[top++]=sy*W+sx; seen[sy*W+sx]=1;
+  while(top){
+    const p=st[--top]; px.push(p); n++;
+    const x=p%W, y=(p-x)/W;
+    if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+      if(!dx&&!dy) continue;
+      const nx=x+dx, ny=y+dy;
+      if(nx<0||ny<0||nx>=W||ny>=H) continue;
+      const q=ny*W+nx;
+      if(seen[q]||f.ink[q]<bar) continue;
+      seen[q]=1; st[top++]=q;
+    }
+  }
+  return {px,n,box:{x0,y0,x1,y1}};
+}
+/* かたまり → 輪郭パス（1px膨らませてアンチエイリアスまで覆う） */
+function blobShape(f,blob){
+  const b=blob.box, pad=2;
+  const rx=Math.max(0,b.x0-pad), ry=Math.max(0,b.y0-pad);
+  const rw=Math.min(f.W-rx,b.x1-b.x0+1+pad*2), rh=Math.min(f.H-ry,b.y1-b.y0+1+pad*2);
+  let m=new Uint8Array(rw*rh);
+  for(const p of blob.px){
+    const x=p%f.W, y=(p-x)/f.W;
+    const lx=x-rx, ly=y-ry;
+    if(lx>=0&&ly>=0&&lx<rw&&ly<rh) m[ly*rw+lx]=1;
+  }
+  for(let t=0;t<2;t++){
+    const n=new Uint8Array(rw*rh);
+    for(let y=0;y<rh;y++) for(let x=0;x<rw;x++){
+      const q=y*rw+x;
+      n[q]= m[q]|(x>0?m[q-1]:0)|(x<rw-1?m[q+1]:0)|(y>0?m[q-rw]:0)|(y<rh-1?m[q+rw]:0);
+    }
+    m=n;
+  }
+  const get=(x,y)=>(x<0||y<0||x>=rw||y>=rh)?0:m[y*rw+x];
+  const ds=[];
+  for(const raw of contoursOf(get,rw,rh)){
+    const sp=simplify(raw,1.2);
+    if(sp.length>=3) ds.push(toPath(sp,1,1,rx,ry,false,90));
+  }
+  return {t:"p", d:ds.join(" "), box:{x0:rx,y0:ry,x1:rx+rw-1,y1:ry+rh-1}};
+}
+/* 消した領域の輪郭（viewBox座標）。重なりはマスク上で合成済みなので穴も正しく出る */
+function eraseOutline(f){
+  if(f.eraseD!=null) return f.eraseD;
+  if(!f.eraseMask){ f.eraseD=""; return ""; }
+  const get=(x,y)=>(x<0||y<0||x>=f.W||y>=f.H)?0:f.eraseMask[y*f.W+x];
+  const sx=f.vb.w/f.W, sy=f.vb.h/f.H;
+  const ds=[];
+  for(const loop of contoursOf(get,f.W,f.H)){
+    const sp=simplify(loop,1.0);
+    if(sp.length>=3) ds.push(toPath(sp,sx,sy,f.vb.x,f.vb.y,false,90));
+  }
+  f.eraseD=ds.join(" ");
+  return f.eraseD;
+}
+/* 消したあとの線を、そのままパスに起こし直す */
+function lineVector(f){
+  const key=`${f.erase.length}/${S.tol}/${S.corner}/${S.curves?1:0}`;
+  if(f.lineVecKey===key && f.lineVec) return f.lineVec;
+  const thr=128;                 /* 半分覆われた所を境界にすると元の線の太さを保てる */
+  const get=(x,y)=>(x<0||y<0||x>=f.W||y>=f.H)?0:(f.ink[y*f.W+x]>=thr?1:0);
+  const sx=f.vb.w/f.W, sy=f.vb.h/f.H;
+  const ds=[];
+  for(const loop of contoursOf(get,f.W,f.H)){
+    const sp=simplify(loop,S.tol);
+    if(sp.length>=3) ds.push(toPath(sp,sx,sy,f.vb.x,f.vb.y,S.curves,S.corner));
+  }
+  const d=f.raw.getContext("2d").getImageData(0,0,f.W,f.H).data;
+  let r=0,g=0,b=0,w=0;
+  for(let p=0;p<f.W*f.H;p++){
+    const k=f.ink[p]; if(k<thr) continue;
+    const o=p*4; r+=d[o]*k; g+=d[o+1]*k; b+=d[o+2]*k; w+=k;
+  }
+  const col=w?rgbToHex(Math.round(r/w),Math.round(g/w),Math.round(b/w)):"#000000";
+  f.lineVecKey=key;
+  f.lineVec=`<path fill="${col}" fill-rule="evenodd" d="${ds.join(" ")}"/>`;
+  return f.lineVec;
+}
+function pushErase(f,it){
+  pushHist(f,"erase");
+  f.erase.push(it);
+  applyErase(f,it);
+  f.seg=null; f.paths=new Map(); f.pathKey="";
+  eraseStat(f);
+}
+
+/* ---------------- 描画 ---------------- */
+const stack=$("#stack");
+const cFill=stack.querySelector(".c-fill"), cLine=stack.querySelector(".c-line"),
+      cOver=stack.querySelector(".c-over"), cRef=stack.querySelector(".c-ref"), cHi=stack.querySelector(".c-hi");
+function mount(){
+  const f=active();
+  $("#empty").hidden=!!f; stack.hidden=!f;
+  $("#flags").textContent="";
+  if(!f){ segStat(null); renderGroups(); renderLayers(); return; }
+  for(const c of [cFill,cLine,cOver,cRef,cHi]){ c.width=f.W; c.height=f.H; }
+  showRefThumb(f);
+  applyZoom();
+  if(f.opaqueBg&&!f.strippedBg){
+    const el=document.createElement("span"); el.className="flag";
+    el.textContent="白地あり → 線はPNGで書き出し"; $("#flags").appendChild(el);
+  }else if(f.strippedBg){
+    const el=document.createElement("span"); el.className="flag";
+    el.textContent="白い背景板を外しました"; $("#flags").appendChild(el);
+  }
+}
+function draw(){
+  const f=active(); if(!f) return;
+  const li=lineIndex(f);
+  const put=(cvs,from,to)=>{
+    const ctx=cvs.getContext("2d");
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,f.W,f.H);
+    if(!f.seg) return;
+    ctx.save();
+    ctx.scale(f.W/f.vb.w, f.H/f.vb.h);
+    ctx.translate(-f.vb.x,-f.vb.y);
+    drawLayerRange(ctx,f,from,to);
+    ctx.restore();
+  };
+  put(cFill,0,li<0?f.layers.length:li);
+  put(cOver,li<0?f.layers.length:li+1,f.layers.length);
+  let n=0,pts=0;
+  if(f.seg) for(const l of f.layers){
+    if(l.kind!=="fill") continue;
+    for(const [,ids] of groupsOfLayer(f,l)) for(const id of ids){ const r=pathOf(f,id); if(r.d){ n++; pts+=r.pts; } }
+  }
+  $("#pathStat").textContent = n?`パス ${n}本 ／ 節点 ${pts}`:"";
+  const lineL=li>=0?f.layers[li]:null;
+  const lc=cLine.getContext("2d");
+  lc.setTransform(1,0,0,1,0,0);
+  lc.clearRect(0,0,f.W,f.H);
+  if(!S.hideLine && lineL && lineL.visible){
+    lc.globalAlpha=lineL.opacity;
+    lc.drawImage((S.key||f.opaqueBg)?f.keyed:f.raw,0,0);
+    lc.globalAlpha=1;
+  }
+  const rc=cRef.getContext("2d");
+  rc.clearRect(0,0,f.W,f.H);
+  cRef.style.opacity = S.showRef ? S.refOp : 0;
+  if(S.showRef && f.ref) rc.drawImage(f.ref,0,0);
+  stack.classList.toggle("plain",S.plainBg);
+  drawThumb(f); segStat(f); renderGroups(); renderLayers();
+  scheduleDetail();
+}
+let hoverId=-1;
+function drawHover(id){
+  const f=active(); const ctx=cHi.getContext("2d");
+  if(hoverId===id) return;
+  hoverId=id;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,cHi.width,cHi.height);
+  if(!f||!f.seg||id<0) return;
+  const r=f.seg.regions[id];
+  const img=ctx.createImageData(r.box.x1-r.box.x0+1, r.box.y1-r.box.y0+1);
+  const d=img.data;
+  let i=0;
+  for(let y=r.box.y0;y<=r.box.y1;y++){
+    const row=y*f.W;
+    for(let x=r.box.x0;x<=r.box.x1;x++,i+=4){
+      if(f.seg.lab[row+x]!==id) continue;
+      d[i]=255; d[i+1]=223; d[i+2]=110; d[i+3]=52;
+    }
+  }
+  ctx.putImageData(img, r.box.x0, r.box.y0);
+}
+function drawThumb(f){
+  if(!f.thumb) return;
+  const c=f.thumb, ctx=c.getContext("2d");
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.drawImage(cFillFor(f),0,0,c.width,c.height);
+}
+function cFillFor(f){
+  const c=cv(f.W,f.H), ctx=c.getContext("2d");
+  const li=lineIndex(f);
+  const band=(from,to)=>{
+    ctx.save();
+    ctx.scale(f.W/f.vb.w,f.H/f.vb.h); ctx.translate(-f.vb.x,-f.vb.y);
+    drawLayerRange(ctx,f,from,to);
+    ctx.restore();
+  };
+  if(f.seg) band(0,li<0?f.layers.length:li);
+  const lineL=li>=0?f.layers[li]:null;
+  if(lineL&&lineL.visible){
+    ctx.globalAlpha=lineL.opacity;
+    ctx.drawImage((S.key||f.opaqueBg)?f.keyed:f.raw,0,0);
+    ctx.globalAlpha=1;
+  }
+  if(f.seg) band(li<0?f.layers.length:li+1,f.layers.length);
+  return c;
+}
+function applyZoom(){
+  const f=active(); if(!f) return;
+  stack.style.width=Math.round(f.W*S.zoom)+"px";
+  stack.style.height=Math.round(f.H*S.zoom)+"px";
+  stack.classList.toggle("zoomed",S.zoom>=1.8);
+  $("#zoomV").textContent=Math.round(S.zoom*100)+"%";
+  scheduleDetail();
+}
+function fit(){
+  const f=active(); if(!f) return;
+  const vp=$("#viewport").getBoundingClientRect();
+  S.zoom=Math.min((vp.width-90)/f.W,(vp.height-90)/f.H,3);
+  if(!isFinite(S.zoom)||S.zoom<=0) S.zoom=1;
+  hideDetail(); applyZoom();
+}
+function status(){
+  const f=active();
+  $("#stat").textContent=f
+    ? `${f.name}　${f.vb.w}×${f.vb.h}単位　解析 ${f.W}×${f.H}px　${S.files.length}枚`
+    : "線画を開いてください";
+}
+
+/* ---------------- 拡大時の高精細プレビュー ---------------- */
+/* 表示中の範囲だけ、線をその倍率でラスタライズし直して描く */
+function keyInPlace(canvas){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  const img=ctx.getImageData(0,0,W,H), d=img.data;
+  for(let o=0;o<d.length;o+=4){
+    const a=d[o+3]/255, lum=d[o]*0.299+d[o+1]*0.587+d[o+2]*0.114;
+    const k=Math.round(a*(255-lum));
+    if(k===0){ d[o]=d[o+1]=d[o+2]=d[o+3]=0; continue; }
+    if(d[o+3]===0){ d[o]=d[o+1]=d[o+2]=0; }
+    d[o+3]=k;
+  }
+  ctx.putImageData(img,0,0);
+}
+let detailTimer=0, detailRun=0;
+function hideDetail(){ $("#detail").hidden=true; }
+function scheduleDetail(){ clearTimeout(detailTimer); detailTimer=setTimeout(renderDetail,150); }
+async function renderDetail(){
+  const f=active(), dc=$("#detail");
+  if(!f || S.zoom<1.3){ dc.hidden=true; return; }
+  const run=++detailRun;
+  const vp=$("#viewport"), vr=vp.getBoundingClientRect(), sr=stack.getBoundingClientRect();
+  const x0=Math.max(0,Math.floor((vr.left-sr.left)/S.zoom)-2);
+  const y0=Math.max(0,Math.floor((vr.top-sr.top)/S.zoom)-2);
+  const x1=Math.min(f.W,Math.ceil((vr.right-sr.left)/S.zoom)+2);
+  const y1=Math.min(f.H,Math.ceil((vr.bottom-sr.top)/S.zoom)+2);
+  const w=x1-x0, h=y1-y0;
+  if(w<=0||h<=0){ dc.hidden=true; return; }
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  let cw=Math.round(w*S.zoom*dpr), ch=Math.round(h*S.zoom*dpr);
+  const cap=Math.sqrt(6e6/Math.max(1,cw*ch));
+  if(cap<1){ cw=Math.max(1,Math.round(cw*cap)); ch=Math.max(1,Math.round(ch*cap)); }
+  const scale=cw/w, sx=f.vb.w/f.W, sy=f.vb.h/f.H;
+  const c=cv(cw,ch), ctx=c.getContext("2d");
+  /* 塗りはパスから直接（線より下の層） */
+  const li=lineIndex(f);
+  const band=(from,to)=>{
+    ctx.save();
+    ctx.scale(scale,scale); ctx.translate(-x0,-y0);
+    ctx.scale(1/sx,1/sy); ctx.translate(-f.vb.x,-f.vb.y);
+    drawLayerRange(ctx,f,from,to);
+    ctx.restore();
+  };
+  if(f.seg) band(0,li<0?f.layers.length:li);
+  /* 線はこの倍率で描き直す */
+  if(!S.hideLine){
+    const clone=f.root.cloneNode(true);
+    clone.setAttribute("xmlns",NS);
+    clone.setAttribute("viewBox",`${f.vb.x+x0*sx} ${f.vb.y+y0*sy} ${w*sx} ${h*sy}`);
+    clone.setAttribute("width",cw); clone.setAttribute("height",ch);
+    clone.setAttribute("preserveAspectRatio","none");
+    const url="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(clone));
+    const img=new Image();
+    let okimg=true;
+    try{ await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=url; }); }catch(e){ okimg=false; }
+    if(run!==detailRun) return;
+    if(okimg){
+      const lc=cv(cw,ch), lx=lc.getContext("2d");
+      lx.drawImage(img,0,0,cw,ch);
+      if(S.key||f.opaqueBg) keyInPlace(lc);
+      if(f.erase.length){
+        lx.save();
+        lx.globalCompositeOperation="destination-out";
+        lx.scale(scale,scale); lx.translate(-x0,-y0);
+        lx.strokeStyle="#000"; lx.fillStyle="#000";
+        for(const it of f.erase) shapeOn(lx,it);
+        lx.restore();
+      }
+      const lineL=li>=0?f.layers[li]:null;
+      ctx.globalAlpha=lineL?lineL.opacity:1;
+      if(!lineL||lineL.visible) ctx.drawImage(lc,0,0);
+      ctx.globalAlpha=1;
+    }
+  }
+  if(f.seg) band(li<0?f.layers.length:li+1,f.layers.length);
+  if(run!==detailRun) return;
+  dc.width=cw; dc.height=ch;
+  dc.style.left=(x0*S.zoom)+"px"; dc.style.top=(y0*S.zoom)+"px";
+  dc.style.width=(w*S.zoom)+"px"; dc.style.height=(h*S.zoom)+"px";
+  const dctx=dc.getContext("2d");
+  dctx.clearRect(0,0,cw,ch);
+  dctx.drawImage(c,0,0);
+  dc.hidden=false;
+}
+/* カーソルの点を動かさずに拡大縮小する */
+function zoomTo(z,cx,cy){
+  const f=active(); if(!f) return;
+  z=Math.max(.05,Math.min(32,z));
+  const vp=$("#viewport"), sr=stack.getBoundingClientRect();
+  if(cx==null){ const vr=vp.getBoundingClientRect(); cx=(vr.left+vr.right)/2; cy=(vr.top+vr.bottom)/2; }
+  const ix=(cx-sr.left)/S.zoom, iy=(cy-sr.top)/S.zoom;
+  S.zoom=z; hideDetail(); applyZoom();
+  const sr2=stack.getBoundingClientRect();
+  vp.scrollLeft += (sr2.left+ix*S.zoom)-cx;
+  vp.scrollTop  += (sr2.top +iy*S.zoom)-cy;
+  scheduleDetail();
+}
+
+/* ---------------- 一覧 ---------------- */
+function renderList(){
+  const box=$("#list"); box.textContent="";
+  for(const f of S.files){
+    const b=document.createElement("button");
+    b.className="tanzaku"+(f.layers.some(l=>l.fill&&l.fill.some(Boolean))?" painted":"");
+    b.setAttribute("aria-current",String(f.id===S.active));
+    b.dataset.id=f.id;
+    const tw=128, th=Math.max(1,Math.round(tw*f.H/f.W));
+    const c=cv(tw,th); c.style.width="100%"; b.appendChild(c);
+    const cap=document.createElement("div"); cap.className="cap";
+    const dot=document.createElement("span"); dot.className="dot";
+    const nm=document.createElement("span"); nm.textContent=f.name;
+    cap.append(dot,nm); b.appendChild(cap);
+    const kill=document.createElement("button");
+    kill.className="kill"; kill.textContent="×"; kill.title="閉じる";
+    kill.addEventListener("click",ev=>{ ev.stopPropagation(); closeFile(f.id); });
+    b.appendChild(kill);
+    b.addEventListener("click",()=>{ S.active=f.id; renderList(); mount(); fit(); segment(active()); draw(); status(); });
+    box.appendChild(b);
+    f.thumb=c; drawThumb(f);
+  }
+}
+function closeFile(id){
+  const i=S.files.findIndex(f=>f.id===id); if(i<0) return;
+  S.files.splice(i,1);
+  if(S.active===id) S.active=S.files.length?S.files[Math.min(i,S.files.length-1)].id:null;
+  renderList(); mount(); if(active()) draw(); status();
+}
+function renderLayers(){
+  const box=$("#layers"); box.textContent="";
+  const f=active();
+  if(!f){ $("#lname").value=""; $("#silhBox").hidden=true; return; }
+  [...f.layers].reverse().forEach(l=>{
+    const row=document.createElement("div");
+    row.className="lay"+(l.kind==="line"?" line":l.kind==="silh"?" silh":"");
+    row.setAttribute("aria-current",String(l.id===f.sel));
+    const eye=document.createElement("button");
+    eye.className="eye"; eye.dataset.on=l.visible?"1":"0"; eye.textContent=l.visible?"●":"○";
+    eye.title="表示／非表示";
+    eye.addEventListener("click",ev=>{ ev.stopPropagation(); l.visible=!l.visible; draw(); });
+    const nm=document.createElement("div"); nm.className="nm"; nm.textContent=l.name;
+    const kd=document.createElement("div"); kd.className="kd";
+    kd.textContent=l.kind==="line"?"線":l.kind==="silh"?"下地":"塗";
+    const op=document.createElement("div"); op.className="op"; op.textContent=Math.round(l.opacity*100)+"%";
+    if(l.kind==="silh"){
+      const sw=document.createElement("div"); sw.className="sw"; sw.style.background=l.color;
+      row.append(eye,sw,nm,kd,op);
+    }else row.append(eye,nm,kd,op);
+    row.addEventListener("click",()=>{ f.sel=l.id; syncLayer(); draw(); });
+    box.appendChild(row);
+  });
+  syncLayer();
+}
+function syncLayer(){
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l) return;
+  $("#lname").value=l.name;
+  $("#lop").value=Math.round(l.opacity*100);
+  $("#lopV").textContent=Math.round(l.opacity*100)+"%";
+  $("#lDel").disabled=l.kind==="line";
+  $("#lMerge").disabled=l.kind!=="fill";
+  $("#lDup").disabled=l.kind!=="fill";
+  $("#silhBox").hidden=l.kind!=="silh";
+  if(l.kind==="silh"){
+    $("#silhColor").value=l.color;
+    $("#silhHex").value=l.color.toUpperCase();
+    $("#silhPad").value=l.pad; $("#silhPadV").textContent=l.pad+"px";
+    $("#silhStat").textContent = l.area
+      ? `覆う面積 ${(100*l.area/(f.W*f.H)).toFixed(1)}%　輪郭 ${l.loops}本`
+      : "";
+  }
+}
+function moveLayer(dir){
+  const f=active(); if(!f) return;
+  const i=f.layers.findIndex(l=>l.id===f.sel), j=i+dir;
+  if(i<0||j<0||j>=f.layers.length) return;
+  const t=f.layers[i]; f.layers[i]=f.layers[j]; f.layers[j]=t;
+  draw(); renderList();
+}
+function renderGroups(){
+  const box=$("#groups"); box.textContent="";
+  const f=active();
+  const g=f?groupsOf(f):new Map();
+  if(!g.size){
+    const p=document.createElement("div"); p.className="none"; p.textContent="まだ色を置いていません。";
+    box.appendChild(p); return;
+  }
+  for(const [color,ids] of [...g].sort((a,b)=>b[1].length-a[1].length)){
+    const row=document.createElement("div"); row.className="grp";
+    const chip=document.createElement("button"); chip.className="chip"; chip.style.background=color;
+    chip.title="この色を選ぶ";
+    chip.addEventListener("click",()=>setColor(color));
+    const hx=document.createElement("div"); hx.className="hexv"; hx.textContent=color.toUpperCase();
+    const cnt=document.createElement("div"); cnt.className="cnt"; cnt.textContent=ids.length+"区画";
+    const go=document.createElement("button"); go.className="go"; go.textContent="今の色へ";
+    go.title="この色の区画を今の色に置き換える";
+    go.addEventListener("click",()=>{
+      pushHist(f);
+      for(const id of ids) f.fill[id]=S.color;
+      draw(); renderList();
+    });
+    row.append(chip,hx,cnt,go);
+    box.appendChild(row);
+  }
+}
+
+/* ---------------- 履歴（塗り分けの配列だけなので軽い） ---------------- */
+let segPrev={b:S.barrier, c:S.close};
+function grabFills(f){ return f.layers.map(l=>l.fill?l.fill.slice():null); }
+function putFills(f,L){
+  f.layers.forEach((l,i)=>{ if(l.fill&&L[i]) l.fill=L[i].slice(); });
+}
+function snap(f,t){
+  if(t==="erase") return {t:"erase", d:f.erase.slice()};
+  if(t==="seg") return {t:"seg", L:grabFills(f), b:S.barrier, c:S.close};
+  return {t:"fill", L:grabFills(f)};
+}
+function syncSegUI(){
+  $("#barrier").value=S.barrier; $("#barrierV").textContent=S.barrier;
+  $("#close").value=S.close; $("#closeV").textContent=S.close+"px";
+}
+/* 線の読み方を変える。前の設定と色を履歴に積んでから読み直す */
+function reseg(f){
+  if(!f) return;
+  f.undo.push({t:"seg", L:grabFills(f), b:segPrev.b, c:segPrev.c});
+  if(f.undo.length>HIST) f.undo.shift();
+  f.redo.length=0;
+  segPrev={b:S.barrier, c:S.close};
+  f.keptNote=0;
+  f.seg=null;
+  segment(f,true);
+  draw(); renderList();
+  if(f.keptNote) toast(`区画を読み直して、${f.keptNote}区画の色を引き継ぎました`);
+}
+function pushHist(f,t){
+  f.undo.push(snap(f,t||"fill"));
+  if(f.undo.length>HIST) f.undo.shift();
+  f.redo.length=0;
+}
+function step(from,to){
+  const f=active(); if(!f||!f[from].length) return;
+  const e=f[from].pop();
+  f[to].push(snap(f,e.t));
+  if(e.t==="erase"){ f.erase=e.d; rebuildLine(f); segment(f); }
+  else if(e.t==="seg"){
+    S.barrier=e.b; S.close=e.c; syncSegUI();
+    segPrev={b:e.b, c:e.c};
+    f.seg=null; segment(f,false);
+    putFills(f,e.L);
+  }
+  else putFills(f,e.L);
+  draw(); renderList();
+}
+
+/* ---------------- 操作 ---------------- */
+let panning=null, refDrag=null, refRaf=0, erasing=null;
+function posOf(e){
+  const r=stack.getBoundingClientRect();
+  return { x:Math.floor((e.clientX-r.left)/S.zoom), y:Math.floor((e.clientY-r.top)/S.zoom) };
+}
+function regionAt(f,x,y){
+  if(!f.seg||x<0||y<0||x>=f.W||y>=f.H) return -1;
+  return f.seg.lab[y*f.W+x];
+}
+function applyAt(f,x,y,skipHist){
+  const l=curL(f);
+  if(!l||l.kind!=="fill"){ toast(l&&l.kind==="silh"?"白ベタの層には区画ごとの色は置けません":"塗りの層を選んでください"); return false; }
+  const id=regionAt(f,x,y);
+  if(id<0) return false;
+  if(!skipHist) pushHist(f);
+  if(S.tool==="clear") f.fill[id]=null;
+  else if(S.tool==="same"){
+    const old=f.fill[id];
+    if(!old){ f.fill[id]=S.color; }
+    else for(let i=0;i<f.fill.length;i++) if(f.fill[i]===old) f.fill[i]=S.color;
+  }else f.fill[id]=S.color;
+  return true;
+}
+$("#hit").addEventListener("pointerdown",e=>{
+  const f=active(); if(!f) return;
+  if(S.spaceDown||e.button===1){
+    panning={x:e.clientX,y:e.clientY,l:$("#viewport").scrollLeft,t:$("#viewport").scrollTop};
+    $("#hit").setPointerCapture(e.pointerId); return;
+  }
+  if(e.button!==0) return;
+  const p=posOf(e);
+  if(S.tool==="ref"){
+    if(!f.refSrc){ toast("先に見本の色画像をひらいてください"); return; }
+    refDrag={px:p.x, py:p.y, x0:S.refX, y0:S.refY};
+    $("#hit").setPointerCapture(e.pointerId);
+    if(!S.showRef){ S.showRef=true; $("#showRef").checked=true; draw(); }
+    return;
+  }
+  if(S.tool==="erase"){
+    erasing={pts:[[p.x,p.y]]};
+    $("#hit").setPointerCapture(e.pointerId);
+    return;
+  }
+  if(S.tool==="eraseBlob"){
+    const blob=inkBlobAt(f,p.x,p.y);
+    if(!blob){ toast("そこに線はありません"); return; }
+    pushErase(f, blobShape(f,blob));
+    segment(f,true); draw(); renderList();
+    toast(`${blob.n}画素のかたまりを消しました`);
+    return;
+  }
+  if(S.tool==="pick"){
+    const id=regionAt(f,p.x,p.y);
+    let got=null;
+    if(id>=0) for(let i=f.layers.length-1;i>=0&&!got;i--){
+      const l=f.layers[i];
+      if(!l.visible) continue;
+      if(l.kind==="fill"&&l.fill[id]) got=l.fill[id];
+      else if(l.kind==="silh"&&l.d) got=l.color;
+    }
+    if(got) setColor(got); else toast("そこに色は置かれていません");
+    return;
+  }
+  segment(f);
+  if(!applyAt(f,p.x,p.y)){ toast("そこは区画になっていません（すき間をふさぐ を上げてみてください）"); return; }
+  if(S.tool!=="clear") remember(S.color);
+  if(S.broadcast) broadcast(p.x/f.W,p.y/f.H,f.id);
+  draw(); renderList();
+});
+$("#hit").addEventListener("pointermove",e=>{
+  if(refDrag){
+    const f=active(); if(!f) return;
+    const p=posOf(e);
+    S.refX=refDrag.x0+(p.x-refDrag.px);
+    S.refY=refDrag.y0+(p.y-refDrag.py);
+    if(!refRaf) refRaf=requestAnimationFrame(()=>{ refRaf=0; alignRef(f); draw(); });
+    return;
+  }
+  if(erasing){
+    const f=active(); if(!f) return;
+    const p=posOf(e);
+    const last=erasing.pts[erasing.pts.length-1];
+    if(last[0]===p.x&&last[1]===p.y) return;
+    erasing.pts.push([p.x,p.y]);
+    const ctx=cHi.getContext("2d");
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.strokeStyle="rgba(200,80,60,.55)"; ctx.lineWidth=S.eraseW;
+    ctx.lineCap="round"; ctx.lineJoin="round";
+    ctx.beginPath(); ctx.moveTo(last[0],last[1]); ctx.lineTo(p.x,p.y); ctx.stroke();
+    hoverId=-2;
+    return;
+  }
+  if(panning){
+    const vp=$("#viewport");
+    vp.scrollLeft=panning.l-(e.clientX-panning.x);
+    vp.scrollTop=panning.t-(e.clientY-panning.y);
+    return;
+  }
+  const f=active(); if(!f||!f.seg) return;
+  const p=posOf(e);
+  drawHover(regionAt(f,p.x,p.y));
+});
+$("#hit").addEventListener("pointerup",()=>{
+  if(erasing){
+    const f=active();
+    const pts=erasing.pts; erasing=null;
+    cHi.getContext("2d").clearRect(0,0,cHi.width,cHi.height); hoverId=-1;
+    if(f){
+      pushErase(f,{t:"s", w:S.eraseW, pts});
+      segment(f,true); draw(); renderList();
+    }
+  }
+  panning=null;
+  if(refDrag){ refDrag=null; const f=active(); if(f){ showRefThumb(f); } }
+});
+$("#hit").addEventListener("pointerleave",()=>drawHover(-1));
+function broadcast(u,v,skipId){
+  const src=S.files.find(f=>f.id===skipId);
+  let hit=0;
+  for(const f of S.files){
+    if(f.id===skipId) continue;
+    const a1=src.vb.w/src.vb.h, a2=f.vb.w/f.vb.h;
+    if(Math.abs(a1-a2)/a1>0.01) continue;
+    segment(f);
+    if(applyAt(f,Math.round(u*f.W),Math.round(v*f.H))){
+      hit++;
+      const el=$(`.tanzaku[data-id="${f.id}"]`);
+      if(el){ el.classList.remove("ripple"); void el.offsetWidth; el.classList.add("ripple"); }
+      drawThumb(f);
+    }
+  }
+  toast(hit?`ほかの${hit}枚の同じ場所にも置きました`:"同じ構図の相手が見つかりません");
+}
+
+/* ---------------- 書き出し ---------------- */
+function lineArtSVG(f){
+  const c=f.root.cloneNode(true);
+  c.setAttribute("xmlns",NS);
+  c.setAttribute("x",f.vb.x); c.setAttribute("y",f.vb.y);
+  c.setAttribute("width",f.vb.w); c.setAttribute("height",f.vb.h);
+  c.setAttribute("viewBox",`${f.vb.x} ${f.vb.y} ${f.vb.w} ${f.vb.h}`);
+  return new XMLSerializer().serializeToString(c);
+}
+function buildSVG(f){
+  const esc=v=>String(v).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+  const n=v=>Math.round(v*100)/100;
+  const out=[
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="${NS}" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${f.vb.x} ${f.vb.y} ${f.vb.w} ${f.vb.h}" width="${f.vb.w}" height="${f.vb.h}">`,
+    `<!-- したじきFill: 塗りはパス / ${esc(f.name)} -->`
+  ];
+  const css=[]; let cn=0;
+  const body=[];
+  const lineOut=()=>{
+    if(S.mode!=="both") return;
+    if(f.opaqueBg&&!f.strippedBg)
+      body.push(`<image x="${f.vb.x}" y="${f.vb.y}" width="${f.vb.w}" height="${f.vb.h}" preserveAspectRatio="none" xlink:href="${f.keyed.toDataURL("image/png")}"/>`);
+    else if(f.erase.length) body.push(lineVector(f));   /* 消した跡はパスへ起こし直す */
+    else body.push(lineArtSVG(f));
+  };
+  for(const l of f.layers){
+    if(!l.visible) continue;
+    if(l.kind==="line"){ lineOut(); continue; }
+    const op = l.opacity<1 ? ` opacity="${n(l.opacity)}"` : "";
+    if(l.kind==="silh"){
+      const d=silhPath(f,l);
+      if(!d) continue;
+      let attr;
+      if(S.useCss){ cn++; css.push(`.n${cn}{fill:${l.color}}`); attr=`class="n${cn}"`; }
+      else attr=`fill="${l.color}"`;
+      body.push(`<g data-name="${esc(l.name)}"${op} fill-rule="evenodd"><path ${attr} d="${d}"/></g>`);
+      continue;
+    }
+    const g=[...groupsOfLayer(f,l)];
+    if(!g.length) continue;
+    const paths=[];
+    for(const [color,ids] of g){
+      const d=ids.map(id=>pathOf(f,id).d).filter(Boolean).join(" ");
+      if(!d) continue;
+      if(S.useCss){ cn++; css.push(`.n${cn}{fill:${color}}`); paths.push(`<path class="n${cn}" d="${d}"/>`); }
+      else paths.push(`<path fill="${color}" d="${d}"/>`);
+    }
+    if(paths.length) body.push(`<g data-name="${esc(l.name)}"${op} fill-rule="evenodd">${paths.join("")}</g>`);
+  }
+  if(S.useCss&&css.length) out.push(`<style>${css.join("")}</style>`);
+  out.push(...body);
+  out.push(`</svg>`);
+  return out.join("\n");
+}
+function hrefFor(text,mime){
+  try{
+    const u=URL.createObjectURL(new Blob([text],{type:mime}));
+    if(!/^blob:null/.test(u)) return u;
+    URL.revokeObjectURL(u);
+  }catch(e){}
+  return "data:"+mime+";charset=utf-8,"+encodeURIComponent(text);
+}
+function saveAs(name,href){
+  const a=document.createElement("a");
+  a.href=href; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  if(href.startsWith("blob:")) setTimeout(()=>URL.revokeObjectURL(href),4000);
+}
+function exportOne(f){ saveAs(`${f.name}_fill.svg`, hrefFor(buildSVG(f),"image/svg+xml")); }
+function exportOneSlow(f){
+  busy(true);
+  setTimeout(()=>{ try{ exportOne(f); } finally { busy(false); } },20);
+}
+async function exportAll(){
+  if(!S.files.length) return;
+  busy(true); await wait();
+  for(const f of S.files){ segment(f); exportOne(f); await new Promise(r=>setTimeout(r,320)); }
+  busy(false);
+  toast(`${S.files.length}枚を書き出しました。止まるときはブラウザの複数ダウンロードを許可してください。`);
+}
+
+/* ---------------- 色 ---------------- */
+function setColor(hex){
+  S.color=String(hex).toLowerCase();
+  $("#color").value=S.color; $("#hex").value=S.color.toUpperCase();
+  drawSwatches();
+}
+function remember(hex){
+  S.recent=[hex.toLowerCase(),...S.recent.filter(c=>c!==hex.toLowerCase())].slice(0,9);
+  drawSwatches();
+}
+function drawSwatches(){
+  for(const [sel,list] of [["#swatches",PALETTE],["#recent",S.recent]]){
+    const box=$(sel); box.textContent="";
+    for(const c of list){
+      const b=document.createElement("button");
+      b.style.background=c; b.title=c;
+      if(c===S.color) b.dataset.cur="1";
+      b.addEventListener("click",()=>setColor(c));
+      box.appendChild(b);
+    }
+  }
+}
+
+/* ---------------- 配線 ---------------- */
+$("#open").onclick=$("#open2").onclick=()=>$("#picker").click();
+$("#picker").onchange=e=>{ loadFiles([...e.target.files]); e.target.value=""; };
+$("#tools").addEventListener("click",e=>{
+  const b=e.target.closest(".tool"); if(!b) return;
+  S.tool=b.dataset.tool;
+  $$(".tool").forEach(t=>t.setAttribute("aria-pressed",String(t===b)));
+});
+$("#mode").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.mode=b.dataset.mode;
+  [...$("#mode").children].forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+});
+function slider(id,key,fmt,post){
+  const el=$(id),out=$(id+"V");
+  el.addEventListener("input",()=>{ S[key]=post?post(+el.value):+el.value; out.textContent=fmt(+el.value); });
+  return el;
+}
+slider("#barrier","barrier",v=>v).addEventListener("change",()=>reseg(active()));
+slider("#close","close",v=>v+"px").addEventListener("change",()=>reseg(active()));
+slider("#minA","minArea",v=>v).addEventListener("change",()=>segStat(active()));
+slider("#tolr","tol",v=>(v/10).toFixed(1),v=>v/10).addEventListener("change",()=>draw());
+slider("#corner","corner",v=>v+"°").addEventListener("change",()=>draw());
+slider("#grow","grow",v=>v+"px").addEventListener("change",()=>draw());
+$("#curves").onchange=e=>{ S.curves=e.target.checked; draw(); };
+$("#key").onchange=e=>{ S.key=e.target.checked; draw(); };
+$("#hideLine").onchange=e=>{ S.hideLine=e.target.checked; draw(); };
+$("#plainBg").onchange=e=>{ S.plainBg=e.target.checked; draw(); };
+$("#useCss").onchange=e=>S.useCss=e.target.checked;
+$("#broadcast").onchange=e=>S.broadcast=e.target.checked;
+$("#reseg").onclick=()=>{
+  const f=active(); if(!f) return;
+  busy(true);
+  setTimeout(()=>{ reseg(f); busy(false); },20);
+};
+$("#autoBase").onclick=()=>{
+  const f=active(); if(!f) return;
+  const L=curL(f); if(!L||L.kind!=="fill"){ toast("塗りの層を選んでください"); return; }
+  segment(f);
+  pushHist(f);
+  let n=0;
+  for(const r of f.seg.regions) if(!r.edge&&r.area>=S.minArea){ f.fill[r.id]=S.color; n++; }
+  if(!n){ f.undo.pop(); toast("囲まれた区画がありません。すき間をふさぐ を上げてみてください"); return; }
+  remember(S.color); draw(); renderList();
+  toast(`${n}区画に色を置きました`);
+};
+$("#autoColor").onclick=()=>{
+  const f=active(); if(!f) return;
+  const L=curL(f); if(!L||L.kind!=="fill"){ toast("塗りの層を選んでください"); return; }
+  segment(f);
+  pushHist(f);
+  let n=0;
+  for(const r of f.seg.regions) if(!r.edge&&r.area>=S.minArea){ f.fill[r.id]=segColor(r.id); n++; }
+  if(!n){ f.undo.pop(); toast("囲まれた区画がありません"); return; }
+  draw(); renderList();
+  toast(`${n}区画に違う色を割りました。あとは色見本の「今の色へ」で置き換えられます`);
+};
+$("#openRef").onclick=()=>$("#refPicker").click();
+$("#refPicker").onchange=e=>{ const b=e.target.files[0]; if(b) loadRef(b); e.target.value=""; };
+$("#refFit").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.refFit=b.dataset.fit;
+  [...$("#refFit").children].forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  applyRefToAll(); const f=active();
+  if(f&&f.refSrc){ showRefThumb(f); draw(); }
+});
+$("#refPick").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  S.refPick=b.dataset.pick;
+  [...$("#refPick").children].forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+});
+function refChanged(){
+  const f=active(); if(!f||!f.refSrc) return;
+  alignRef(f); showRefThumb(f); draw();
+}
+slider("#refScale","refScale",v=>v+"%",v=>v/100).addEventListener("input",refChanged);
+slider("#refOp","refOp",v=>v+"%",v=>v/100).addEventListener("input",()=>{ cRef.style.opacity=S.showRef?S.refOp:0; });
+$("#refReset").onclick=()=>{
+  S.refX=0; S.refY=0; S.refScale=1; S.refFlip=false;
+  $("#refScale").value=100; $("#refScaleV").textContent="100%";
+  refChanged();
+};
+$("#refFlip").onclick=()=>{ S.refFlip=!S.refFlip; refChanged(); };
+slider("#shrink","shrink",v=>v+"px");
+slider("#mergeC","mergeC",v=>v);
+$("#skipInk").onchange=e=>S.skipInk=e.target.checked;
+$("#skipBg").onchange=e=>S.skipBg=e.target.checked;
+$("#showRef").onchange=e=>{ S.showRef=e.target.checked; draw(); };
+$("#colorize").onclick=()=>{
+  const f=active(); if(!f) return;
+  if(!f.ref){ toast("先に見本の色画像をひらいてください"); return; }
+  busy(true);
+  setTimeout(()=>{
+    const n=colorizeFrom(f);
+    busy(false);
+    if(!n){ toast("色を吸える区画がありません（小さい区画は無視 を下げてみてください）"); return; }
+    draw(); renderList();
+    toast(`${n}区画に見本の色を置きました`);
+  },20);
+};
+$("#colorizeAll").onclick=()=>{
+  if(!lastRefBitmap){ toast("先に見本の色画像をひらいてください"); return; }
+  busy(true);
+  setTimeout(()=>{
+    let files=0, total=0;
+    for(const f of S.files){
+      if(!f.refSrc) alignRef(f,lastRefBitmap);
+      const n=colorizeFrom(f);
+      if(n){ files++; total+=n; drawThumb(f); }
+    }
+    busy(false); draw(); renderList();
+    toast(files?`${files}枚・計${total}区画を着色しました`:"着色できる区画がありません");
+  },20);
+};
+$("#doMerge").onclick=()=>{
+  const f=active(); if(!f||!f.seg) return;
+  const n=mergeColors(f,S.mergeC,false);
+  draw(); renderList();
+  toast(n?`${n}色に整理しました`:"色が置かれていません");
+};
+slider("#eraseW","eraseW",v=>v);
+$("#eraseEdge").onclick=()=>{
+  const f=active(); if(!f) return;
+  busy(true);
+  setTimeout(()=>{
+    const W=f.W,H=f.H,bar=S.barrier;
+    const seen=new Uint8Array(W*H);
+    let items=0, total=0;
+    const scan=[];
+    for(let x=0;x<W;x++){ scan.push(x, (H-1)*W+x); }
+    for(let y=0;y<H;y++){ scan.push(y*W, y*W+W-1); }
+    for(const p of scan){
+      if(seen[p]||f.ink[p]<bar) continue;
+      const x=p%W, y=(p-x)/W;
+      const blob=inkBlobAt(f,x,y);
+      if(!blob) continue;
+      for(const q of blob.px) seen[q]=1;
+      pushErase(f, blobShape(f,blob));
+      items++; total+=blob.n;
+    }
+    busy(false);
+    if(!items){ toast("外周につながる線はありません"); return; }
+    segment(f,true); draw(); renderList();
+    toast(`外周につながる${items}かたまり（${total}画素）を消しました`);
+  },20);
+};
+$("#eraseUndoAll").onclick=()=>{
+  const f=active(); if(!f||!f.erase.length) return;
+  pushHist(f,"erase");
+  f.erase=[];
+  rebuildLine(f); segment(f,true); draw(); renderList();
+  toast("消した線をもどしました");
+};
+$("#undo").onclick=()=>step("undo","redo");
+$("#redo").onclick=()=>step("redo","undo");
+$("#clearAll").onclick=()=>{
+  const f=active(); if(!f||!f.seg) return;
+  pushHist(f);
+  f.fill=new Array(f.seg.regions.length).fill(null);
+  draw(); renderList();
+};
+$("#copyAll").onclick=()=>{
+  const f=active(); if(!f||!f.seg) return;
+  let n=0;
+  for(const g of S.files){
+    if(g.id===f.id) continue;
+    const a1=f.vb.w/f.vb.h, a2=g.vb.w/g.vb.h;
+    if(Math.abs(a1-a2)/a1>0.01) continue;
+    segment(g);
+    pushHist(g);
+    const srcL=curL(f);
+    if(!srcL||srcL.kind!=="fill") { toast("塗りの層を選んでください"); return; }
+    const src=srcL.fill;
+    let twin=g.layers.find(l=>l.kind==="fill"&&l.name===srcL.name);
+    if(!twin){ twin=makeFill(g,srcL.name); twin.fill=new Array(g.seg.regions.length).fill(null); g.layers.splice(Math.max(0,lineIndex(g)),0,twin); }
+    if(twin.fill.length!==g.seg.regions.length) twin.fill=new Array(g.seg.regions.length).fill(null);
+    const dst=twin.fill;
+    /* 相手の区画の重心を、こちらの区画に照らして色を引く */
+    for(const r of g.seg.regions){
+      const cx=Math.round((r.box.x0+r.box.x1)/2), cy=Math.round((r.box.y0+r.box.y1)/2);
+      const sx=Math.min(f.W-1,Math.round(cx/g.W*f.W)), sy=Math.min(f.H-1,Math.round(cy/g.H*f.H));
+      const sid=f.seg.lab[sy*f.W+sx];
+      if(sid>=0&&src[sid]) dst[r.id]=src[sid];
+    }
+    drawThumb(g); n++;
+  }
+  renderList();
+  toast(n?`${n}枚へ色を写しました（区画の位置で照合）`:"同じ構図の相手が見つかりません");
+};
+$("#lAdd").onclick=()=>{
+  const f=active(); if(!f) return;
+  const i=f.layers.findIndex(l=>l.id===f.sel);
+  const l=makeFill(f,`層${f.lseq+1}`);
+  if(f.seg) l.fill=new Array(f.seg.regions.length).fill(null);
+  f.layers.splice(i+1,0,l); f.sel=l.id;
+  draw(); renderList();
+};
+$("#lDup").onclick=()=>{
+  const f=active(); if(!f) return;
+  const cur=curL(f); if(!cur||cur.kind!=="fill") return;
+  const l=makeFill(f,cur.name+"のコピー");
+  l.fill=cur.fill.slice(); l.opacity=cur.opacity;
+  f.layers.splice(f.layers.indexOf(cur)+1,0,l); f.sel=l.id;
+  draw(); renderList();
+};
+$("#lUp").onclick=()=>moveLayer(1);
+$("#lDown").onclick=()=>moveLayer(-1);
+$("#lDel").onclick=()=>{
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l||l.kind==="line") return;
+  if(l.kind==="fill" && f.layers.filter(x=>x.kind==="fill").length<=1){ toast("塗りの層は1つ残します"); return; }
+  const i=f.layers.indexOf(l);
+  f.layers.splice(i,1);
+  f.sel=(f.layers[i-1]||f.layers[i]||f.layers[0]).id;
+  f.undo.length=0; f.redo.length=0;
+  draw(); renderList();
+};
+$("#lMerge").onclick=()=>{
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l||l.kind!=="fill") return;
+  const i=f.layers.indexOf(l), below=f.layers[i-1];
+  if(!below||below.kind!=="fill"){ toast("すぐ下に塗りの層がありません"); return; }
+  pushHist(f);
+  l.fill.forEach((c,id)=>{ if(c) below.fill[id]=c; });   /* 上の色を優先して落とす */
+  f.layers.splice(i,1); f.sel=below.id;
+  draw(); renderList();
+};
+$("#lname").addEventListener("input",e=>{
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l) return;
+  l.name=e.target.value.slice(0,40)||"層";
+  renderLayers();
+});
+$("#lop").addEventListener("input",e=>{
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l) return;
+  l.opacity=+e.target.value/100;
+  $("#lopV").textContent=e.target.value+"%";
+  draw();
+});
+function setSilhColor(hex){
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l||l.kind!=="silh") return;
+  l.color=hex.toLowerCase();
+  $("#silhColor").value=l.color; $("#silhHex").value=l.color.toUpperCase();
+  draw();
+}
+$("#silhColor").addEventListener("input",e=>setSilhColor(e.target.value));
+$("#silhHex").addEventListener("change",e=>{
+  const v=e.target.value.trim();
+  if(/^#?[0-9a-f]{6}$/i.test(v)) setSilhColor(v.startsWith("#")?v:"#"+v);
+  else toast("色は #RRGGBB で");
+});
+$("#silhPad").addEventListener("input",e=>{
+  const l=curL(active()); if(!l||l.kind!=="silh") return;
+  l.pad=+e.target.value; $("#silhPadV").textContent=l.pad+"px";
+});
+$("#silhPad").addEventListener("change",()=>{
+  const f=active(); if(!f) return;
+  busy(true); setTimeout(()=>{ draw(); busy(false); },20);
+});
+$("#silhRedo").onclick=()=>{
+  const f=active(); if(!f) return;
+  const l=curL(f); if(!l||l.kind!=="silh") return;
+  l.dKey=""; busy(true);
+  setTimeout(()=>{ draw(); busy(false); toast("白ベタの形を作り直しました"); },20);
+};
+$("#exp1").onclick=()=>{ const f=active(); if(f) exportOneSlow(f); };
+$("#expAll").onclick=exportAll;
+$("#color").addEventListener("input",e=>setColor(e.target.value));
+$("#hex").addEventListener("change",e=>{
+  const v=e.target.value.trim();
+  if(/^#?[0-9a-f]{6}$/i.test(v)) setColor(v.startsWith("#")?v:"#"+v);
+  else{ toast("色は #RRGGBB で"); $("#hex").value=S.color.toUpperCase(); }
+});
+$("#zoomIn").onclick=()=>{ S.zoom=Math.min(8,S.zoom*1.25); applyZoom(); };
+$("#zoomOut").onclick=()=>{ S.zoom=Math.max(.05,S.zoom/1.25); applyZoom(); };
+$("#zoomFit").onclick=fit;
+$("#zoom1").onclick=()=>{ S.zoom=1; applyZoom(); };
+$("#hit").addEventListener("wheel",e=>{
+  const f=active();
+  if(!f||S.tool!=="ref"||!f.refSrc||e.ctrlKey||e.metaKey) return;
+  e.preventDefault(); e.stopPropagation();
+  S.refScale=Math.max(.2,Math.min(3, S.refScale*(e.deltaY<0?1.03:1/1.03)));
+  $("#refScale").value=Math.round(S.refScale*100);
+  $("#refScaleV").textContent=Math.round(S.refScale*100)+"%";
+  alignRef(f); draw();
+},{passive:false});
+$("#viewport").addEventListener("wheel",e=>{
+  if(!active()||!(e.ctrlKey||e.metaKey)) return;
+  e.preventDefault();
+  S.zoom=Math.max(.05,Math.min(8,S.zoom*(e.deltaY<0?1.12:1/1.12)));
+  applyZoom();
+},{passive:false});
+addEventListener("keydown",e=>{
+  if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.code==="Space"){ S.spaceDown=true; $("#hit").classList.add("hand"); e.preventDefault(); return; }
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==="z"){ e.preventDefault(); e.shiftKey?step("redo","undo"):step("undo","redo"); return; }
+  if(e.ctrlKey||e.metaKey) return;
+  if(k==="+"||k==="="){ zoomTo(S.zoom*1.25); e.preventDefault(); return; }
+  if(k==="-"||k==="_"){ zoomTo(S.zoom/1.25); e.preventDefault(); return; }
+  if(k==="0"){ fit(); return; }
+  if(k==="1"){ zoomTo(1); return; }
+  if(k==="2"){ zoomTo(2); return; }
+  if(k==="4"){ zoomTo(4); return; }
+  if(k==="8"){ zoomTo(8); return; }
+  if(S.tool==="ref"&&/^Arrow/.test(e.key)){
+    const f=active(); if(!f||!f.refSrc) return;
+    const d=e.shiftKey?10:1;
+    if(e.key==="ArrowLeft") S.refX-=d;
+    if(e.key==="ArrowRight") S.refX+=d;
+    if(e.key==="ArrowUp") S.refY-=d;
+    if(e.key==="ArrowDown") S.refY+=d;
+    e.preventDefault(); alignRef(f); draw(); return;
+  }
+  const map={a:"fill",e:"clear",i:"pick",s:"same",m:"ref",d:"erase",f:"eraseBlob"};
+  if(map[k]){ const b=$(`.tool[data-tool="${map[k]}"]`); b&&b.click(); }
+});
+addEventListener("keyup",e=>{ if(e.code==="Space"){ S.spaceDown=false; $("#hit").classList.remove("hand"); } });
+const vp=$("#viewport");
+vp.addEventListener("dragover",e=>{ e.preventDefault(); vp.classList.add("dragging"); });
+vp.addEventListener("dragleave",()=>vp.classList.remove("dragging"));
+vp.addEventListener("drop",e=>{
+  e.preventDefault(); vp.classList.remove("dragging");
+  const files=[...e.dataTransfer.files];
+  const svgs=files.filter(x=>/\.svg$/i.test(x.name)||x.type==="image/svg+xml");
+  const imgs=files.filter(x=>/^image\//.test(x.type)&&!/svg/.test(x.type));
+  if(svgs.length) loadFiles(svgs);
+  if(imgs.length) loadRef(imgs[0]);
+  if(!svgs.length&&!imgs.length) toast("SVGか画像ファイルを落としてください");
+});
+addEventListener("resize",applyZoom);
+addEventListener("error",e=>{ busy(false); toast("エラー: "+(e.message||e.error)); });
+addEventListener("unhandledrejection",e=>{ busy(false); toast("エラー: "+((e.reason&&e.reason.message)||e.reason)); });
+
+drawSwatches(); setColor(S.color); renderGroups(); renderLayers();
+</script>
+</body>
+</html>
