@@ -300,6 +300,62 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
   filter:saturate(.82) brightness(.88);
 }
 
+/* ============================================================
+   ウカのしるし — 宵闇に金の上の狐アレンジ
+   (動きは明滅のみ。光る輪は蝕環だけ、の禁則は守る)
+   ============================================================ */
+
+/* 狐火：宵闇にゆっくり明滅する金の粒。ひとつだけ暗紫(情) */
+.foxfire{position:absolute;inset:0;pointer-events:none;z-index:0}
+.foxfire i{
+  position:absolute;width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,206,126,.95) 0%,rgba(217,169,76,.4) 45%,transparent 72%);
+  opacity:0;animation:kitsunebi 8s ease-in-out infinite;
+}
+.foxfire i:nth-child(1){left:58%;top:64%;animation-delay:0s}
+.foxfire i:nth-child(2){left:66%;top:38%;width:5px;height:5px;animation-delay:2.2s;animation-duration:9.5s}
+.foxfire i:nth-child(3){left:76%;top:70%;width:9px;height:9px;animation-delay:4.1s}
+.foxfire i:nth-child(4){left:86%;top:52%;width:5px;height:5px;animation-delay:1.3s;animation-duration:11s}
+.foxfire i:nth-child(5){left:71%;top:24%;width:6px;height:6px;animation-delay:5.6s;animation-duration:10s}
+.foxfire i:nth-child(6){left:92%;top:78%;width:6px;height:6px;animation-delay:3.4s;animation-duration:9s}
+.foxfire i.murasaki{background:radial-gradient(circle,rgba(142,107,158,.9) 0%,rgba(92,68,112,.4) 45%,transparent 72%)}
+@keyframes kitsunebi{
+  0%,100%{opacity:0;transform:translateY(7px)}
+  40%{opacity:.8;transform:translateY(-3px)}
+  58%{opacity:.28;transform:translateY(-6px)}
+  74%{opacity:.6;transform:translateY(-9px)}
+}
+@media (prefers-reduced-motion:reduce){.foxfire i{animation:none;opacity:.3}}
+
+/* 狐の紋：ヒーローの裾に沈む大きな面紋(ウカの署名) */
+.fox-crest{
+  position:absolute;right:6%;bottom:44px;width:230px;height:230px;
+  fill:var(--kindei);opacity:.07;pointer-events:none;z-index:0;
+}
+
+/* site-tag の頭に小さな狐耳マーク */
+.site-tag::before{
+  content:"";display:inline-block;width:1.05em;height:1.05em;margin-right:.7em;
+  vertical-align:-.16em;background:var(--kindei);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 56 L13 43 L8 9 L26 21 Q32 17 38 21 L56 9 L51 43 Z'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 56 L13 43 L8 9 L26 21 Q32 17 38 21 L56 9 L51 43 Z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* 短編の組見出しに稲穂の粒(宇迦之御魂=稲の神さまへの目配せ) */
+.story-group::before{
+  content:"";width:5px;height:5px;border-radius:50%;flex:none;
+  background:var(--kindei-hi);
+  box-shadow:9px 0 0 -1px rgba(217,169,76,.7),17px 0 0 -2px rgba(217,169,76,.4);
+  margin-right:14px;
+}
+
+/* 章カードは撫でると耳先がほんのり金に灯る */
+a.chapter-card:hover .chapter-no,.chapter-card:hover .chapter-no{color:var(--kindei-hi)}
+
+@media (max-width:600px){
+  .fox-crest{width:150px;bottom:56px;right:-12px}
+}
+
 /* ダークトグルはさらに沈める */
 html[data-theme="dark"]{--yoiyami:#0C0C15;--panel:#0A0913;--geppaku:#DCD7CC}
 html[data-theme="dark"] body{background:#0C0C15}
