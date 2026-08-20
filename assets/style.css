@@ -1,885 +1,327 @@
-/* ============================================
-   クリプト忍者のウカ — 『空の狐と地上のウサギ』
-   ============================================ */
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&display=swap");
 
-:root {
-  --sky-deep: #4a140e;   /* 深緋 */
-  --sky-mid: #942a1b;    /* 緋 */
-  --sky-dawn: #c9512f;   /* 朱 */
-  --fox: #bf3a24;        /* 朱アクセント */
-  --fox-bright: #f0c072; /* 金 */
-  --paper: #fbf6ec;      /* 生成りの白 */
-  --ink: #34261e;
-  --ink-soft: #6d5a4b;
-  --line: #e7d8bf;
-  --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
-    "Noto Serif JP", serif;
+/* ============================================================
+   クリプト忍者のウカ — 宵闇に金
+   月蝕綺譚 -Luna Occulta- の公開トンマナに準拠した装い
+   （地=宵闇藍 / 主=金泥は線と粒 / 徴=蝕紅は5%以下 / 署名=蝕環）
+   ============================================================ */
+
+:root{
+  --yoiyami:    #131320;   /* 地・宵闇藍 */
+  --yoiyami-hi: #1B1B2E;
+  --panel:      #100E1C;
+  --bubble:     #181626;
+  --kindei:     #D9A94C;   /* 主・金泥 */
+  --kindei-hi:  #F0CE7E;
+  --shu:        #C93A2E;   /* 徴・蝕紅（面積5%以下） */
+  --geppaku:    #E8E4D8;   /* 静・月白＝本文 */
+  --anshi:      #5C4470;   /* 情・暗紫 */
+  --sakura:     #8E6B9E;
+  --sub:        #9D93B5;
+  --line:       rgba(217,169,76,.22);
+  --serif: "Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+
+  /* 旧変数の受け皿（他ページが参照していても壊れないように） */
+  --sky-deep: var(--yoiyami); --sky-mid: var(--yoiyami-hi); --sky-dawn: var(--panel);
+  --fox: var(--shu); --fox-bright: var(--kindei-hi);
+  --paper: var(--yoiyami); --ink: var(--geppaku); --ink-soft: var(--sub);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:var(--serif);
+  background:var(--yoiyami);
+  color:var(--geppaku);
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
-
-html {
-  font-size: 16px;
-}
-
-body {
-  font-family: var(--serif);
-  background: var(--paper);
-  color: var(--ink);
-  line-height: 1.9;
-  -webkit-font-smoothing: antialiased;
-}
-
-a {
-  color: inherit;
-}
+a{color:var(--kindei-hi);text-decoration:none}
+main{display:block}
+img{max-width:100%}
+::selection{background:rgba(217,169,76,.25)}
 
 /* ---------- ヘッダー / ヒーロー ---------- */
-
-.site-header {
-  background: linear-gradient(170deg, var(--sky-deep) 0%, var(--sky-mid) 55%, var(--sky-dawn) 100%);
-  color: #f4efe4;
-  position: relative;
-  overflow: hidden;
-}
-
-.site-header::after {
-  /* 大風輪のシルエット */
-  content: "";
-  position: absolute;
-  right: -140px;
-  top: -140px;
-  width: 420px;
-  height: 420px;
+.site-header{
+  position:relative;overflow:hidden;
+  color:var(--geppaku);
   background:
-    conic-gradient(
-      from 0deg,
-      rgba(240, 192, 114, 0.16) 0deg 12deg, transparent 12deg 40deg,
-      rgba(240, 192, 114, 0.16) 40deg 52deg, transparent 52deg 80deg,
-      rgba(240, 192, 114, 0.16) 80deg 92deg, transparent 92deg 120deg,
-      rgba(240, 192, 114, 0.16) 120deg 132deg, transparent 132deg 160deg,
-      rgba(240, 192, 114, 0.16) 160deg 172deg, transparent 172deg 200deg,
-      rgba(240, 192, 114, 0.16) 200deg 212deg, transparent 212deg 240deg,
-      rgba(240, 192, 114, 0.16) 240deg 252deg, transparent 252deg 280deg,
-      rgba(240, 192, 114, 0.16) 280deg 292deg, transparent 292deg 320deg,
-      rgba(240, 192, 114, 0.16) 320deg 332deg, transparent 332deg 360deg
-    );
-  border-radius: 50%;
-  pointer-events: none;
+    radial-gradient(120% 90% at 78% -20%, #241F3E 0%, #17142A 45%, var(--yoiyami) 100%);
+  border-bottom:1px solid var(--line);
 }
-
-.header-inner {
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 4.5rem 1.5rem 4rem;
-  position: relative;
-  z-index: 1;
+/* 蝕環：一筆の円相が約1/3、闇に喰われている（IPの視覚署名） */
+.site-header::after{
+  content:"";position:absolute;pointer-events:none;
+  right:-130px;top:-150px;width:560px;height:560px;border-radius:50%;
+  background:conic-gradient(from -108deg,
+    rgba(201,58,46,0) 0deg,
+    rgba(201,58,46,.92) 18deg,
+    rgba(201,58,46,.92) 222deg,
+    rgba(201,58,46,0) 240deg,
+    transparent 240deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 46.4%, #000 47% 48.8%, transparent 49.4%);
+          mask:radial-gradient(circle, transparent 0 46.4%, #000 47% 48.8%, transparent 49.4%);
+  opacity:.55;
 }
-
-.site-tag {
-  font-size: 0.85rem;
-  letter-spacing: 0.35em;
-  color: var(--fox-bright);
-  margin-bottom: 1rem;
+.header-inner{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5.5rem 1.5rem 3.2rem}
+.site-tag{
+  font-size:.72rem;letter-spacing:.42em;color:var(--kindei);
+  text-transform:uppercase;margin-bottom:1.6rem;font-weight:600;
 }
-
-.site-title {
-  font-size: clamp(1.9rem, 5vw, 3.1rem);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
+.site-title{
+  font-size:clamp(2.5rem,7vw,4.2rem);font-weight:800;letter-spacing:.12em;
+  line-height:1.25;margin-bottom:1.6rem;
+  background:linear-gradient(180deg,var(--kindei-hi) 0%,var(--kindei) 62%,#A9803A 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 34px rgba(240,206,126,.16);
 }
-
-.site-subtitle {
-  margin-top: 1.2rem;
-  font-size: clamp(0.95rem, 2.4vw, 1.1rem);
-  color: #d9d2c2;
-  letter-spacing: 0.08em;
-  max-width: 36em;
+.site-subtitle{
+  max-width:34em;color:#C9C3D8;font-size:1rem;line-height:2.05;font-weight:400;
 }
+.hero-cta{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2.4rem}
 
-.site-nav {
-  border-top: 1px solid rgba(244, 239, 228, 0.2);
-  position: relative;
-  z-index: 1;
+/* ---------- ナビ ---------- */
+.site-nav{
+  position:relative;z-index:1;
+  border-top:1px solid var(--line);
+  background:rgba(16,14,28,.55);
+  backdrop-filter:saturate(120%);
 }
-
-.site-nav ul {
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  list-style: none;
-  display: flex;
-  gap: 2rem;
+.site-nav ul{
+  max-width:960px;margin:0 auto;padding:.95rem 1.5rem;
+  display:flex;flex-wrap:wrap;gap:2.2rem;list-style:none;
 }
-
-.site-nav a {
-  display: block;
-  padding: 0.8rem 0;
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  color: #e8e2d3;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
+.site-nav a{
+  font-size:.86rem;letter-spacing:.2em;color:#BDB4D0;
+  padding-bottom:.25rem;border-bottom:1px solid transparent;transition:color .2s,border-color .2s;
 }
+.site-nav a:hover{color:var(--kindei-hi);border-bottom-color:var(--kindei)}
 
-.site-nav a:hover {
-  color: var(--fox-bright);
-  border-bottom-color: var(--fox-bright);
+/* ---------- ボタン（金は線。面でベタ塗りしない） ---------- */
+.btn{
+  display:inline-block;padding:.72rem 1.9rem;border-radius:5px;
+  font-family:var(--serif);font-size:.9rem;font-weight:700;letter-spacing:.2em;
+  text-decoration:none;cursor:pointer;transition:transform .09s,box-shadow .2s,border-color .2s;
+  border:1px solid var(--line);background:linear-gradient(180deg,#232033,#161320);
+  color:var(--kindei-hi);box-shadow:0 4px 10px rgba(0,0,0,.55);
 }
+.btn:hover{border-color:var(--kindei);box-shadow:0 6px 18px rgba(0,0,0,.6)}
+.btn:active{transform:scale(.965)}
+.btn-primary{border-color:rgba(226,193,118,.75);color:var(--kindei-hi)}
+.btn-primary:hover{border-color:var(--kindei-hi);box-shadow:0 0 0 1px rgba(240,206,126,.25),0 8px 22px rgba(0,0,0,.6)}
+.btn-ghost{background:transparent;border-color:rgba(232,228,216,.28);color:var(--geppaku)}
+.btn-ghost:hover{border-color:var(--kindei);color:var(--kindei-hi)}
+.btn-light{background:linear-gradient(180deg,#232033,#161320);border-color:var(--line);color:var(--kindei-hi)}
+.btn-light:hover{border-color:var(--kindei)}
 
-/* ---------- 本文レイアウト ---------- */
-
-main {
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 0 1.5rem;
+/* ---------- セクション（闇の余白が主役。リズムをつける） ---------- */
+.section{max-width:960px;margin:0 auto;padding:6rem 1.5rem 0}
+.section:last-of-type{padding-bottom:5rem}
+.section-title{
+  font-size:clamp(1.5rem,3.4vw,2rem);font-weight:800;letter-spacing:.16em;
+  color:var(--kindei-hi);margin-bottom:.5rem;position:relative;padding-left:1.1rem;
 }
-
-.section {
-  padding: 4rem 0 1rem;
+.section-title::after{
+  content:"";position:absolute;left:0;top:.28em;width:3px;height:1.1em;
+  background:linear-gradient(180deg,var(--kindei-hi),transparent);border-radius:2px;
 }
+.section-lead{color:var(--sub);font-size:.94rem;margin-bottom:2.4rem;max-width:38em}
+.section-more{margin-top:2rem}
+.section-more a{color:var(--kindei);font-size:.88rem;letter-spacing:.14em;border-bottom:1px solid var(--line);padding-bottom:2px}
+.section-more a:hover{color:var(--kindei-hi);border-bottom-color:var(--kindei)}
 
-.section-title {
-  font-size: 1.5rem;
-  letter-spacing: 0.25em;
-  color: var(--sky-deep);
-  margin-bottom: 0.6rem;
+.story-group{
+  margin:3rem 0 1.2rem;font-size:.95rem;font-weight:700;letter-spacing:.22em;
+  color:var(--sakura);display:flex;align-items:center;gap:1em;
 }
+.story-group::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
 
-.section-title::after {
-  content: "";
-  display: block;
-  width: 3.2em;
-  height: 2px;
-  margin-top: 0.55rem;
-  background: linear-gradient(90deg, var(--fox), transparent);
+.story-intro{color:#C4BED4;max-width:40em}
+.story-intro p + p{margin-top:1rem}
+.story-intro .work-title,.work-title{color:var(--kindei-hi);font-weight:600}
+
+/* ---------- 章カード（羽二重＝縁なし・影で浮かす） ---------- */
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1rem}
+.chapter-card{
+  display:block;position:relative;padding:1.5rem 1.4rem;border-radius:10px;
+  background:radial-gradient(120% 140% at 50% -60%,#24203E 0%,#181432 42%,#110F1E 100%);
+  border:none;text-decoration:none;color:inherit;overflow:hidden;
+  box-shadow:0 18px 44px rgba(0,0,0,.55),0 4px 14px rgba(0,0,0,.5);
+  transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s;
 }
-
-.section-lead {
-  color: var(--ink-soft);
-  max-width: 42em;
-  margin-bottom: 2rem;
+.chapter-card::before{
+  content:"";position:absolute;left:12%;right:12%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(232,228,216,.34),transparent);
 }
-
-/* ---------- あらすじ ---------- */
-
-.story-intro {
-  background: #fffdf7;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 2rem 2.2rem;
-  max-width: 46em;
+a.chapter-card:hover,.chapter-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 24px 56px rgba(0,0,0,.62),0 0 0 1px rgba(217,169,76,.28);
 }
-
-.story-intro p + p {
-  margin-top: 1em;
+.chapter-no{
+  font-size:.7rem;letter-spacing:.34em;color:var(--kindei);font-weight:700;
+  display:block;margin-bottom:.7rem;
 }
-
-.story-intro .work-title {
-  font-size: 1.25rem;
-  letter-spacing: 0.15em;
-  color: var(--sky-deep);
-  margin-bottom: 1rem;
+.chapter-name{font-size:1.12rem;font-weight:700;letter-spacing:.06em;color:var(--geppaku);margin-bottom:.6rem;line-height:1.6}
+.chapter-teaser{font-size:.85rem;color:var(--sub);line-height:1.85}
+.chapter-card.coming{opacity:.42;box-shadow:none;background:var(--panel)}
+.chapter-card.coming .chapter-no{color:var(--sub)}
+.badge-soon{
+  display:inline-block;margin-left:.5em;padding:.1rem .7rem;border-radius:999px;
+  font-size:.66rem;letter-spacing:.16em;color:var(--shu);
+  border:1px solid rgba(201,58,46,.5);background:rgba(201,58,46,.08);
 }
-
-/* ---------- 小説一覧 ---------- */
-
-.chapter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 1.1rem;
-}
-
-.chapter-card {
-  display: block;
-  text-decoration: none;
-  background: #fffdf7;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 1.4rem 1.5rem 1.3rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-a.chapter-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(74, 20, 14, 0.16);
-  border-color: var(--fox);
-}
-
-.chapter-no {
-  font-size: 0.78rem;
-  letter-spacing: 0.3em;
-  color: var(--fox);
-  margin-bottom: 0.4rem;
-}
-
-.chapter-name {
-  font-size: 1.15rem;
-  letter-spacing: 0.1em;
-  color: var(--sky-deep);
-  margin-bottom: 0.55rem;
-}
-
-.chapter-teaser {
-  font-size: 0.86rem;
-  color: var(--ink-soft);
-  line-height: 1.75;
-}
-
-.chapter-card.coming {
-  background: transparent;
-  border-style: dashed;
-  opacity: 0.75;
-}
-
-.chapter-card.coming .chapter-no {
-  color: var(--ink-soft);
-}
-
-.badge-soon {
-  display: inline-block;
-  margin-top: 0.6rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  color: var(--ink-soft);
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  padding: 0.1rem 0.7rem;
-}
-
-.section-more {
-  margin-top: 1.4rem;
-  text-align: right;
-}
-
-.section-more a {
-  font-size: 0.92rem;
-  letter-spacing: 0.12em;
-  color: var(--sky-mid);
-  text-decoration: none;
-  border-bottom: 1px solid var(--fox);
-  padding-bottom: 0.15em;
-}
-
-.section-more a:hover {
-  color: var(--fox);
-}
-
-.story-group {
-  margin: 2.4rem 0 1rem;
-  font-size: 1.05rem;
-  letter-spacing: 0.2em;
-  color: var(--sky-mid);
-  display: flex;
-  align-items: center;
-  gap: 0.8em;
-}
-
-.story-group::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
+#novels .chapter-card{min-height:158px}
+#stories .chapter-card{padding:1.15rem 1.2rem}
+#stories .chapter-name{font-size:1rem}
+#stories .chapter-teaser{font-size:.8rem}
 
 /* ---------- 登場人物 ---------- */
-
-.chara-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 1.1rem;
+.chara-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem}
+.chara-card{
+  padding:1.5rem 1.3rem;border-radius:10px;border:none;
+  background:radial-gradient(120% 140% at 50% -60%,#24203E 0%,#181432 42%,#110F1E 100%);
+  box-shadow:0 16px 38px rgba(0,0,0,.52);
 }
+.chara-card.rabbit{background:radial-gradient(120% 140% at 50% -60%,#241E33 0%,#1A1528 42%,#110F1E 100%)}
+.chara-name{font-size:1.15rem;font-weight:700;color:var(--kindei-hi);letter-spacing:.08em;margin-bottom:.35rem}
+.chara-role{font-size:.74rem;letter-spacing:.2em;color:var(--sakura);margin-bottom:.9rem}
+.chara-card.rabbit .chara-role{color:var(--anshi)}
+.chara-desc{font-size:.86rem;color:var(--sub);line-height:1.9}
 
-.chara-card {
-  background: #fffdf7;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--fox);
-  border-radius: 8px;
-  padding: 1.2rem 1.4rem;
+/* ---------- 特集（キービジュアル） ---------- */
+.featured-work{
+  position:relative;margin:0 auto;max-width:960px;
+  border-radius:12px;overflow:hidden;
+  background:radial-gradient(130% 150% at 70% -40%,#2A2447 0%,#181432 45%,#0E0C18 100%);
+  box-shadow:0 26px 70px rgba(0,0,0,.6);
 }
-
-.chara-card.rabbit {
-  border-left-color: var(--sky-mid);
+.featured-work::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(19,19,32,.92) 0%,rgba(19,19,32,.55) 46%,transparent 72%);
 }
-
-.chara-name {
-  font-size: 1.05rem;
-  letter-spacing: 0.12em;
-  color: var(--sky-deep);
+.featured-inner{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:1rem;align-items:center}
+.featured-text{padding:3.2rem 2.4rem}
+.featured-badge{
+  display:inline-block;padding:.18rem .95rem;border-radius:999px;margin-bottom:1rem;
+  font-size:.68rem;letter-spacing:.24em;color:var(--kindei);
+  border:1px solid var(--line);background:rgba(217,169,76,.06);
 }
-
-.chara-role {
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  color: var(--fox);
-  margin-bottom: 0.5rem;
-}
-
-.chara-card.rabbit .chara-role {
-  color: var(--sky-mid);
-}
-
-.chara-desc {
-  font-size: 0.86rem;
-  color: var(--ink-soft);
-  line-height: 1.8;
-}
-
-/* ---------- 読書ページ ---------- */
-
-.reader-header {
-  background: linear-gradient(170deg, var(--sky-deep), var(--sky-mid));
-  color: #f4efe4;
-}
-
-.reader-header .header-inner {
-  padding: 3rem 1.5rem 2.6rem;
-}
-
-.reader-work {
-  font-size: 0.85rem;
-  letter-spacing: 0.25em;
-  color: var(--fox-bright);
-  margin-bottom: 0.8rem;
-}
-
-.reader-work a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.reader-work a:hover {
-  text-decoration: underline;
-}
-
-.reader-title {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  letter-spacing: 0.15em;
-  font-weight: 600;
-}
-
-.novel-body {
-  max-width: 38em;
-  margin: 0 auto;
-  padding: 3.5rem 1.5rem 2rem;
-  font-size: 1.05rem;
-  line-height: 2.15;
-  letter-spacing: 0.04em;
-}
-
-.novel-body p {
-  margin-block-end: 0.4em;
-  text-align: justify;
-}
-
-.novel-body .sep {
-  text-align: center;
-  margin: 2.4em 0;
-  color: var(--fox);
-  letter-spacing: 1em;
-  text-indent: 1em;
-}
-
-.novel-body .chapter-end {
-  margin-top: 3em;
-  text-align: right;
-  color: var(--ink-soft);
-}
-
-.novel-body .fin {
-  margin-top: 3.5em;
-  text-align: center;
-  letter-spacing: 0.4em;
-  color: var(--sky-deep);
-  font-size: 1.15rem;
-}
-
-/* ---------- 章送りナビ ---------- */
-
-.chapter-nav {
-  max-width: 38em;
-  margin: 0 auto;
-  padding: 1.5rem 1.5rem 4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  border-top: 1px solid var(--line);
-}
-
-.chapter-nav a {
-  text-decoration: none;
-  color: var(--sky-deep);
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  padding: 0.5rem 0.2rem;
-}
-
-.chapter-nav a:hover {
-  color: var(--fox);
-}
-
-.chapter-nav .to-index {
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
-  color: var(--ink-soft);
-}
-
-.chapter-nav .nav-empty {
-  color: transparent;
-  pointer-events: none;
-  user-select: none;
-}
+.featured-title{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:.08em;color:var(--geppaku);margin-bottom:1rem;line-height:1.5}
+.featured-desc{color:#C4BED4;font-size:.94rem;margin-bottom:1.6rem;max-width:30em}
+.featured-actions{display:flex;flex-wrap:wrap;gap:.8rem}
+.featured-art{width:100%;height:100%;min-height:320px;object-fit:cover;display:block;filter:saturate(.72) brightness(.82) contrast(1.06)}
 
 /* ---------- フッター ---------- */
+.site-footer{
+  margin-top:6rem;border-top:1px solid var(--line);
+  background:var(--panel);color:var(--sub);
+}
+.footer-inner{max-width:960px;margin:0 auto;padding:2.6rem 1.5rem;font-size:.8rem;line-height:2}
+.footer-inner a{color:var(--kindei)}
+.footer-inner a:hover{color:var(--kindei-hi)}
 
-.site-footer {
-  margin-top: 4rem;
-  background: var(--sky-deep);
-  color: #b9b3a4;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
+/* ============================================================
+   読み物ページ
+   ============================================================ */
+.reader-header{background:var(--panel);border-bottom:1px solid var(--line)}
+.reader-header .header-inner{padding:1.6rem 1.5rem}
+.reader-work{font-size:.76rem;letter-spacing:.24em;color:var(--sub);margin-bottom:.5rem}
+.reader-work a{color:var(--kindei);text-decoration:none}
+.reader-work a:hover{color:var(--kindei-hi);text-decoration:underline}
+.reader-title{font-size:1.5rem;font-weight:700;letter-spacing:.1em;color:var(--kindei-hi)}
+.reader-meta{font-size:.78rem;color:var(--sub);letter-spacing:.14em;margin-top:.4rem}
+
+.reader-tools{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.reader-tools button{
+  font-family:var(--serif);font-size:.76rem;letter-spacing:.14em;
+  padding:.38rem 1rem;border-radius:5px;cursor:pointer;
+  background:linear-gradient(180deg,#232033,#161320);
+  border:1px solid var(--line);color:var(--kindei-hi);transition:border-color .2s;
+}
+.reader-tools button:hover{border-color:var(--kindei)}
+
+.reader-toc{max-width:760px;margin:1.4rem auto 0;padding:0 1.5rem}
+.reader-toc summary{cursor:pointer;font-size:.84rem;letter-spacing:.18em;color:var(--kindei);padding:.4rem 0}
+.reader-toc summary:hover{color:var(--kindei-hi)}
+.reader-toc ol{margin:.6rem 0 0 1.2rem;padding:0;font-size:.86rem;line-height:2.1}
+.reader-toc a{color:#BDB4D0;text-decoration:none}
+.reader-toc a:hover{color:var(--kindei-hi)}
+.reader-toc .current{color:var(--kindei-hi);font-weight:700}
+
+.novel-body{
+  max-width:37em;margin:0 auto;padding:3.4rem 1.6rem 5rem;
+  font-size:1.05rem;line-height:2.15;color:var(--geppaku);letter-spacing:.02em;
+}
+.novel-body p{margin-bottom:1.7em;text-indent:1em}
+.novel-body .sep{text-align:center;color:var(--kindei);opacity:.6;margin:2.6em 0;letter-spacing:1em}
+.novel-body .fin{text-align:center;color:var(--kindei);letter-spacing:.5em;margin-top:3em}
+.novel-body .chapter-end{margin-top:3.4em;text-align:center;color:var(--sub)}
+html[data-fontsize="large"] .novel-body{font-size:1.2rem;line-height:2.25}
+html[data-fontsize="small"] .novel-body{font-size:.94rem;line-height:2.05}
+html[data-writing="tate"] .novel-body{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  max-width:none;height:78vh;padding:2.6rem 2rem;overflow-x:auto;
+}
+html[data-writing="tate"] .novel-body .sep{margin:2.6em 0}
+html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4em}
+
+.chapter-nav{
+  max-width:760px;margin:0 auto;padding:0 1.5rem 5rem;
+  display:flex;justify-content:space-between;gap:1rem;
+}
+.chapter-nav a{
+  font-size:.86rem;letter-spacing:.14em;color:var(--kindei-hi);text-decoration:none;
+  padding:.5rem .2rem;border-bottom:1px solid transparent;
+}
+.chapter-nav a:hover{border-bottom-color:var(--kindei)}
+.chapter-nav .nav-empty{color:#3E3752}
+.chapter-nav .to-index{color:var(--sub)}
+
+.reading-progress{position:fixed;top:0;left:0;right:0;height:2px;background:transparent;z-index:50}
+#reading-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--kindei),var(--kindei-hi))}
+
+.resume-chip{
+  position:fixed;right:1.2rem;bottom:1.2rem;z-index:60;
+  padding:.6rem 1.1rem;border-radius:10px;font-size:.8rem;letter-spacing:.1em;
+  background:var(--bubble);color:var(--kindei-hi);border:1px solid var(--line);
+  box-shadow:0 14px 30px rgba(0,0,0,.6);transition:opacity .4s;
+}
+.resume-chip.fade{opacity:0}
+/* ゲーム集のカードサムネ(<img class="card-thumb"> 直付け) */
+.card-thumb{
+  display:block;
+  width:calc(100% + 2.8rem);
+  margin:-1.5rem -1.4rem 1rem;
+  height:160px;
+  object-fit:cover;object-position:center top;
+  border-radius:10px 10px 0 0;
+  background:#0E0C18;
+  filter:saturate(.82) brightness(.88);
 }
 
-.footer-inner {
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 2.2rem 1.5rem;
-  line-height: 2;
+/* ダークトグルはさらに沈める */
+html[data-theme="dark"]{--yoiyami:#0C0C15;--panel:#0A0913;--geppaku:#DCD7CC}
+html[data-theme="dark"] body{background:#0C0C15}
+html[data-theme="dark"] .reader-tools button{background:linear-gradient(180deg,#1B1828,#100E1A);color:var(--kindei-hi)}
+html[data-theme="dark"] .chapter-nav .to-index{color:var(--sub)}
+html[data-theme="dark"] .reader-toc a{color:#ADA4C0}
+html[data-theme="dark"] .novel-body .sep,
+html[data-theme="dark"] .novel-body .fin{color:var(--kindei)}
+html[data-theme="dark"] .chapter-nav a{color:var(--kindei-hi)}
+html[data-theme="dark"] .chapter-nav .nav-empty{color:#332C46}
+
+@media (max-width:700px){
+  .featured-inner{grid-template-columns:1fr}
+  .featured-text{padding:2.2rem 1.5rem}
+  .featured-art{min-height:210px;order:-1}
+  .featured-work::after{background:linear-gradient(180deg,transparent 0%,rgba(19,19,32,.9) 62%)}
 }
-
-.footer-inner a {
-  color: #d9d2c2;
-}
-
-@media (max-width: 600px) {
-  .site-nav ul {
-    gap: 1.2rem;
-  }
-  .novel-body {
-    font-size: 1rem;
-  }
-}
-
-
-/* ---------- ヒーローCTA ---------- */
-
-.hero-cta {
-  margin-top: 1.9rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-block;
-  padding: 0.68rem 1.7rem;
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: 0.95rem;
-  letter-spacing: 0.15em;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-}
-
-.btn-primary {
-  background: var(--fox-bright);
-  color: #4a140e;
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background: #ffd68f;
-}
-
-.btn-ghost {
-  border: 1px solid rgba(240, 192, 114, 0.65);
-  color: #f6e8cf;
-}
-
-.btn-ghost:hover {
-  border-color: var(--fox-bright);
-  color: var(--fox-bright);
-}
-
-.btn-light {
-  background: var(--paper);
-  color: #7a2416;
-  font-weight: 600;
-}
-
-.btn-light:hover {
-  background: #fff;
-}
-
-/* ---------- 看板長編 ---------- */
-
-.featured-work {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #571a12 0%, #a03322 55%, #c9512f 100%);
-  color: #f9efdd;
-  border-radius: 14px;
-  padding: 2.5rem 2.7rem;
-  margin-bottom: 2.2rem;
-  box-shadow: 0 16px 34px rgba(74, 20, 14, 0.28);
-}
-
-.featured-work::after {
-  content: "";
-  position: absolute;
-  right: -110px;
-  bottom: -110px;
-  width: 320px;
-  height: 320px;
-  background:
-    conic-gradient(
-      from 0deg,
-      rgba(240, 192, 114, 0.2) 0deg 12deg, transparent 12deg 40deg,
-      rgba(240, 192, 114, 0.2) 40deg 52deg, transparent 52deg 80deg,
-      rgba(240, 192, 114, 0.2) 80deg 92deg, transparent 92deg 120deg,
-      rgba(240, 192, 114, 0.2) 120deg 132deg, transparent 132deg 160deg,
-      rgba(240, 192, 114, 0.2) 160deg 172deg, transparent 172deg 200deg,
-      rgba(240, 192, 114, 0.2) 200deg 212deg, transparent 212deg 240deg,
-      rgba(240, 192, 114, 0.2) 240deg 252deg, transparent 252deg 280deg,
-      rgba(240, 192, 114, 0.2) 280deg 292deg, transparent 292deg 320deg,
-      rgba(240, 192, 114, 0.2) 320deg 332deg, transparent 332deg 360deg
-    );
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.featured-inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 2.2rem;
-  align-items: stretch;
-}
-
-.featured-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.featured-art {
-  width: min(320px, 36%);
-  border-radius: 10px;
-  object-fit: cover;
-  object-position: center top;
-  box-shadow: 0 10px 26px rgba(30, 8, 5, 0.45);
-  border: 1px solid rgba(240, 192, 114, 0.35);
-}
-
-@media (max-width: 700px) {
-  .featured-inner {
-    flex-direction: column-reverse;
-  }
-  .featured-art {
-    width: 100%;
-    max-height: 300px;
-  }
-}
-
-.featured-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  letter-spacing: 0.25em;
-  border: 1px solid rgba(240, 192, 114, 0.7);
-  color: var(--fox-bright);
-  border-radius: 999px;
-  padding: 0.18rem 0.95rem;
-  margin-bottom: 1.1rem;
-}
-
-.featured-title {
-  font-size: clamp(1.5rem, 4vw, 2.15rem);
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  margin-bottom: 0.8rem;
-}
-
-.featured-desc {
-  max-width: 40em;
-  font-size: 0.95rem;
-  line-height: 2;
-  color: #f4e3c6;
-  margin-bottom: 1.7rem;
-  position: relative;
-  z-index: 1;
-}
-
-.featured-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
-
-/* ---------- セクション別の強弱 ---------- */
-
-#novels .chapter-card {
-  border-left: 3px solid var(--fox);
-}
-
-#stories .chapter-card {
-  padding: 1.15rem 1.25rem 1.1rem;
-}
-
-#stories .chapter-name {
-  font-size: 1.05rem;
-}
-
-#stories .chapter-teaser {
-  font-size: 0.82rem;
-}
-
-
-/* ============================================
-   読書体験
-   ============================================ */
-
-/* ---------- 進捗バー ---------- */
-
-.reading-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 60;
-  pointer-events: none;
-}
-
-#reading-progress-bar {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: linear-gradient(90deg, var(--fox), var(--fox-bright));
-  transition: width 0.1s linear;
-}
-
-/* ---------- 読書設定ツールバー ---------- */
-
-.reader-tools {
-  position: fixed;
-  right: 0.9rem;
-  bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  z-index: 50;
-}
-
-.reader-tools button {
-  width: 2.9rem;
-  height: 2.9rem;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: #fffdf7;
-  color: var(--ink);
-  font-family: var(--serif);
-  font-size: 0.95rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(74, 20, 14, 0.16);
-  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-}
-
-.reader-tools button:hover {
-  border-color: var(--fox);
-  color: var(--fox);
-  transform: translateY(-2px);
-}
-
-/* ---------- 読了目安 ---------- */
-
-.reader-meta {
-  margin-top: 0.9rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
-  color: #eed3a4;
-}
-
-/* ---------- しおりチップ ---------- */
-
-.resume-chip {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 1.2rem;
-  z-index: 70;
-  background: var(--sky-deep);
-  color: #f6e5c8;
-  border: 1px solid rgba(240, 192, 114, 0.55);
-  border-radius: 999px;
-  padding: 0.65rem 1.5rem;
-  font-family: var(--serif);
-  font-size: 0.9rem;
-  letter-spacing: 0.12em;
-  cursor: pointer;
-  box-shadow: 0 8px 22px rgba(74, 20, 14, 0.35);
-  transition: opacity 1s ease;
-}
-
-.resume-chip.fade {
-  opacity: 0;
-}
-
-/* ---------- 目次(読書ページ) ---------- */
-
-.reader-toc {
-  max-width: 38em;
-  margin: 0 auto;
-  padding: 0 1.5rem 1.6rem;
-}
-
-.reader-toc summary {
-  cursor: pointer;
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  color: var(--ink-soft);
-}
-
-.reader-toc summary:hover {
-  color: var(--fox);
-}
-
-.reader-toc ol {
-  list-style: none;
-  margin-top: 0.9rem;
-  columns: 14em 3;
-  column-gap: 2em;
-  font-size: 0.88rem;
-  line-height: 2.1;
-}
-
-.reader-toc a {
-  text-decoration: none;
-  color: var(--sky-mid);
-}
-
-.reader-toc a:hover {
-  color: var(--fox);
-  text-decoration: underline;
-}
-
-.reader-toc .current {
-  color: var(--fox);
-  font-weight: 600;
-}
-
-/* ---------- 章送りをボタン状に ---------- */
-
-.chapter-nav a {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.55rem 1.25rem;
-  background: #fffdf7;
-}
-
-.chapter-nav a:hover {
-  border-color: var(--fox);
-}
-
-.chapter-nav .to-index,
-.chapter-nav .nav-empty {
-  border: none;
-  background: transparent;
-  padding: 0.55rem 0.3rem;
-}
-
-/* ---------- 文字サイズ ---------- */
-
-html[data-fontsize="small"] .novel-body {
-  font-size: 0.95rem;
-}
-
-html[data-fontsize="large"] .novel-body {
-  font-size: 1.22rem;
-  line-height: 2.25;
-}
-
-/* ---------- 夜間モード ---------- */
-
-html[data-theme="dark"] {
-  --paper: #191210;
-  --ink: #e8dcc6;
-  --ink-soft: #b3a189;
-  --line: #48382c;
-}
-
-html[data-theme="dark"] body {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-html[data-theme="dark"] .reader-tools button,
-html[data-theme="dark"] .chapter-nav a {
-  background: #251b15;
-  color: #e9cf9f;
-}
-
-html[data-theme="dark"] .chapter-nav .to-index,
-html[data-theme="dark"] .chapter-nav .nav-empty {
-  background: transparent;
-}
-
-html[data-theme="dark"] .reader-toc a {
-  color: #d8b77e;
-}
-
-html[data-theme="dark"] .novel-body .fin {
-  color: #e9cf9f;
-}
-
-html[data-theme="dark"] .novel-body .sep {
-  color: #d8955f;
-}
-
-/* ---------- 縦書きモード ---------- */
-
-html[data-writing="tate"] .novel-body {
-  writing-mode: vertical-rl;
-  max-width: none;
-  width: 100%;
-  height: min(78vh, 46em);
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2.5rem 1.5rem;
-  margin: 0;
-}
-
-html[data-writing="tate"] .novel-body .sep {
-  letter-spacing: normal;
-  text-indent: 0;
-  margin: 0 2.2em;
-}
-
-html[data-writing="tate"] .novel-body .chapter-end {
-  margin-top: 0;
-  margin-block-start: 3em;
-}
-
-
-/* ---------- ゲームカードのサムネイル ---------- */
-
-.card-thumb {
-  display: block;
-  width: calc(100% + 3rem);
-  margin: -1.4rem -1.5rem 1rem;
-  height: 160px;
-  object-fit: cover;
-  object-position: center top;
-  border-radius: 9px 9px 0 0;
-  background: #1c1410;
-  border-bottom: 1px solid var(--line);
+@media (max-width:600px){
+  .header-inner{padding:3.6rem 1.2rem 2.4rem}
+  .site-header::after{width:360px;height:360px;right:-110px;top:-110px}
+  .section{padding:4rem 1.2rem 0}
+  .site-nav ul{gap:1.3rem}
+  .novel-body{padding:2.4rem 1.2rem 3.6rem}
+  html[data-writing="tate"] .novel-body{height:74vh}
 }
