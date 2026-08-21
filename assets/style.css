@@ -1,24 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&display=swap");
 
 /* ============================================================
-   クリプト忍者のウカ — 宵闇に金
-   月蝕綺譚 -Luna Occulta- の公開トンマナに準拠した装い
-   （地=宵闇藍 / 主=金泥は線と粒 / 徴=蝕紅は5%以下 / 署名=蝕環）
+   ウカ文庫 — 夕暮れの狐
+   （地=暮れの焦げ紫 / 主=狐の茜は線と粒 / 差し色=桜 / 署名=狐の面紋）
    ============================================================ */
 
 :root{
-  --yoiyami:    #131320;   /* 地・宵闇藍 */
-  --yoiyami-hi: #1B1B2E;
-  --panel:      #100E1C;
-  --bubble:     #181626;
-  --kindei:     #D9A94C;   /* 主・金泥 */
-  --kindei-hi:  #F0CE7E;
-  --shu:        #C93A2E;   /* 徴・蝕紅（面積5%以下） */
-  --geppaku:    #E8E4D8;   /* 静・月白＝本文 */
-  --anshi:      #5C4470;   /* 情・暗紫 */
-  --sakura:     #8E6B9E;
-  --sub:        #9D93B5;
-  --line:       rgba(217,169,76,.22);
+  --yoiyami:    #1A1016;   /* 地・暮れの焦げ紫 */
+  --yoiyami-hi: #271821;
+  --panel:      #150D13;
+  --bubble:     #1F141A;
+  --kindei:     #DE8250;   /* 主・狐の茜 */
+  --kindei-hi:  #F2AC77;
+  --shu:        #C93A2E;   /* 徴・紅（面積5%以下) */
+  --geppaku:    #EDE3D4;   /* 静・生成り＝本文 */
+  --anshi:      #6B4152;   /* 情・葡萄 */
+  --sakura:     #C08497;
+  --sub:        #B39AA3;
+  --line:       rgba(222,130,80,.22);
   --serif: "Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
 
   /* 旧変数の受け皿（他ページが参照していても壊れないように） */
@@ -40,29 +39,26 @@ body{
 a{color:var(--kindei-hi);text-decoration:none}
 main{display:block}
 img{max-width:100%}
-::selection{background:rgba(217,169,76,.25)}
+::selection{background:rgba(222,130,80,.25)}
 
 /* ---------- ヘッダー / ヒーロー ---------- */
 .site-header{
   position:relative;overflow:hidden;
   color:var(--geppaku);
   background:
-    radial-gradient(120% 90% at 78% -20%, #241F3E 0%, #17142A 45%, var(--yoiyami) 100%);
+    radial-gradient(120% 90% at 78% -20%, #2E1B26 0%, #221420 45%, var(--yoiyami) 100%);
   border-bottom:1px solid var(--line);
 }
-/* 蝕環：一筆の円相が約1/3、闇に喰われている（IPの視覚署名） */
+/* 夕陽の暈：地平へ沈みかけの陽が右上に残す、やわらかな明かり */
 .site-header::after{
   content:"";position:absolute;pointer-events:none;
-  right:-130px;top:-150px;width:560px;height:560px;border-radius:50%;
-  background:conic-gradient(from -108deg,
-    rgba(201,58,46,0) 0deg,
-    rgba(201,58,46,.92) 18deg,
-    rgba(201,58,46,.92) 222deg,
-    rgba(201,58,46,0) 240deg,
-    transparent 240deg 360deg);
-  -webkit-mask:radial-gradient(circle, transparent 0 46.4%, #000 47% 48.8%, transparent 49.4%);
-          mask:radial-gradient(circle, transparent 0 46.4%, #000 47% 48.8%, transparent 49.4%);
-  opacity:.55;
+  right:-160px;top:-190px;width:620px;height:620px;border-radius:50%;
+  background:radial-gradient(circle,
+    rgba(242,172,119,.30) 0%,
+    rgba(222,130,80,.16) 34%,
+    rgba(181,90,56,.07) 58%,
+    transparent 72%);
+  opacity:.9;
 }
 .header-inner{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:5.5rem 1.5rem 3.2rem}
 .site-tag{
@@ -72,12 +68,12 @@ img{max-width:100%}
 .site-title{
   font-size:clamp(2.5rem,7vw,4.2rem);font-weight:800;letter-spacing:.12em;
   line-height:1.25;margin-bottom:1.6rem;
-  background:linear-gradient(180deg,var(--kindei-hi) 0%,var(--kindei) 62%,#A9803A 100%);
+  background:linear-gradient(180deg,var(--kindei-hi) 0%,var(--kindei) 62%,#B55A38 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  text-shadow:0 0 34px rgba(240,206,126,.16);
+  text-shadow:0 0 34px rgba(242,172,119,.16);
 }
 .site-subtitle{
-  max-width:34em;color:#C9C3D8;font-size:1rem;line-height:2.05;font-weight:400;
+  max-width:34em;color:#D6C6C0;font-size:1rem;line-height:2.05;font-weight:400;
 }
 .hero-cta{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2.4rem}
 
@@ -85,7 +81,7 @@ img{max-width:100%}
 .site-nav{
   position:relative;z-index:1;
   border-top:1px solid var(--line);
-  background:rgba(16,14,28,.55);
+  background:rgba(21,13,19,.55);
   backdrop-filter:saturate(120%);
 }
 .site-nav ul{
@@ -93,7 +89,7 @@ img{max-width:100%}
   display:flex;flex-wrap:wrap;gap:2.2rem;list-style:none;
 }
 .site-nav a{
-  font-size:.86rem;letter-spacing:.2em;color:#BDB4D0;
+  font-size:.86rem;letter-spacing:.2em;color:#C9B3BC;
   padding-bottom:.25rem;border-bottom:1px solid transparent;transition:color .2s,border-color .2s;
 }
 .site-nav a:hover{color:var(--kindei-hi);border-bottom-color:var(--kindei)}
@@ -103,16 +99,16 @@ img{max-width:100%}
   display:inline-block;padding:.72rem 1.9rem;border-radius:5px;
   font-family:var(--serif);font-size:.9rem;font-weight:700;letter-spacing:.2em;
   text-decoration:none;cursor:pointer;transition:transform .09s,box-shadow .2s,border-color .2s;
-  border:1px solid var(--line);background:linear-gradient(180deg,#232033,#161320);
+  border:1px solid var(--line);background:linear-gradient(180deg,#291B23,#1A1016);
   color:var(--kindei-hi);box-shadow:0 4px 10px rgba(0,0,0,.55);
 }
 .btn:hover{border-color:var(--kindei);box-shadow:0 6px 18px rgba(0,0,0,.6)}
 .btn:active{transform:scale(.965)}
-.btn-primary{border-color:rgba(226,193,118,.75);color:var(--kindei-hi)}
-.btn-primary:hover{border-color:var(--kindei-hi);box-shadow:0 0 0 1px rgba(240,206,126,.25),0 8px 22px rgba(0,0,0,.6)}
+.btn-primary{border-color:rgba(242,172,119,.75);color:var(--kindei-hi)}
+.btn-primary:hover{border-color:var(--kindei-hi);box-shadow:0 0 0 1px rgba(242,172,119,.25),0 8px 22px rgba(0,0,0,.6)}
 .btn-ghost{background:transparent;border-color:rgba(232,228,216,.28);color:var(--geppaku)}
 .btn-ghost:hover{border-color:var(--kindei);color:var(--kindei-hi)}
-.btn-light{background:linear-gradient(180deg,#232033,#161320);border-color:var(--line);color:var(--kindei-hi)}
+.btn-light{background:linear-gradient(180deg,#291B23,#1A1016);border-color:var(--line);color:var(--kindei-hi)}
 .btn-light:hover{border-color:var(--kindei)}
 
 /* ---------- セクション（闇の余白が主役。リズムをつける） ---------- */
@@ -137,7 +133,7 @@ img{max-width:100%}
 }
 .story-group::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
 
-.story-intro{color:#C4BED4;max-width:40em}
+.story-intro{color:#CEBEC2;max-width:40em}
 .story-intro p + p{margin-top:1rem}
 .story-intro .work-title,.work-title{color:var(--kindei-hi);font-weight:600}
 
@@ -145,7 +141,7 @@ img{max-width:100%}
 .chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1rem}
 .chapter-card{
   display:block;position:relative;padding:1.5rem 1.4rem;border-radius:10px;
-  background:radial-gradient(120% 140% at 50% -60%,#24203E 0%,#181432 42%,#110F1E 100%);
+  background:radial-gradient(120% 140% at 50% -60%,#2C1D28 0%,#221521 42%,#160E15 100%);
   border:none;text-decoration:none;color:inherit;overflow:hidden;
   box-shadow:0 18px 44px rgba(0,0,0,.55),0 4px 14px rgba(0,0,0,.5);
   transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s;
@@ -156,7 +152,7 @@ img{max-width:100%}
 }
 a.chapter-card:hover,.chapter-card:hover{
   transform:translateY(-4px);
-  box-shadow:0 24px 56px rgba(0,0,0,.62),0 0 0 1px rgba(217,169,76,.28);
+  box-shadow:0 24px 56px rgba(0,0,0,.62),0 0 0 1px rgba(222,130,80,.28);
 }
 .chapter-no{
   font-size:.7rem;letter-spacing:.34em;color:var(--kindei);font-weight:700;
@@ -180,10 +176,10 @@ a.chapter-card:hover,.chapter-card:hover{
 .chara-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem}
 .chara-card{
   padding:1.5rem 1.3rem;border-radius:10px;border:none;
-  background:radial-gradient(120% 140% at 50% -60%,#24203E 0%,#181432 42%,#110F1E 100%);
+  background:radial-gradient(120% 140% at 50% -60%,#2C1D28 0%,#221521 42%,#160E15 100%);
   box-shadow:0 16px 38px rgba(0,0,0,.52);
 }
-.chara-card.rabbit{background:radial-gradient(120% 140% at 50% -60%,#241E33 0%,#1A1528 42%,#110F1E 100%)}
+.chara-card.rabbit{background:radial-gradient(120% 140% at 50% -60%,#2A1C22 0%,#1F1319 42%,#160E15 100%)}
 .chara-name{font-size:1.15rem;font-weight:700;color:var(--kindei-hi);letter-spacing:.08em;margin-bottom:.35rem}
 .chara-role{font-size:.74rem;letter-spacing:.2em;color:var(--sakura);margin-bottom:.9rem}
 .chara-card.rabbit .chara-role{color:var(--anshi)}
@@ -193,22 +189,22 @@ a.chapter-card:hover,.chapter-card:hover{
 .featured-work{
   position:relative;margin:0 auto;max-width:960px;
   border-radius:12px;overflow:hidden;
-  background:radial-gradient(130% 150% at 70% -40%,#2A2447 0%,#181432 45%,#0E0C18 100%);
+  background:radial-gradient(130% 150% at 70% -40%,#33202C 0%,#221521 45%,#120B10 100%);
   box-shadow:0 26px 70px rgba(0,0,0,.6);
 }
 .featured-work::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(90deg,rgba(19,19,32,.92) 0%,rgba(19,19,32,.55) 46%,transparent 72%);
+  background:linear-gradient(90deg,rgba(20,13,18,.92) 0%,rgba(20,13,18,.55) 46%,transparent 72%);
 }
 .featured-inner{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:1rem;align-items:center}
 .featured-text{padding:3.2rem 2.4rem}
 .featured-badge{
   display:inline-block;padding:.18rem .95rem;border-radius:999px;margin-bottom:1rem;
   font-size:.68rem;letter-spacing:.24em;color:var(--kindei);
-  border:1px solid var(--line);background:rgba(217,169,76,.06);
+  border:1px solid var(--line);background:rgba(222,130,80,.06);
 }
 .featured-title{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:.08em;color:var(--geppaku);margin-bottom:1rem;line-height:1.5}
-.featured-desc{color:#C4BED4;font-size:.94rem;margin-bottom:1.6rem;max-width:30em}
+.featured-desc{color:#CEBEC2;font-size:.94rem;margin-bottom:1.6rem;max-width:30em}
 .featured-actions{display:flex;flex-wrap:wrap;gap:.8rem}
 .featured-art{width:100%;height:100%;min-height:320px;object-fit:cover;display:block;filter:saturate(.72) brightness(.82) contrast(1.06)}
 
@@ -236,7 +232,7 @@ a.chapter-card:hover,.chapter-card:hover{
 .reader-tools button{
   font-family:var(--serif);font-size:.76rem;letter-spacing:.14em;
   padding:.38rem 1rem;border-radius:5px;cursor:pointer;
-  background:linear-gradient(180deg,#232033,#161320);
+  background:linear-gradient(180deg,#291B23,#1A1016);
   border:1px solid var(--line);color:var(--kindei-hi);transition:border-color .2s;
 }
 .reader-tools button:hover{border-color:var(--kindei)}
@@ -245,7 +241,7 @@ a.chapter-card:hover,.chapter-card:hover{
 .reader-toc summary{cursor:pointer;font-size:.84rem;letter-spacing:.18em;color:var(--kindei);padding:.4rem 0}
 .reader-toc summary:hover{color:var(--kindei-hi)}
 .reader-toc ol{margin:.6rem 0 0 1.2rem;padding:0;font-size:.86rem;line-height:2.1}
-.reader-toc a{color:#BDB4D0;text-decoration:none}
+.reader-toc a{color:#C9B3BC;text-decoration:none}
 .reader-toc a:hover{color:var(--kindei-hi)}
 .reader-toc .current{color:var(--kindei-hi);font-weight:700}
 
@@ -275,7 +271,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
   padding:.5rem .2rem;border-bottom:1px solid transparent;
 }
 .chapter-nav a:hover{border-bottom-color:var(--kindei)}
-.chapter-nav .nav-empty{color:#3E3752}
+.chapter-nav .nav-empty{color:#4A3640}
 .chapter-nav .to-index{color:var(--sub)}
 
 .reading-progress{position:fixed;top:0;left:0;right:0;height:2px;background:transparent;z-index:50}
@@ -296,7 +292,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
   height:160px;
   object-fit:cover;object-position:center top;
   border-radius:10px 10px 0 0;
-  background:#0E0C18;
+  background:#120B10;
   filter:saturate(.82) brightness(.88);
 }
 
@@ -319,7 +315,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
   box-shadow:0 16px 38px rgba(0,0,0,.55),0 3px 10px rgba(0,0,0,.5);
   transition:box-shadow .22s;
 }
-.cover-card:hover .cover-frame{box-shadow:0 22px 50px rgba(0,0,0,.62),0 0 0 1px rgba(217,169,76,.35)}
+.cover-card:hover .cover-frame{box-shadow:0 22px 50px rgba(0,0,0,.62),0 0 0 1px rgba(222,130,80,.35)}
 .cover-frame::after{ /* 本の背のハイライト */
   content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;
   background:linear-gradient(90deg,rgba(255,255,255,.07) 0%,transparent 5%);
@@ -330,7 +326,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
 .cover-badge{
   align-self:flex-start;margin-top:.15rem;padding:.08rem .7rem;border-radius:999px;
   font-size:.66rem;letter-spacing:.14em;color:var(--kindei);
-  border:1px solid var(--line);background:rgba(217,169,76,.06);
+  border:1px solid var(--line);background:rgba(222,130,80,.06);
 }
 .cover-name{font-size:1.02rem;font-weight:700;letter-spacing:.05em;color:var(--geppaku);line-height:1.55}
 .cover-card:hover .cover-name{color:var(--kindei-hi)}
@@ -351,7 +347,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
   font-size:.6rem;letter-spacing:.22em;color:rgba(232,228,216,.55);
 }
 .novel-cover::before{ /* 表紙の飾り罫 */
-  content:"";position:absolute;inset:9px;border:1px solid rgba(217,169,76,.28);border-radius:5px;
+  content:"";position:absolute;inset:9px;border:1px solid rgba(222,130,80,.28);border-radius:5px;
 }
 .novel-cover.c2{background:radial-gradient(130% 120% at 30% -10%,#2A2140 0%,#1B1530 55%,#120F1E 100%)}
 .novel-cover.c3{background:radial-gradient(130% 120% at 30% -10%,#3A1F2A 0%,#241423 55%,#140F1A 100%)}
@@ -372,11 +368,11 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
 .banner-card{
   display:flex;align-items:center;gap:1.4rem;justify-content:space-between;
   padding:1.7rem 1.9rem;border-radius:10px;text-decoration:none;color:inherit;
-  background:radial-gradient(140% 160% at 50% -60%,#24203E 0%,#181432 42%,#110F1E 100%);
+  background:radial-gradient(140% 160% at 50% -60%,#2C1D28 0%,#221521 42%,#160E15 100%);
   box-shadow:0 18px 44px rgba(0,0,0,.55);
   transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s;
 }
-.banner-card:hover{transform:translateY(-3px);box-shadow:0 24px 56px rgba(0,0,0,.62),0 0 0 1px rgba(217,169,76,.28)}
+.banner-card:hover{transform:translateY(-3px);box-shadow:0 24px 56px rgba(0,0,0,.62),0 0 0 1px rgba(222,130,80,.28)}
 .banner-text{display:flex;flex-direction:column;gap:.4rem;min-width:0}
 .banner-title{font-size:1.12rem;font-weight:700;letter-spacing:.06em;color:var(--geppaku)}
 .banner-desc{font-size:.85rem;color:var(--sub);line-height:1.8}
@@ -399,7 +395,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
 .foxfire{position:absolute;inset:0;pointer-events:none;z-index:0}
 .foxfire i{
   position:absolute;width:7px;height:7px;border-radius:50%;
-  background:radial-gradient(circle,rgba(240,206,126,.95) 0%,rgba(217,169,76,.4) 45%,transparent 72%);
+  background:radial-gradient(circle,rgba(242,172,119,.95) 0%,rgba(222,130,80,.4) 45%,transparent 72%);
   opacity:0;animation:kitsunebi 8s ease-in-out infinite;
 }
 .foxfire i:nth-child(1){left:58%;top:64%;animation-delay:0s}
@@ -408,7 +404,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
 .foxfire i:nth-child(4){left:86%;top:52%;width:5px;height:5px;animation-delay:1.3s;animation-duration:11s}
 .foxfire i:nth-child(5){left:71%;top:24%;width:6px;height:6px;animation-delay:5.6s;animation-duration:10s}
 .foxfire i:nth-child(6){left:92%;top:78%;width:6px;height:6px;animation-delay:3.4s;animation-duration:9s}
-.foxfire i.murasaki{background:radial-gradient(circle,rgba(142,107,158,.9) 0%,rgba(92,68,112,.4) 45%,transparent 72%)}
+.foxfire i.murasaki{background:radial-gradient(circle,rgba(192,132,151,.9) 0%,rgba(107,65,82,.4) 45%,transparent 72%)}
 @keyframes kitsunebi{
   0%,100%{opacity:0;transform:translateY(7px)}
   40%{opacity:.8;transform:translateY(-3px)}
@@ -435,7 +431,7 @@ html[data-writing="tate"] .novel-body .chapter-end{margin-top:0;margin-right:3.4
 .story-group::before{
   content:"";width:5px;height:5px;border-radius:50%;flex:none;
   background:var(--kindei-hi);
-  box-shadow:9px 0 0 -1px rgba(217,169,76,.7),17px 0 0 -2px rgba(217,169,76,.4);
+  box-shadow:9px 0 0 -1px rgba(222,130,80,.7),17px 0 0 -2px rgba(222,130,80,.4);
   margin-right:14px;
 }
 
@@ -447,21 +443,21 @@ a.chapter-card:hover .chapter-no,.chapter-card:hover .chapter-no{color:var(--kin
 }
 
 /* ダークトグルはさらに沈める */
-html[data-theme="dark"]{--yoiyami:#0C0C15;--panel:#0A0913;--geppaku:#DCD7CC}
-html[data-theme="dark"] body{background:#0C0C15}
-html[data-theme="dark"] .reader-tools button{background:linear-gradient(180deg,#1B1828,#100E1A);color:var(--kindei-hi)}
+html[data-theme="dark"]{--yoiyami:#120A10;--panel:#0E0810;--geppaku:#E0D5C8}
+html[data-theme="dark"] body{background:#120A10}
+html[data-theme="dark"] .reader-tools button{background:linear-gradient(180deg,#211219,#150C12);color:var(--kindei-hi)}
 html[data-theme="dark"] .chapter-nav .to-index{color:var(--sub)}
-html[data-theme="dark"] .reader-toc a{color:#ADA4C0}
+html[data-theme="dark"] .reader-toc a{color:#BAA4AC}
 html[data-theme="dark"] .novel-body .sep,
 html[data-theme="dark"] .novel-body .fin{color:var(--kindei)}
 html[data-theme="dark"] .chapter-nav a{color:var(--kindei-hi)}
-html[data-theme="dark"] .chapter-nav .nav-empty{color:#332C46}
+html[data-theme="dark"] .chapter-nav .nav-empty{color:#3D2833}
 
 @media (max-width:700px){
   .featured-inner{grid-template-columns:1fr}
   .featured-text{padding:2.2rem 1.5rem}
   .featured-art{min-height:210px;order:-1}
-  .featured-work::after{background:linear-gradient(180deg,transparent 0%,rgba(19,19,32,.9) 62%)}
+  .featured-work::after{background:linear-gradient(180deg,transparent 0%,rgba(20,13,18,.9) 62%)}
 }
 @media (max-width:600px){
   .header-inner{padding:3.6rem 1.2rem 2.4rem}
