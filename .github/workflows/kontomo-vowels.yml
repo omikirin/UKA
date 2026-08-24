@@ -1,0 +1,148 @@
+name: こんとも 口パクタイミング生成 (音声→母音)
+
+on:
+  workflow_dispatch:
+    inputs:
+      audio:
+        description: '音声ファイル。リポジトリ内のパス(例: kontomo/audio/voice01.wav)か、http(s)のURL'
+        required: true
+        type: string
+      script_text:
+        description: '台本(そのまま貼る)。入れると認識文より優先され、口パクが正確になる。漢字OK'
+        required: false
+        default: ''
+        type: string
+      script_path:
+        description: '台本のファイルパス(例: kontomo/audio/voice01.txt)。script_textを入れた場合は不要'
+        required: false
+        default: ''
+        type: string
+      out:
+        description: '出力先(空なら kontomo/cues/<音声名>.json)'
+        required: false
+        default: ''
+        type: string
+      model:
+        description: '認識モデル。大きいほど正確だが遅い'
+        required: false
+        default: 'small'
+        type: choice
+        options:
+          - tiny
+          - base
+          - small
+          - medium
+
+permissions:
+  contents: write
+
+jobs:
+  vowels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存を入れる
+        run: |
+          python -m pip install --upgrade pip
+          pip install faster-whisper pykakasi
+
+      - name: 音声を用意する
+        id: prep
+        env:
+          AUDIO: ${{ inputs.audio }}
+          SCRIPT_TEXT: ${{ inputs.script_text }}
+          SCRIPT_PATH: ${{ inputs.script_path }}
+          OUT: ${{ inputs.out }}
+        run: |
+          set -euo pipefail
+          mkdir -p _work
+          case "$AUDIO" in
+            http://*|https://*)
+              name="$(basename "${AUDIO%%\?*}")"
+              [ -n "$name" ] || name="audio.wav"
+              curl -fsSL "$AUDIO" -o "_work/$name"
+              audio_path="_work/$name"
+              ;;
+            *)
+              if [ ! -f "$AUDIO" ]; then
+                echo "音声が見つかりません: $AUDIO"
+                echo "リポジトリに音声を置いてからパスを指定するか、URLを渡してください。"
+                exit 1
+              fi
+              audio_path="$AUDIO"
+              ;;
+          esac
+          echo "audio_path=$audio_path" >> "$GITHUB_OUTPUT"
+
+          base="$(basename "$audio_path")"
+          base="${base%.*}"
+          if [ -n "$OUT" ]; then
+            out_path="$OUT"
+          else
+            out_path="kontomo/cues/${base}.json"
+          fi
+          mkdir -p "$(dirname "$out_path")"
+          echo "out_path=$out_path" >> "$GITHUB_OUTPUT"
+
+          script_arg=""
+          if [ -n "$SCRIPT_TEXT" ]; then
+            printf '%s' "$SCRIPT_TEXT" > _work/script.txt
+            script_arg="--script _work/script.txt"
+          elif [ -n "$SCRIPT_PATH" ]; then
+            if [ ! -f "$SCRIPT_PATH" ]; then
+              echo "台本が見つかりません: $SCRIPT_PATH"
+              exit 1
+            fi
+            script_arg="--script $SCRIPT_PATH"
+          fi
+          echo "script_arg=$script_arg" >> "$GITHUB_OUTPUT"
+
+      - name: 母音タイミングを作る
+        run: |
+          set -euo pipefail
+          python kontomo/audio_to_vowels.py \
+            --audio "${{ steps.prep.outputs.audio_path }}" \
+            --out "${{ steps.prep.outputs.out_path }}" \
+            --model "${{ inputs.model }}" \
+            ${{ steps.prep.outputs.script_arg }}
+
+      - name: cues一覧を更新する
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, glob
+          files = sorted(os.path.basename(p) for p in glob.glob('kontomo/cues/*.json')
+                         if os.path.basename(p) != 'index.json')
+          os.makedirs('kontomo/cues', exist_ok=True)
+          json.dump(files, open('kontomo/cues/index.json', 'w'), ensure_ascii=False, indent=1)
+          print('cues:', files)
+          PY
+
+      - name: 結果をコミットする
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kontomo/cues
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "こんとも: 口パクタイミングを生成 (${{ steps.prep.outputs.out_path }})"
+          for i in 1 2 3 4 5 6 7 8; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((RANDOM % 10 + i * 3))
+          done
+          echo "プッシュに失敗しました"
+          exit 1
+
+      - name: 出来たものを確認できるようにする
+        uses: actions/upload-artifact@v4
+        with:
+          name: kontomo-cues
+          path: ${{ steps.prep.outputs.out_path }}

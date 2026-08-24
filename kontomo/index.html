@@ -49,12 +49,18 @@ input[type=range]{width:100%}
     <button id="stop">■ 止める</button>
   </div>
   <div class="note">
-    音声で喋らせるときは下から音声を選ぶ。<br>
-    台本つきの正確な口パクは <code>audio_to_vowels.py</code> で
-    タイミングJSONを作って読み込む。
+    マイクで録るか、音声ファイルを選ぶ。<br>
+    台本つきの正確な口パクは、録音を保存して
+    GitHubの「こんとも 口パクタイミング生成」を回すとJSONができる。
   </div>
+  <div class="row">
+    <button type="button" id="recBtn">● マイクで録音</button>
+    <button type="button" id="recSave" disabled>録音を保存</button>
+  </div>
+  <div id="recStat" class="note" style="display:none"></div>
   <input type="file" id="audio" accept="audio/*">
   <input type="file" id="cues" accept=".json">
+  <select id="cuesPick" style="display:none"></select>
 
   <h4>撮影</h4>
   <div class="row">
@@ -314,6 +320,83 @@ document.getElementById('cues').onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
   f.text().then(t=>{cueData=JSON.parse(t);
     document.getElementById('stat').textContent=`タイミング: ${cueData.cues.length}キュー / ${cueData.duration}秒`;});};
+
+// ── マイクで録音（録ったらそのまま口パクの音源になる）
+let micRec=null, micChunks=[], micBlob=null, micStream=null, micStart=0, micTick=null;
+const recBtn=document.getElementById('recBtn'), recSave=document.getElementById('recSave'),
+      recStat=document.getElementById('recStat');
+function micType(){
+  return ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus']
+    .find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+recBtn.onclick=async()=>{
+  if(micRec && micRec.state==='recording'){ micRec.stop(); return; }
+  if(!navigator.mediaDevices || !window.MediaRecorder){
+    recStat.style.display=''; recStat.textContent='このブラウザではマイク録音が使えません。'; return; }
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(err){
+    recStat.style.display='';
+    recStat.textContent='マイクが使えませんでした（許可されていないか、httpsでない可能性）。';
+    return;
+  }
+  micChunks=[];
+  const mt=micType();
+  micRec=new MediaRecorder(micStream, mt?{mimeType:mt}:undefined);
+  micRec.ondataavailable=ev=>{ if(ev.data && ev.data.size) micChunks.push(ev.data); };
+  micRec.onstop=()=>{
+    clearInterval(micTick);
+    micStream.getTracks().forEach(t=>t.stop());
+    micBlob=new Blob(micChunks,{type:micChunks[0]?micChunks[0].type:(mt||'audio/webm')});
+    if(!audioEl) audioEl=new Audio();
+    audioEl.src=URL.createObjectURL(micBlob); audioEl.load();
+    cueData=null; // 録り直したらタイミングJSONは外す（音量で口が動く）
+    recBtn.textContent='● マイクで録音';
+    recSave.disabled=false;
+    const sec=((Date.now()-micStart)/1000).toFixed(1);
+    recStat.style.display='';
+    recStat.textContent=`録音しました（${sec}秒）。「▶ 喋る」で口が動きます。`;
+    document.getElementById('stat').textContent='音声を読み込みました: マイク録音';
+  };
+  micRec.start();
+  micStart=Date.now();
+  recBtn.textContent='■ 録音を止める';
+  recSave.disabled=true;
+  recStat.style.display='';
+  micTick=setInterval(()=>{
+    recStat.textContent='録音中… '+((Date.now()-micStart)/1000).toFixed(1)+'秒';
+  },100);
+};
+recSave.onclick=()=>{
+  if(!micBlob) return;
+  const ext=(micBlob.type.indexOf('mp4')>=0)?'m4a':(micBlob.type.indexOf('ogg')>=0?'ogg':'webm');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(micBlob);
+  a.download='こんとも_録音_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'')+'.'+ext;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+
+// ── 生成済みタイミングJSON（kontomo/cues/）があれば選べるように
+(async()=>{
+  try{
+    const r=await fetch('cues/index.json',{cache:'no-store'});
+    if(!r.ok) return;
+    const list=await r.json();
+    if(!Array.isArray(list) || !list.length) return;
+    const sel=document.getElementById('cuesPick');
+    sel.innerHTML='<option value="">タイミングJSON: 選ぶ</option>'+
+      list.map(f=>`<option value="${f}">${f}</option>`).join('');
+    sel.style.display='';
+    sel.onchange=async()=>{
+      if(!sel.value){ cueData=null; return; }
+      const rr=await fetch('cues/'+sel.value,{cache:'no-store'});
+      cueData=await rr.json();
+      document.getElementById('stat').textContent=
+        `タイミング: ${cueData.cues.length}キュー / ${cueData.duration}秒`;
+    };
+  }catch(_){}
+})();
 
 // ── 動画出力
 let rec=null, chunks=[], recTimer=null;
