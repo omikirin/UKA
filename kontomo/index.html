@@ -49,13 +49,17 @@ input[type=range]{width:100%}
     <button id="stop">■ 止める</button>
   </div>
   <div class="note">
-    マイクで録るか、音声ファイルを選ぶ。<br>
-    台本つきの正確な口パクは、録音を保存して
-    GitHubの「こんとも 口パクタイミング生成」を回すとJSONができる。
+    マイクで録るか、音声ファイルを選ぶ。そのまま「▶ 喋る」で音量に合わせて口が動く。<br>
+    上の台本欄にかなで台本を入れて<b>「上の台本を録音に合わせる」</b>を押すと、
+    喋っている区間に母音を割り当てて口パクが正確になる（この場で完結）。
   </div>
   <div class="row">
     <button type="button" id="recBtn">● マイクで録音</button>
     <button type="button" id="recSave" disabled>録音を保存</button>
+  </div>
+  <div class="row">
+    <button type="button" id="fitBtn" disabled>上の台本を録音に合わせる</button>
+    <button type="button" id="cuesSave" disabled>タイミングを保存</button>
   </div>
   <div id="recStat" class="note" style="display:none"></div>
   <input type="file" id="audio" accept="audio/*">
@@ -315,6 +319,7 @@ document.getElementById('audio').onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
   if(!audioEl) audioEl=new Audio();
   audioEl.src=URL.createObjectURL(f); audioEl.load();
+  markSource(f); cuesSave.disabled=true;
   document.getElementById('stat').textContent='音声を読み込みました: '+f.name;};
 document.getElementById('cues').onchange=e=>{
   const f=e.target.files[0]; if(!f)return;
@@ -351,6 +356,8 @@ recBtn.onclick=async()=>{
     if(!audioEl) audioEl=new Audio();
     audioEl.src=URL.createObjectURL(micBlob); audioEl.load();
     cueData=null; // 録り直したらタイミングJSONは外す（音量で口が動く）
+    markSource(micBlob);
+    cuesSave.disabled=true;
     recBtn.textContent='● マイクで録音';
     recSave.disabled=false;
     const sec=((Date.now()-micStart)/1000).toFixed(1);
@@ -367,6 +374,109 @@ recBtn.onclick=async()=>{
     recStat.textContent='録音中… '+((Date.now()-micStart)/1000).toFixed(1)+'秒';
   },100);
 };
+// ── 録音した音声の「喋っている区間」に、上の台本の母音を割り当てる
+//    (whisperを使わずブラウザだけで、audio_to_vowels.py と同じ考え方をやる)
+const fitBtn=document.getElementById('fitBtn'), cuesSave=document.getElementById('cuesSave');
+let lastSrcBlob=null; // マイク録音でもファイル選択でも、解析対象の音
+function markSource(b){ lastSrcBlob=b; fitBtn.disabled=!b; }
+
+async function decodeBlob(b){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const buf=await ctx.decodeAudioData(await b.arrayBuffer());
+  ctx.close();
+  return buf;
+}
+/* 音量の起伏から発話区間を切り出す */
+function voicedSegments(buf){
+  const ch=buf.getChannelData(0), sr=buf.sampleRate;
+  const win=Math.max(1,Math.round(sr*0.02));           // 20msごと
+  const rms=[];
+  for(let i=0;i<ch.length;i+=win){
+    let s=0; const end=Math.min(i+win,ch.length);
+    for(let j=i;j<end;j++) s+=ch[j]*ch[j];
+    rms.push(Math.sqrt(s/Math.max(1,end-i)));
+  }
+  const peak=Math.max(...rms);
+  if(!(peak>0)) return {segs:[],dur:buf.duration};
+  const sorted=[...rms].sort((a,b)=>a-b);
+  const noise=sorted[Math.floor(sorted.length*0.2)]||0;  // 下位20%を無音の目安に
+  const th=Math.max(noise*2.2, peak*0.10);
+  const segs=[]; let st=null;
+  for(let k=0;k<rms.length;k++){
+    const t=k*win/sr;
+    if(rms[k]>=th){ if(st===null) st=t; }
+    else if(st!==null){
+      if(t-st>=0.08) segs.push({start:st,end:t});       // 80ms未満は雑音として捨てる
+      st=null;
+    }
+  }
+  if(st!==null) segs.push({start:st,end:rms.length*win/sr});
+  // 120ms以内の切れ目はつなぐ
+  const merged=[];
+  for(const s of segs){
+    const last=merged[merged.length-1];
+    if(last && s.start-last.end<0.12) last.end=s.end;
+    else merged.push({...s});
+  }
+  return {segs:merged,dur:buf.duration};
+}
+function buildCues(segs,vowels,dur){
+  const cues=[], lead=0.04, closeGap=0.25;
+  const total=segs.reduce((a,s)=>a+(s.end-s.start),0);
+  const per=total/Math.max(1,vowels.length);
+  let idx=0;
+  for(const s of segs){
+    const cnt=Math.max(1,Math.round((s.end-s.start)/per));
+    for(let k=0;k<cnt && idx<vowels.length;k++){
+      const t=s.start+(s.end-s.start)*k/cnt;
+      cues.push({t:+Math.max(0,t-lead).toFixed(3), v:vowels[idx++]});
+    }
+  }
+  let prev=0;
+  for(const s of segs){
+    if(s.start-prev>=closeGap) cues.push({t:+prev.toFixed(3), v:'n'});
+    prev=s.end;
+  }
+  cues.push({t:+prev.toFixed(3), v:'n'});
+  cues.sort((a,b)=>a.t-b.t);
+  return {audio:'(ブラウザで作成)', duration:+dur.toFixed(3), cues};
+}
+fitBtn.onclick=async()=>{
+  if(!lastSrcBlob) return;
+  const vowels=refreshVowels();
+  if(!vowels.length){
+    recStat.style.display='';
+    recStat.textContent='台本の母音が取れません。上の欄にひらがな・カタカナで台本を入れてください。';
+    return;
+  }
+  recStat.style.display='';
+  recStat.textContent='音声を解析しています…';
+  try{
+    const buf=await decodeBlob(lastSrcBlob);
+    const {segs,dur}=voicedSegments(buf);
+    if(!segs.length){
+      recStat.textContent='喋っている区間が見つかりませんでした。音量を上げて録り直してみてください。';
+      return;
+    }
+    cueData=buildCues(segs,vowels,dur);
+    cuesSave.disabled=false;
+    recStat.textContent=
+      `台本を合わせました（発話${segs.length}区間 / ${cueData.cues.length}キュー / ${cueData.duration}秒）。「▶ 喋る」で確認。`;
+    document.getElementById('stat').textContent=
+      `タイミング: ${cueData.cues.length}キュー / ${cueData.duration}秒`;
+  }catch(err){
+    recStat.textContent='音声を解析できませんでした（対応していない形式かもしれません）。';
+  }
+};
+cuesSave.onclick=()=>{
+  if(!cueData) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(cueData,null,1)],{type:'application/json'}));
+  a.download='こんとも_タイミング_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'')+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+
 recSave.onclick=()=>{
   if(!micBlob) return;
   const ext=(micBlob.type.indexOf('mp4')>=0)?'m4a':(micBlob.type.indexOf('ogg')>=0?'ogg':'webm');
