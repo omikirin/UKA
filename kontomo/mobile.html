@@ -2,75 +2,120 @@
 <html lang="ja"><head><meta charset="utf-8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1016'/%3E%3Cpath d='M32 56 L13 43 L8 9 L26 21 Q32 17 38 21 L56 9 L51 43 Z' fill='%23DE8250'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#1A1016">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="こんとも撮影ツール。ポーズと表情を選び、口パク・目ぱちつきで喋らせて透過PNGで撮影できるブラウザツール。">
-
-<title>こんとも撮影ツール | ウカ文庫</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="こんとも撮影ツール スマホ版。ポーズと表情を選び、口パク・目ぱちつきで喋らせて撮影・動画化できる。">
+<title>こんとも撮影ツール スマホ版 | ウカ文庫</title>
 <style>
-:root{color-scheme:light}
-*{box-sizing:border-box}
-body{margin:0;display:flex;height:100vh;font:13px/1.6 -apple-system,sans-serif;background:#e8e2d8}
-#side{width:320px;padding:12px;background:#fff;overflow-y:auto;border-right:1px solid #ccc;flex-shrink:0}
-#stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
-#shot{position:relative;background:
-  repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/24px 24px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+@supports (height:100dvh){body{height:100dvh}}
+body{
+  display:flex;flex-direction:column;
+  font:15px/1.6 -apple-system,"Hiragino Sans",sans-serif;
+  background:#e8e2d8;color:#333;
+  overscroll-behavior:none;
+}
+header.top{
+  flex:none;display:flex;align-items:center;gap:10px;
+  padding:8px calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left));
+  background:#fff;border-bottom:1px solid #ddd;font-size:13px;
+}
+header.top a{color:#c63;text-decoration:none;flex:none}
+header.top b{flex:1;text-align:center;font-size:14px}
+header.top .sp{width:2.5em}
+#stage{
+  flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;padding:6px;
+}
+#shot{background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/22px 22px}
 #shot canvas{display:block}
-h4{margin:12px 0 3px;font-size:12px;color:#888;border-bottom:1px solid #eee}
-select,button,input[type=file],input[type=text]{width:100%;padding:5px;margin:3px 0}
-button{cursor:pointer}
-.btn-main{background:#2b7;color:#fff;border:none;font-weight:bold;padding:9px}
-.btn-shot{background:#c63;color:#fff;border:none;font-weight:bold;padding:9px}
-textarea{width:100%;height:64px;font:13px/1.5 inherit;padding:5px}
-.row{display:flex;gap:6px}.row>*{flex:1}
-label{display:flex;align-items:center;gap:6px;font-size:12px;margin:3px 0}
-.note{font-size:11px;color:#666;background:#f8f8f8;padding:7px;border-radius:4px;margin:4px 0}
-#vowels{font-family:monospace;font-size:11px;color:#c60;word-break:break-all;
-  background:#faf7f0;padding:5px;border-radius:4px;min-height:16px}
-input[type=range]{width:100%}
+nav.tabs{
+  flex:none;display:flex;background:#fff;border-top:1px solid #ddd;
+}
+nav.tabs button{
+  flex:1;padding:10px 0 8px;border:none;background:none;font:inherit;font-size:13px;
+  color:#888;border-top:3px solid transparent;cursor:pointer;
+}
+nav.tabs button.on{color:#c63;border-top-color:#c63;font-weight:bold}
+#panel{
+  flex:none;height:38vh;min-height:230px;overflow-y:auto;background:#fff;
+  padding:12px calc(14px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  -webkit-overflow-scrolling:touch;
+}
+.tab{display:none;padding-bottom:58px}
+.tab.on{display:block}
+select,button.big,input[type=text],textarea{
+  width:100%;font:inherit;font-size:16px;padding:11px 12px;margin:4px 0;
+  border:1px solid #ccc;border-radius:10px;background:#fff;
+}
+button.big{cursor:pointer;background:#f4f1ec;border-color:#d8d2c8}
+button.big:active{transform:scale(.98)}
+button.main{background:#2b7;color:#fff;border-color:#2b7;font-weight:bold}
+button.warm{background:#c63;color:#fff;border-color:#c63;font-weight:bold}
+button:disabled{opacity:.45}
+textarea{height:70px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+label.line{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+label.line input[type=range]{flex:1}
+label.line input[type=checkbox]{width:20px;height:20px}
+.note{font-size:12px;color:#666;background:#f6f3ee;padding:8px 10px;border-radius:8px;margin:6px 0;line-height:1.7}
+#vowels{font-family:ui-monospace,monospace;font-size:11px;color:#c60;word-break:break-all;
+  background:#faf7f0;padding:6px 8px;border-radius:8px;min-height:16px;margin:4px 0}
+#stat{position:sticky;bottom:0;margin-top:8px;background:#fff8ea;border:1px solid #eadfc8}
+input[type=file]{width:100%;font-size:13px;margin:4px 0}
+h5{font-size:12px;color:#999;margin:10px 0 2px;font-weight:normal;letter-spacing:.1em}
 </style></head><body>
-<div id="side">
-  <p style="margin:0 0 6px;display:flex;justify-content:space-between">
-    <a href="../games/" style="color:#c63;text-decoration:none;font-size:12px">&laquo; ウカ文庫 ゲーム集へ</a>
-    <a href="mobile.html" style="color:#c63;text-decoration:none;font-size:12px">📱 スマホ版</a>
-  </p>
+<header class="top">
+  <a href="./">PC版</a>
   <b>こんとも撮影ツール</b>
+  <span class="sp"></span>
+</header>
 
-  <h4>ポーズ・表情</h4>
-  <select id="body"></select>
-  <select id="eyes"></select>
-  <select id="mouth"></select>
-  <label><input type="checkbox" id="blink" checked> 自動で目ぱち</label>
-  <label>まばたきの速さ <input type="range" id="blinkSpd" min="60" max="900" value="360"><span id="blinkV">360</span>ms</label>
-  <label>まばたきの間隔 <input type="range" id="blinkGap" min="2" max="20" value="7"><span id="gapV">7</span>秒くらい</label>
+<div id="stage"><div id="shot"><canvas id="cv"></canvas></div></div>
 
-  <h4>喋らせる</h4>
-  <textarea id="text" placeholder="ひらがな・カタカナで入力">こんにちは、こんともです</textarea>
-  <label>速さ <input type="range" id="rate" min="60" max="260" value="130"><span id="rateV">130</span></label>
-  <div id="vowels"></div>
-  <div class="row">
-    <button class="btn-main" id="play">▶ 喋る</button>
-    <button id="stop">■ 止める</button>
-  </div>
-  <div class="note">
-    マイクで録るか、音声ファイルを選ぶ。そのまま「▶ 喋る」で音量に合わせて口が動く。<br>
-    上の台本欄にかなで台本を入れて<b>「上の台本を録音に合わせる」</b>を押すと、
-    喋っている区間に母音を割り当てて口パクが正確になる（この場で完結）。
-  </div>
-  <div class="row">
-    <button type="button" id="recBtn">● マイクで録音</button>
-    <button type="button" id="recSave" disabled>録音を保存</button>
-  </div>
-  <div class="row">
-    <button type="button" id="fitBtn" disabled>上の台本を録音に合わせる</button>
-    <button type="button" id="cuesSave" disabled>タイミングを保存</button>
-  </div>
-  <div id="recStat" class="note" style="display:none"></div>
-  <input type="file" id="audio" accept="audio/*">
-  <input type="file" id="cues" accept=".json">
-  <select id="cuesPick" style="display:none"></select>
+<nav class="tabs">
+  <button type="button" data-tab="pose" class="on">😊 表情</button>
+  <button type="button" data-tab="talk">🎤 喋る</button>
+  <button type="button" data-tab="shot">📷 撮影</button>
+  <button type="button" data-tab="movie">🎬 動画</button>
+</nav>
 
-  <h4>撮影</h4>
-  <div class="row">
+<div id="panel">
+  <section class="tab on" id="tab-pose">
+    <select id="body"></select>
+    <select id="eyes"></select>
+    <select id="mouth"></select>
+    <label class="line"><input type="checkbox" id="blink" checked> 自動で目ぱち</label>
+    <label class="line">速さ <input type="range" id="blinkSpd" min="60" max="900" value="360"><span id="blinkV">360</span>ms</label>
+    <label class="line">間隔 <input type="range" id="blinkGap" min="2" max="20" value="7"><span id="gapV">7</span>秒</label>
+  </section>
+
+  <section class="tab" id="tab-talk">
+    <textarea id="text" placeholder="ひらがな・カタカナで台本を入力">こんにちは、こんともです</textarea>
+    <label class="line">速さ <input type="range" id="rate" min="60" max="260" value="130"><span id="rateV">130</span></label>
+    <div id="vowels"></div>
+    <div class="row">
+      <button type="button" class="big main" id="play">▶ 喋る</button>
+      <button type="button" class="big" id="stop">■ 止める</button>
+    </div>
+    <h5>声を使う</h5>
+    <div class="row">
+      <button type="button" class="big warm" id="recBtn">● マイクで録音</button>
+      <button type="button" class="big" id="recSave" disabled>録音を保存</button>
+    </div>
+    <div class="row">
+      <button type="button" class="big" id="fitBtn" disabled>台本を録音に合わせる</button>
+      <button type="button" class="big" id="cuesSave" disabled>タイミング保存</button>
+    </div>
+    <div id="recStat" class="note" style="display:none"></div>
+    <div class="note">録ってすぐ「▶ 喋る」で音量口パク。台本を入れて「台本を録音に合わせる」を押すと口が正確になる。</div>
+    <h5>ファイルから</h5>
+    <input type="file" id="audio" accept="audio/*">
+    <input type="file" id="cues" accept=".json">
+    <select id="cuesPick" style="display:none"></select>
+  </section>
+
+  <section class="tab" id="tab-shot">
     <select id="bg">
       <option value="">背景: 透過</option>
       <option value="#fdf4eb">生成りベージュ</option>
@@ -80,38 +125,38 @@ input[type=range]{width:100%}
       <option value="custom">自分で指定</option>
     </select>
     <input type="text" id="bgCustom" placeholder="#rrggbb" style="display:none">
-  </div>
-  <div class="row">
-    <select id="size">
-      <option value="0">そのまま</option>
-      <option value="1080x1920">縦 1080x1920</option>
-      <option value="1920x1080">横 1920x1080</option>
-      <option value="1080x1080">正方 1080x1080</option>
-      <option value="512x512">アイコン 512x512</option>
-    </select>
-    <select id="fit">
-      <option value="contain">全身が入る</option>
-      <option value="bust">バストアップ</option>
-      <option value="face">顔アップ</option>
-    </select>
-  </div>
-  <button class="btn-shot" id="snap">📷 いまの1枚を保存</button>
-  <button id="snapAll">全ポーズ×全表情を一括保存</button>
+    <div class="row">
+      <select id="size">
+        <option value="0">そのまま</option>
+        <option value="1080x1920">縦 1080x1920</option>
+        <option value="1920x1080">横 1920x1080</option>
+        <option value="1080x1080">正方 1080x1080</option>
+        <option value="512x512">アイコン 512x512</option>
+      </select>
+      <select id="fit">
+        <option value="contain">全身が入る</option>
+        <option value="bust">バストアップ</option>
+        <option value="face">顔アップ</option>
+      </select>
+    </div>
+    <button type="button" class="big warm" id="snap">📷 いまの1枚を保存</button>
+    <button type="button" class="big" id="snapAll">全ポーズ×全表情を一括保存(32枚)</button>
+  </section>
 
-  <h4>動画にする</h4>
-  <div class="note">
-    いま画面で起きていること（口パク・目ぱち）をそのまま録って保存する。
-    マイク録音や選んだ音声は、音声トラックとして一緒に入る。<br>
-    <span id="codec"></span>
-  </div>
-  <div class="row">
-    <button class="btn-main" id="rec">● 録って保存</button>
-    <button id="recStop" disabled>■ 停止</button>
-  </div>
-  <label>長さの上限 <input type="range" id="recMax" min="3" max="60" value="15"><span id="recMaxV">15</span>秒</label>
+  <section class="tab" id="tab-movie">
+    <div class="note">
+      いま画面で起きていること(口パク・目ぱち)をそのまま録って保存。
+      録音や選んだ音声は音声トラックとして入る。<br><span id="codec"></span>
+    </div>
+    <div class="row">
+      <button type="button" class="big main" id="rec">● 録って保存</button>
+      <button type="button" class="big" id="recStop" disabled>■ 停止</button>
+    </div>
+    <label class="line">長さ上限 <input type="range" id="recMax" min="3" max="60" value="15"><span id="recMaxV">15</span>秒</label>
+  </section>
+
   <div class="note" id="stat">準備中…</div>
 </div>
-<div id="stage"><div id="shot"><canvas id="cv"></canvas></div></div>
 <script>
 // 素材を差し替えたときに古い画像が出ないようにする
 const CACHE_BUST='?v='+Date.now();
@@ -161,8 +206,10 @@ function render(){
 /** 画面表示 */
 function draw(){
   const c=render(); if(!c)return;
-  const maxH=Math.min(window.innerHeight-60, 760);
-  const k=maxH/c.height;
+  const st=document.getElementById('stage');
+  const maxH=Math.max(120, st.clientHeight-14);
+  const maxW=Math.max(120, st.clientWidth-14);
+  const k=Math.min(maxH/c.height, maxW/c.width);
   cv.width=Math.round(c.width*k); cv.height=Math.round(c.height*k);
   ctx.clearRect(0,0,cv.width,cv.height);
   ctx.imageSmoothingQuality='high';
@@ -649,6 +696,17 @@ ms.onchange=()=>{curMouth=ms.value;draw();};
 window.addEventListener('resize',draw);
 preload().then(()=>{
   refreshVowels(); draw(); startBlink();
-  document.getElementById('stat').textContent='準備できました（v5・口パク/録画音 修正版）';
+  document.getElementById('stat').textContent='準備できました（スマホ版 v1）';
 });
-</script></body></html>
+</script>
+<script>
+// タブ切り替え
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('#panel .tab').forEach(t=>t.classList.toggle('on', t.id==='tab-'+b.dataset.tab));
+    draw();
+  });
+});
+</script>
+</body></html>
