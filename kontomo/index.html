@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1016'/%3E%3Cpath d='M32 56 L13 43 L8 9 L26 21 Q32 17 38 21 L56 9 L51 43 Z' fill='%23DE8250'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1A1016">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="こんとも撮影ツール。ポーズと表情を選び、口パク・目ぱちつきで喋らせて透過PNGで撮影できるブラウザツール。">
+
+<title>こんとも撮影ツール | ウカ文庫</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;display:flex;height:100vh;font:13px/1.6 -apple-system,sans-serif;background:#e8e2d8}
+#side{width:320px;padding:12px;background:#fff;overflow-y:auto;border-right:1px solid #ccc;flex-shrink:0}
+#stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+#shot{position:relative;background:
+  repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/24px 24px}
+#shot canvas{display:block}
+h4{margin:12px 0 3px;font-size:12px;color:#888;border-bottom:1px solid #eee}
+select,button,input[type=file],input[type=text]{width:100%;padding:5px;margin:3px 0}
+button{cursor:pointer}
+.btn-main{background:#2b7;color:#fff;border:none;font-weight:bold;padding:9px}
+.btn-shot{background:#c63;color:#fff;border:none;font-weight:bold;padding:9px}
+textarea{width:100%;height:64px;font:13px/1.5 inherit;padding:5px}
+.row{display:flex;gap:6px}.row>*{flex:1}
+label{display:flex;align-items:center;gap:6px;font-size:12px;margin:3px 0}
+.note{font-size:11px;color:#666;background:#f8f8f8;padding:7px;border-radius:4px;margin:4px 0}
+#vowels{font-family:monospace;font-size:11px;color:#c60;word-break:break-all;
+  background:#faf7f0;padding:5px;border-radius:4px;min-height:16px}
+input[type=range]{width:100%}
+</style></head><body>
+<div id="side">
+  <p style="margin:0 0 6px"><a href="../games/" style="color:#c63;text-decoration:none;font-size:12px">&laquo; ウカ文庫 ゲーム集へ</a></p>
+  <b>こんとも撮影ツール</b>
+
+  <h4>ポーズ・表情</h4>
+  <select id="body"></select>
+  <select id="eyes"></select>
+  <select id="mouth"></select>
+  <label><input type="checkbox" id="blink" checked> 自動で目ぱち</label>
+  <label>まばたきの速さ <input type="range" id="blinkSpd" min="60" max="900" value="360"><span id="blinkV">360</span>ms</label>
+  <label>まばたきの間隔 <input type="range" id="blinkGap" min="2" max="20" value="7"><span id="gapV">7</span>秒くらい</label>
+
+  <h4>喋らせる</h4>
+  <textarea id="text" placeholder="ひらがな・カタカナで入力">こんにちは、こんともです</textarea>
+  <label>速さ <input type="range" id="rate" min="60" max="260" value="130"><span id="rateV">130</span></label>
+  <div id="vowels"></div>
+  <div class="row">
+    <button class="btn-main" id="play">▶ 喋る</button>
+    <button id="stop">■ 止める</button>
+  </div>
+  <div class="note">
+    音声で喋らせるときは下から音声を選ぶ。<br>
+    台本つきの正確な口パクは <code>audio_to_vowels.py</code> で
+    タイミングJSONを作って読み込む。
+  </div>
+  <input type="file" id="audio" accept="audio/*">
+  <input type="file" id="cues" accept=".json">
+
+  <h4>撮影</h4>
+  <div class="row">
+    <select id="bg">
+      <option value="">背景: 透過</option>
+      <option value="#fdf4eb">生成りベージュ</option>
+      <option value="#ffffff">白</option>
+      <option value="#111111">黒</option>
+      <option value="#00b140">グリーンバック</option>
+      <option value="custom">自分で指定</option>
+    </select>
+    <input type="text" id="bgCustom" placeholder="#rrggbb" style="display:none">
+  </div>
+  <div class="row">
+    <select id="size">
+      <option value="0">そのまま</option>
+      <option value="1080x1920">縦 1080x1920</option>
+      <option value="1920x1080">横 1920x1080</option>
+      <option value="1080x1080">正方 1080x1080</option>
+      <option value="512x512">アイコン 512x512</option>
+    </select>
+    <select id="fit">
+      <option value="contain">全身が入る</option>
+      <option value="bust">バストアップ</option>
+      <option value="face">顔アップ</option>
+    </select>
+  </div>
+  <button class="btn-shot" id="snap">📷 いまの1枚を保存</button>
+  <button id="snapAll">全ポーズ×全表情を一括保存</button>
+
+  <h4>動画にする</h4>
+  <div class="note">
+    いま画面で起きていること（口パク・目ぱち）をそのまま録って
+    <b>mp4</b> で保存する。音声を選んでいれば音も入る。<br>
+    <span id="codec"></span>
+  </div>
+  <div class="row">
+    <button class="btn-main" id="rec">● 録って保存</button>
+    <button id="recStop" disabled>■ 停止</button>
+  </div>
+  <label>長さの上限 <input type="range" id="recMax" min="3" max="60" value="15"><span id="recMaxV">15</span>秒</label>
+  <div class="note" id="stat">準備中…</div>
+</div>
+<div id="stage"><div id="shot"><canvas id="cv"></canvas></div></div>
+<script>
+// 素材を差し替えたときに古い画像が出ないようにする
+const CACHE_BUST='?v='+Date.now();
+const BODIES=['stand','armscrossed','wave','heart'];
+const EYES=['open','half','happy','smile','closed','cry','dot','angry'];
+const EYE_LABEL={open:'ふつう',half:'半目',happy:'嬉しい',smile:'にっこり',
+                 closed:'目閉じ',cry:'泣き',dot:'点目',angry:'怒り'};
+const BODY_LABEL={stand:'素立ち',armscrossed:'腕組み',wave:'手振り',heart:'ハート'};
+const MOUTHS=['n','a','i','u','e','o'];
+const MOUTH_REF_W=149;
+let P={mouth_w:0.11,mouth_y:0.80,mouth_dx:0,mouth_dy:0,neck_overlap:0.10,body_front:true,
+       heads:{},bodies:{}};
+const IM={};
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let curBody='stand', curEyes='open', curMouth='n';
+
+function load(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src;});}
+async function preload(){
+  for(const b of BODIES) IM['body_'+b]=await load(`parts/body_${b}.png${CACHE_BUST}`);
+  for(const e of EYES)   IM['head_'+e]=await load(`parts/head_${e}.png${CACHE_BUST}`);
+  for(const m of MOUTHS) IM['mouth_'+m]=await load(`parts_mouth/mouth_${m}.png${CACHE_BUST}`);
+  try{const r=await fetch('rig_params.json'+CACHE_BUST); if(r.ok) Object.assign(P, await r.json());}catch(_){}
+}
+/** 素材をフルサイズで1枚のキャンバスに描く（透過のまま） */
+function render(){
+  const head=IM['head_'+curEyes], body=IM['body_'+curBody], mouth=IM['mouth_'+curMouth];
+  if(!head||!body||!mouth) return null;
+  const B=P.bodies[curBody]||{body_scale:1,body_dx:0,body_dy:0};
+  const H=P.heads[curEyes]||{head_dx:0,head_dy:0};
+  const bw=body.width*B.body_scale, bh=body.height*B.body_scale;
+  const ms=head.width*P.mouth_w/MOUTH_REF_W;
+  const mw=mouth.width*ms, mh=mouth.height*ms;
+  const W=Math.max(bw,head.width)+120;
+  const HT=head.height*(1-P.neck_overlap)+bh+40;
+  const c=document.createElement('canvas'); c.width=Math.round(W); c.height=Math.round(HT);
+  const g=c.getContext('2d');
+  const bx0=(W-head.width)/2, by0=20;
+  const hx=bx0+H.head_dx, hy=by0+H.head_dy;
+  const bx=(W-bw)/2+B.body_dx, by=head.height*(1-P.neck_overlap)+20+B.body_dy;
+  const drawHead=()=>g.drawImage(head,hx,hy,head.width,head.height);
+  const drawBody=()=>g.drawImage(body,bx,by,bw,bh);
+  if(P.body_front){drawHead();drawBody();}else{drawBody();drawHead();}
+  g.drawImage(mouth, bx0+head.width/2-mw/2+P.mouth_dx,
+              by0+head.height*P.mouth_y-mh/2+P.mouth_dy, mw, mh);
+  return c;
+}
+/** 画面表示 */
+function draw(){
+  const c=render(); if(!c)return;
+  const maxH=Math.min(window.innerHeight-60, 760);
+  const k=maxH/c.height;
+  cv.width=Math.round(c.width*k); cv.height=Math.round(c.height*k);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(c,0,0,cv.width,cv.height);
+}
+/** 撮影: 背景・サイズ・寄りを適用して1枚に焼く */
+function shoot(){
+  const src=render(); if(!src)return null;
+  const bgSel=document.getElementById('bg').value;
+  const bg = bgSel==='custom' ? (document.getElementById('bgCustom').value||null)
+           : (bgSel||null);
+  const fit=document.getElementById('fit').value;
+  // 寄り: 上からの割合で切り出す
+  const crop = fit==='face' ? [0, 0, 1, 0.34]
+             : fit==='bust' ? [0, 0, 1, 0.58]
+             : [0,0,1,1];
+  const sx=src.width*crop[0], sy=src.height*crop[1];
+  const sw=src.width*crop[2], sh=src.height*crop[3];
+  const sizeSel=document.getElementById('size').value;
+  let W,HT;
+  if(sizeSel==='0'){ W=Math.round(sw); HT=Math.round(sh); }
+  else { const p=sizeSel.split('x'); W=+p[0]; HT=+p[1]; }
+  const out=document.createElement('canvas'); out.width=W; out.height=HT;
+  const g=out.getContext('2d');
+  if(bg){ g.fillStyle=bg; g.fillRect(0,0,W,HT); }
+  const k=Math.min(W/sw, HT/sh)*0.94;
+  const dw=sw*k, dh=sh*k;
+  g.imageSmoothingQuality='high';
+  g.drawImage(src, sx,sy,sw,sh, (W-dw)/2, (HT-dh)/2, dw, dh);
+  return out;
+}
+function save(canvas,name){
+  canvas.toBlob(b=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=name; a.click();
+  },'image/png');
+}
+document.getElementById('snap').onclick=()=>{
+  const c=shoot(); if(!c)return;
+  save(c, `こんとも_${curBody}_${curEyes}_${curMouth}.png`);
+  document.getElementById('stat').textContent=`保存: ${curBody}／${EYE_LABEL[curEyes]}／口${curMouth}`;
+};
+document.getElementById('snapAll').onclick=async()=>{
+  const st=document.getElementById('stat');
+  const keepB=curBody, keepE=curEyes, keepM=curMouth;
+  let n=0;
+  for(const b of BODIES) for(const e of EYES){
+    curBody=b; curEyes=e; curMouth='n';
+    const c=shoot(); if(!c)continue;
+    save(c, `こんとも_${b}_${e}.png`); n++;
+    st.textContent=`一括保存中… ${n}/${BODIES.length*EYES.length}`;
+    await new Promise(r=>setTimeout(r,220));
+  }
+  curBody=keepB; curEyes=keepE; curMouth=keepM; draw();
+  st.textContent=`一括保存 完了（${n}枚）`;
+};
+function applyBg(){
+  const v=document.getElementById('bg').value;
+  document.getElementById('bgCustom').style.display = v==='custom'?'':'none';
+  const col = v==='custom' ? (document.getElementById('bgCustom').value||'') : v;
+  const el=document.getElementById('shot');
+  if(col){ el.style.background=col; }
+  else { el.style.background='repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/24px 24px'; }
+}
+document.getElementById('bg').onchange=applyBg;
+document.getElementById('bgCustom').oninput=applyBg;
+
+// ── かな→母音
+const KANA={あ:'a',い:'i',う:'u',え:'e',お:'o',ん:'n'};
+function kanaToVowels(s){
+  const out=[];
+  const t=s.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  const R=['あいうえお','かきくけこ','さしすせそ','たちつてと','なにぬねの','はひふへほ',
+           'まみむめも','やゆよ','らりるれろ','わをん','がぎぐげご','ざじずぜぞ',
+           'だぢづでど','ばびぶべぼ','ぱぴぷぺぽ'];
+  for(const ch of t){
+    if(ch==='ー'){ if(out.length)out.push(out[out.length-1]); continue; }
+    if(ch==='っ') continue;
+    if(ch in KANA){ out.push(KANA[ch]); continue; }
+    let f=null;
+    for(const row of R){const i=row.indexOf(ch);
+      if(i>=0){f='aiueo'[row.length===3?[0,2,4][i]:i];break;}}
+    if(!f){const sm='ゃゅょぁぃぅぇぉ'; const j=sm.indexOf(ch);
+      if(j>=0)f=['a','u','o','a','i','u','e','o'][j];}
+    if(f)out.push(f);
+    else if(/[、。！？\s]/.test(ch)) out.push('n');
+  }
+  return out;
+}
+function refreshVowels(){
+  const v=kanaToVowels(document.getElementById('text').value);
+  document.getElementById('vowels').textContent=v.length?v.join(' '):'（母音が取れません）';
+  return v;
+}
+document.getElementById('text').oninput=refreshVowels;
+document.getElementById('rate').oninput=e=>document.getElementById('rateV').textContent=e.target.value;
+document.getElementById('blinkSpd').oninput=e=>document.getElementById('blinkV').textContent=e.target.value;
+document.getElementById('blinkGap').oninput=e=>document.getElementById('gapV').textContent=e.target.value;
+
+// ── 目ぱち
+let blinkT=null;
+function startBlink(){
+  stopBlink();
+  const tick=()=>{
+    if(!document.getElementById('blink').checked){blinkT=setTimeout(tick,1200);return;}
+    const sp=+document.getElementById('blinkSpd').value/4;
+    ['half','closed','half','open'].forEach((e,i)=>setTimeout(()=>{curEyes=e;syncSel();draw();},i*sp));
+    const gap=+document.getElementById('blinkGap').value*1000;
+    blinkT=setTimeout(tick, gap*0.6+Math.random()*gap*0.8);
+  };
+  blinkT=setTimeout(tick,900);
+}
+function stopBlink(){if(blinkT){clearTimeout(blinkT);blinkT=null;}}
+
+// ── 再生
+let timers=[], audioEl=null, raf=null, cueData=null, ac=null, analyser=null;
+function clearAll(){timers.forEach(clearTimeout);timers=[];if(raf)cancelAnimationFrame(raf);raf=null;
+  if(audioEl){audioEl.pause();audioEl.currentTime=0;} curMouth='n'; syncSel(); draw();}
+document.getElementById('stop').onclick=()=>{clearAll();stopBlink();};
+document.getElementById('play').onclick=()=>{
+  clearAll(); startBlink();
+  if(audioEl&&cueData) playCues();
+  else if(audioEl) playAmp();
+  else playText();
+};
+function playText(){
+  const v=refreshVowels(), r=+document.getElementById('rate').value;
+  v.forEach((vv,i)=>timers.push(setTimeout(()=>{curMouth=vv;syncSel();draw();},i*r)));
+  timers.push(setTimeout(()=>{curMouth='n';syncSel();draw();}, v.length*r+120));
+}
+function playCues(){
+  audioEl.currentTime=0; audioEl.play(); let i=0;
+  const step=()=>{
+    const t=audioEl.currentTime;
+    while(i<cueData.cues.length && cueData.cues[i].t<=t){curMouth=cueData.cues[i].v;i++;syncSel();draw();}
+    if(!audioEl.paused) raf=requestAnimationFrame(step); else {curMouth='n';syncSel();draw();}
+  };
+  raf=requestAnimationFrame(step);
+}
+function playAmp(){
+  if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();
+    const s=ac.createMediaElementSource(audioEl);
+    analyser=ac.createAnalyser(); analyser.fftSize=1024;
+    s.connect(analyser); analyser.connect(ac.destination);}
+  ac.resume(); audioEl.currentTime=0; audioEl.play();
+  const buf=new Uint8Array(analyser.fftSize), M=['n','i','e','a','a'];
+  const step=()=>{
+    analyser.getByteTimeDomainData(buf);
+    let s=0; for(let k=0;k<buf.length;k++){const d=(buf[k]-128)/128; s+=d*d;}
+    const m=M[Math.min(4,Math.floor(Math.sqrt(s/buf.length)*46))];
+    if(m!==curMouth){curMouth=m;syncSel();draw();}
+    if(!audioEl.paused) raf=requestAnimationFrame(step); else {curMouth='n';syncSel();draw();}
+  };
+  raf=requestAnimationFrame(step);
+}
+document.getElementById('audio').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  if(!audioEl) audioEl=new Audio();
+  audioEl.src=URL.createObjectURL(f); audioEl.load();
+  document.getElementById('stat').textContent='音声を読み込みました: '+f.name;};
+document.getElementById('cues').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  f.text().then(t=>{cueData=JSON.parse(t);
+    document.getElementById('stat').textContent=`タイミング: ${cueData.cues.length}キュー / ${cueData.duration}秒`;});};
+
+// ── 動画出力
+let rec=null, chunks=[], recTimer=null;
+document.getElementById('recMax').oninput=e=>document.getElementById('recMaxV').textContent=e.target.value;
+(()=>{ // このブラウザで何が録れるか表示しておく
+  const ok=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4']
+    .some(m=>MediaRecorder.isTypeSupported(m));
+  document.getElementById('codec').textContent =
+    ok ? '（このブラウザは mp4 で直接書き出せます）'
+       : '（このブラウザは mp4 非対応のため webm で保存されます）';
+})();
+document.getElementById('rec').onclick=()=>{
+  const sizeSel=document.getElementById('size').value;
+  const probe=shoot(); if(!probe)return;
+  const W=probe.width, HT=probe.height;
+  const rc=document.createElement('canvas'); rc.width=W; rc.height=HT;
+  const g=rc.getContext('2d');
+  const stream=rc.captureStream(30);
+  // 音声も混ぜる
+  if(audioEl){
+    try{
+      if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();
+        const s=ac.createMediaElementSource(audioEl);
+        analyser=ac.createAnalyser(); analyser.fftSize=1024;
+        s.connect(analyser); analyser.connect(ac.destination);}
+      const dest=ac.createMediaStreamDestination();
+      analyser.connect(dest);
+      dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+    }catch(_){}
+  }
+  chunks=[];
+  // mp4 が録れるならmp4。ダメならwebmへ落とす
+  const CAND=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4',
+              'video/webm;codecs=vp9','video/webm'];
+  const mime = CAND.find(m=>MediaRecorder.isTypeSupported(m)) || '';
+  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+  rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8_000_000});
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  rec.onstop=()=>{
+    const b=new Blob(chunks,{type:mime||'video/mp4'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=`こんとも_${curBody}.${ext}`; a.click();
+    document.getElementById('stat').textContent=
+      `${ext.toUpperCase()} を保存（${(b.size/1e6).toFixed(1)}MB）`;
+    document.getElementById('rec').disabled=false;
+    document.getElementById('recStop').disabled=true;
+  };
+  // 毎フレーム描き込む
+  const pump=()=>{
+    if(!rec||rec.state!=='recording')return;
+    const c=shoot(); if(c){g.clearRect(0,0,W,HT); g.drawImage(c,0,0,W,HT);}
+    requestAnimationFrame(pump);
+  };
+  rec.start(); pump();
+  document.getElementById('rec').disabled=true;
+  document.getElementById('recStop').disabled=false;
+  document.getElementById('stat').textContent='録画中…';
+  document.getElementById('play').click();
+  const lim=+document.getElementById('recMax').value*1000;
+  recTimer=setTimeout(()=>{if(rec&&rec.state==='recording')rec.stop();}, lim);
+};
+document.getElementById('recStop').onclick=()=>{
+  if(recTimer)clearTimeout(recTimer);
+  if(rec&&rec.state==='recording')rec.stop();
+};
+
+// ── UI
+function syncSel(){
+  document.getElementById('eyes').value=curEyes;
+  document.getElementById('mouth').value=curMouth;
+}
+const bs=document.getElementById('body');
+BODIES.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent='ポーズ: '+BODY_LABEL[b];bs.appendChild(o);});
+bs.onchange=()=>{curBody=bs.value;draw();};
+const es=document.getElementById('eyes');
+EYES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent='表情: '+EYE_LABEL[e];es.appendChild(o);});
+es.onchange=()=>{curEyes=es.value;draw();};
+const ms=document.getElementById('mouth');
+MOUTHS.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent='口: '+m;ms.appendChild(o);});
+ms.onchange=()=>{curMouth=ms.value;draw();};
+window.addEventListener('resize',draw);
+preload().then(()=>{
+  refreshVowels(); draw(); startBlink();
+  document.getElementById('stat').textContent='準備できました';
+});
+</script></body></html>
