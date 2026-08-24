@@ -300,16 +300,10 @@ function playCues(){
   raf=requestAnimationFrame(step);
 }
 function playAmp(){
-  if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();
-    const s=ac.createMediaElementSource(audioEl);
-    analyser=ac.createAnalyser(); analyser.fftSize=1024;
-    s.connect(analyser); analyser.connect(ac.destination);}
-  ac.resume(); audioEl.currentTime=0; audioEl.play();
-  const buf=new Uint8Array(analyser.fftSize), M=['n','i','e','a','a'];
+  /* 音は<audio>がそのまま鳴らす。口は事前計算した音量カーブで動かす */
+  audioEl.currentTime=0; audioEl.play();
   const step=()=>{
-    analyser.getByteTimeDomainData(buf);
-    let s=0; for(let k=0;k<buf.length;k++){const d=(buf[k]-128)/128; s+=d*d;}
-    const m=M[Math.min(4,Math.floor(Math.sqrt(s/buf.length)*46))];
+    const m=mouthFromEnv(audioEl.currentTime);
     if(m!==curMouth){curMouth=m;syncSel();draw();}
     if(!audioEl.paused) raf=requestAnimationFrame(step); else {curMouth='n';syncSel();draw();}
   };
@@ -378,13 +372,39 @@ recBtn.onclick=async()=>{
 //    (whisperを使わずブラウザだけで、audio_to_vowels.py と同じ考え方をやる)
 const fitBtn=document.getElementById('fitBtn'), cuesSave=document.getElementById('cuesSave');
 let lastSrcBlob=null; // マイク録音でもファイル選択でも、解析対象の音
-function markSource(b){ lastSrcBlob=b; fitBtn.disabled=!b; }
+let audioBuf=null;    // デコード済みの音(録画・口パク解析用)
+let envelope=null, ENV_HOP=0.05, envMax=0; // 50msごとの音量カーブ
 
 async function decodeBlob(b){
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   const buf=await ctx.decodeAudioData(await b.arrayBuffer());
   ctx.close();
   return buf;
+}
+/* 音量カーブを事前計算しておく。再生中はこれを読むだけで口が動く
+   (ブラウザのリアルタイム解析経路に依存しない) */
+function buildEnvelope(buf){
+  const ch=buf.getChannelData(0), sr=buf.sampleRate;
+  const hop=Math.max(1,Math.round(sr*ENV_HOP));
+  const env=[];
+  for(let i=0;i<ch.length;i+=hop){
+    let ss=0; const end=Math.min(i+hop,ch.length);
+    for(let j=i;j<end;j++) ss+=ch[j]*ch[j];
+    env.push(Math.sqrt(ss/Math.max(1,end-i)));
+  }
+  envelope=env; envMax=Math.max(...env,1e-6);
+}
+function mouthFromEnv(t){
+  if(!envelope) return 'n';
+  const v=(envelope[Math.floor(t/ENV_HOP)]||0)/envMax;
+  if(v<0.14) return 'n';
+  return ['i','e','a','a'][Math.min(3,Math.floor(v*3.2))];
+}
+async function markSource(b){
+  lastSrcBlob=b; fitBtn.disabled=!b;
+  audioBuf=null; envelope=null;
+  if(!b) return;
+  try{ audioBuf=await decodeBlob(b); buildEnvelope(audioBuf); }catch(_){}
 }
 /* 音量の起伏から発話区間を切り出す */
 function voicedSegments(buf){
@@ -454,8 +474,8 @@ fitBtn.onclick=async()=>{
   recStat.style.display='';
   recStat.textContent='音声を解析しています…';
   try{
-    const buf=await decodeBlob(lastSrcBlob);
-    const {segs,dur}=voicedSegments(buf);
+    if(!audioBuf){ audioBuf=await decodeBlob(lastSrcBlob); buildEnvelope(audioBuf); }
+    const {segs,dur}=voicedSegments(audioBuf);
     if(!segs.length){
       recStat.textContent='喋っている区間が見つかりませんでした。音量を上げて録り直してみてください。';
       return;
@@ -527,20 +547,21 @@ document.getElementById('rec').onclick=()=>{
   const rc=document.createElement('canvas'); rc.width=W; rc.height=HT;
   const g=rc.getContext('2d');
   const stream=rc.captureStream(30);
-  // 音声も混ぜる
-  let audioIn=false;
-  if(audioEl){
+  // 音声も混ぜる: デコード済みの音(audioBuf)をファイルへ直接流し込む。
+  // <audio>要素の経路は環境によって録画に音が乗らないため使わない。
+  let audioIn=false, recSrc=null;
+  if(audioBuf){
     try{
-      if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();
-        const s=ac.createMediaElementSource(audioEl);
-        analyser=ac.createAnalyser(); analyser.fftSize=1024;
-        s.connect(analyser); analyser.connect(ac.destination);}
+      if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)();
       if(ac.state==='suspended') ac.resume();
       const dest=ac.createMediaStreamDestination();
-      analyser.connect(dest);
+      recSrc=ac.createBufferSource();
+      recSrc.buffer=audioBuf;
+      recSrc.connect(dest);           // ファイルへ
+      recSrc.connect(ac.destination); // モニター(耳)へ
       dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
       audioIn = stream.getAudioTracks().length>0;
-    }catch(_){}
+    }catch(_){ recSrc=null; }
   }
   chunks=[];
   // mp4 が録れるならmp4。ダメならwebmへ落とす
@@ -559,6 +580,7 @@ document.getElementById('rec').onclick=()=>{
   const ext = (actual.startsWith('video/mp4') && /avc1/.test(actual)) ? 'mp4' : 'webm';
   rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
   rec.onstop=()=>{
+    if(recSrc){ try{recSrc.stop();}catch(_){} recSrc=null; }
     const b=new Blob(chunks,{type:actual||'video/webm'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(b); a.download=`こんとも_${curBody}.${ext}`; a.click();
@@ -577,7 +599,28 @@ document.getElementById('rec').onclick=()=>{
   document.getElementById('rec').disabled=true;
   document.getElementById('recStop').disabled=false;
   document.getElementById('stat').textContent='録画中…'+(audioIn?'（音あり）':'（音なし）');
-  document.getElementById('play').click();
+  if(recSrc){
+    // 音つき録画: バッファ音源の時計に合わせて口を動かす
+    clearAll(); startBlink();
+    recSrc.start();
+    const t0=ac.currentTime;
+    let ci=0;
+    const act=()=>{
+      if(!rec||rec.state!=='recording'){curMouth='n';syncSel();draw();return;}
+      const t=ac.currentTime-t0;
+      if(cueData){
+        while(ci<cueData.cues.length && cueData.cues[ci].t<=t){curMouth=cueData.cues[ci].v;ci++;}
+        syncSel();draw();
+      }else{
+        const m=mouthFromEnv(t);
+        if(m!==curMouth){curMouth=m;syncSel();draw();}
+      }
+      requestAnimationFrame(act);
+    };
+    requestAnimationFrame(act);
+  }else{
+    document.getElementById('play').click();
+  }
   const lim=+document.getElementById('recMax').value*1000;
   recTimer=setTimeout(()=>{if(rec&&rec.state==='recording')rec.stop();}, lim);
 };
@@ -603,6 +646,6 @@ ms.onchange=()=>{curMouth=ms.value;draw();};
 window.addEventListener('resize',draw);
 preload().then(()=>{
   refreshVowels(); draw(); startBlink();
-  document.getElementById('stat').textContent='準備できました（v4・音修正版）';
+  document.getElementById('stat').textContent='準備できました（v5・口パク/録画音 修正版）';
 });
 </script></body></html>
