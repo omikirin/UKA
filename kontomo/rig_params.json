@@ -1,0 +1,64 @@
+{
+  "heads": {
+    "open": {
+      "head_dx": 0,
+      "head_dy": 0
+    },
+    "half": {
+      "head_dx": 2,
+      "head_dy": -1
+    },
+    "happy": {
+      "head_dx": 1,
+      "head_dy": 0
+    },
+    "smile": {
+      "head_dx": 2,
+      "head_dy": -1
+    },
+    "closed": {
+      "head_dx": 6,
+      "head_dy": -4
+    },
+    "cry": {
+      "head_dx": 2,
+      "head_dy": -8
+    },
+    "dot": {
+      "head_dx": 6,
+      "head_dy": -4
+    },
+    "angry": {
+      "head_dx": 2,
+      "head_dy": -7
+    }
+  },
+  "mouth_w": 0.11,
+  "mouth_y": 0.8,
+  "mouth_dx": 0,
+  "mouth_dy": 0,
+  "neck_overlap": 0.1,
+  "body_front": true,
+  "bodies": {
+    "stand": {
+      "body_scale": 1,
+      "body_dx": 0,
+      "body_dy": 0
+    },
+    "armscrossed": {
+      "body_scale": 1,
+      "body_dx": -6,
+      "body_dy": 0
+    },
+    "wave": {
+      "body_scale": 1.093,
+      "body_dx": 5,
+      "body_dy": -50
+    },
+    "heart": {
+      "body_scale": 1,
+      "body_dx": -5,
+      "body_dy": 0
+    }
+  }
+}
