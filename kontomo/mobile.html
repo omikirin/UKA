@@ -3,7 +3,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1016'/%3E%3Cpath d='M32 56 L13 43 L8 9 L26 21 Q32 17 38 21 L56 9 L51 43 Z' fill='%23DE8250'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#1A1016">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="description" content="こんとも撮影ツール スマホ版。ポーズと表情を選び、口パク・目ぱちつきで喋らせて撮影・動画化できる。">
+<meta name="description" content="こんとも撮影ツール スマホ版。ポーズと表情をアイコンで選び、口パクつきで喋らせて撮影・動画化できる。">
 <title>こんとも撮影ツール スマホ版 | ウカ文庫</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -12,33 +12,67 @@ html,body{height:100%}
 body{
   display:flex;flex-direction:column;
   font:15px/1.6 -apple-system,"Hiragino Sans",sans-serif;
-  background:#e8e2d8;color:#333;
-  overscroll-behavior:none;
+  background:#e8e2d8;color:#333;overscroll-behavior:none;
 }
 header.top{
   flex:none;display:flex;align-items:center;gap:10px;
-  padding:8px calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left));
+  padding:7px calc(12px + env(safe-area-inset-right)) 7px calc(12px + env(safe-area-inset-left));
   background:#fff;border-bottom:1px solid #ddd;font-size:13px;
 }
 header.top a{color:#c63;text-decoration:none;flex:none}
 header.top b{flex:1;text-align:center;font-size:14px}
 header.top .sp{width:2.5em}
+
+/* ── 上のアイコンバー(ポーズ・表情・目ぱち・カメラ) ── */
+.iconbar{
+  flex:none;display:flex;align-items:center;gap:6px;
+  padding:6px calc(10px + env(safe-area-inset-right)) 6px calc(10px + env(safe-area-inset-left));
+  background:#fff;border-bottom:1px solid #eee;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.iconbar::-webkit-scrollbar{display:none}
+.icon{
+  flex:none;width:46px;height:46px;border:2px solid #ddd;border-radius:12px;
+  background:#faf8f4;padding:2px;cursor:pointer;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none}
+.icon.on{border-color:#c63;background:#fff3ec}
+.icon.tool{font-size:22px;background:#f2efe9}
+.icon.tool.off{opacity:.35;filter:grayscale(1)}
+.sep{flex:none;width:1px;height:34px;background:#e5e0d8;margin:0 2px}
+
+/* 目ぱち設定の吹き出し(目アイコン長押し) */
+#blinkPop{
+  position:absolute;z-index:30;background:#fff;border:1px solid #ccc;border-radius:12px;
+  padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25);width:min(86vw,320px);
+}
+#blinkPop label{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+#blinkPop input[type=range]{flex:1}
+#blinkPop .close{width:100%;margin-top:6px;padding:8px;border:1px solid #ccc;border-radius:8px;background:#f4f1ec;font:inherit}
+
 #stage{
   flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
   overflow:hidden;position:relative;padding:6px;
 }
 #shot{background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/22px 22px}
 #shot canvas{display:block}
-nav.tabs{
-  flex:none;display:flex;background:#fff;border-top:1px solid #ddd;
+/* ステージ右下のカメラボタン */
+#quickSnap{
+  position:absolute;right:12px;bottom:12px;z-index:5;
+  width:54px;height:54px;border-radius:50%;border:none;font-size:24px;
+  background:#c63;color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.3);cursor:pointer;
 }
+#quickSnap:active{transform:scale(.94)}
+
+nav.tabs{flex:none;display:flex;background:#fff;border-top:1px solid #ddd}
 nav.tabs button{
   flex:1;padding:10px 0 8px;border:none;background:none;font:inherit;font-size:13px;
   color:#888;border-top:3px solid transparent;cursor:pointer;
 }
 nav.tabs button.on{color:#c63;border-top-color:#c63;font-weight:bold}
 #panel{
-  flex:none;height:38vh;min-height:230px;overflow-y:auto;background:#fff;
+  flex:none;height:33vh;min-height:200px;overflow-y:auto;background:#fff;
   padding:12px calc(14px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
   -webkit-overflow-scrolling:touch;
 }
@@ -53,17 +87,17 @@ button.big:active{transform:scale(.98)}
 button.main{background:#2b7;color:#fff;border-color:#2b7;font-weight:bold}
 button.warm{background:#c63;color:#fff;border-color:#c63;font-weight:bold}
 button:disabled{opacity:.45}
-textarea{height:70px}
+button.small{width:auto;font-size:13px;padding:7px 12px;border:1px solid #ccc;border-radius:8px;background:#f4f1ec;font-family:inherit}
+textarea{height:74px}
 .row{display:flex;gap:8px}.row>*{flex:1}
 label.line{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
 label.line input[type=range]{flex:1}
-label.line input[type=checkbox]{width:20px;height:20px}
 .note{font-size:12px;color:#666;background:#f6f3ee;padding:8px 10px;border-radius:8px;margin:6px 0;line-height:1.7}
 #vowels{font-family:ui-monospace,monospace;font-size:11px;color:#c60;word-break:break-all;
   background:#faf7f0;padding:6px 8px;border-radius:8px;min-height:16px;margin:4px 0}
 #stat{position:sticky;bottom:0;margin-top:8px;background:#fff8ea;border:1px solid #eadfc8}
 input[type=file]{width:100%;font-size:13px;margin:4px 0}
-h5{font-size:12px;color:#999;margin:10px 0 2px;font-weight:normal;letter-spacing:.1em}
+.hidden{display:none !important}
 </style></head><body>
 <header class="top">
   <a href="./">PC版</a>
@@ -71,76 +105,49 @@ h5{font-size:12px;color:#999;margin:10px 0 2px;font-weight:normal;letter-spacing
   <span class="sp"></span>
 </header>
 
-<div id="stage"><div id="shot"><canvas id="cv"></canvas></div></div>
+<!-- ポーズ -->
+<div class="iconbar" id="poseBar"></div>
+<!-- 表情 + 目ぱち -->
+<div class="iconbar" id="faceBar"></div>
+
+<div id="stage">
+  <div id="shot"><canvas id="cv"></canvas></div>
+  <button type="button" id="quickSnap" title="いまの1枚を保存">📷</button>
+</div>
 
 <nav class="tabs">
-  <button type="button" data-tab="pose" class="on">😊 表情</button>
-  <button type="button" data-tab="talk">🎤 喋る</button>
-  <button type="button" data-tab="shot">📷 撮影</button>
+  <button type="button" data-tab="talk" class="on">🎤 喋る</button>
+  <button type="button" data-tab="script">✍️ 台本</button>
   <button type="button" data-tab="movie">🎬 動画</button>
 </nav>
 
 <div id="panel">
-  <section class="tab on" id="tab-pose">
-    <select id="body"></select>
-    <select id="eyes"></select>
-    <select id="mouth"></select>
-    <label class="line"><input type="checkbox" id="blink" checked> 自動で目ぱち</label>
-    <label class="line">速さ <input type="range" id="blinkSpd" min="60" max="900" value="360"><span id="blinkV">360</span>ms</label>
-    <label class="line">間隔 <input type="range" id="blinkGap" min="2" max="20" value="7"><span id="gapV">7</span>秒</label>
-  </section>
-
-  <section class="tab" id="tab-talk">
-    <textarea id="text" placeholder="ひらがな・カタカナで台本を入力">こんにちは、こんともです</textarea>
-    <label class="line">速さ <input type="range" id="rate" min="60" max="260" value="130"><span id="rateV">130</span></label>
-    <div id="vowels"></div>
+  <section class="tab on" id="tab-talk">
+    <div class="row">
+      <button type="button" class="big warm" id="recBtn">● マイクで録音</button>
+    </div>
     <div class="row">
       <button type="button" class="big main" id="play">▶ 喋る</button>
       <button type="button" class="big" id="stop">■ 止める</button>
     </div>
-    <h5>声を使う</h5>
-    <div class="row">
-      <button type="button" class="big warm" id="recBtn">● マイクで録音</button>
-      <button type="button" class="big" id="recSave" disabled>録音を保存</button>
-    </div>
-    <div class="row">
-      <button type="button" class="big" id="fitBtn" disabled>台本を録音に合わせる</button>
-      <button type="button" class="big" id="cuesSave" disabled>タイミング保存</button>
-    </div>
     <div id="recStat" class="note" style="display:none"></div>
-    <div class="note">録ってすぐ「▶ 喋る」で音量口パク。台本を入れて「台本を録音に合わせる」を押すと口が正確になる。</div>
-    <h5>ファイルから</h5>
+    <div class="note">録ってすぐ「▶ 喋る」で声に合わせて口が動く。✍️台本タブで台本を書いて合わせると、口がもっと正確になる。</div>
+    <div class="row" style="align-items:center">
+      <button type="button" class="small" id="recSave" disabled>録音を保存</button>
+    </div>
     <input type="file" id="audio" accept="audio/*">
-    <input type="file" id="cues" accept=".json">
-    <select id="cuesPick" style="display:none"></select>
   </section>
 
-  <section class="tab" id="tab-shot">
-    <select id="bg">
-      <option value="">背景: 透過</option>
-      <option value="#fdf4eb">生成りベージュ</option>
-      <option value="#ffffff">白</option>
-      <option value="#111111">黒</option>
-      <option value="#00b140">グリーンバック</option>
-      <option value="custom">自分で指定</option>
-    </select>
-    <input type="text" id="bgCustom" placeholder="#rrggbb" style="display:none">
+  <section class="tab" id="tab-script">
+    <textarea id="text" placeholder="ひらがな・カタカナで台本を入力">こんにちは、こんともです</textarea>
+    <button type="button" class="big warm" id="fitBtn" disabled>この台本を録音に合わせる</button>
     <div class="row">
-      <select id="size">
-        <option value="0">そのまま</option>
-        <option value="1080x1920">縦 1080x1920</option>
-        <option value="1920x1080">横 1920x1080</option>
-        <option value="1080x1080">正方 1080x1080</option>
-        <option value="512x512">アイコン 512x512</option>
-      </select>
-      <select id="fit">
-        <option value="contain">全身が入る</option>
-        <option value="bust">バストアップ</option>
-        <option value="face">顔アップ</option>
-      </select>
+      <button type="button" class="big main" id="play2">▶ 喋る</button>
+      <button type="button" class="big" id="stop2">■ 止める</button>
     </div>
-    <button type="button" class="big warm" id="snap">📷 いまの1枚を保存</button>
-    <button type="button" class="big" id="snapAll">全ポーズ×全表情を一括保存(32枚)</button>
+    <label class="line">文字だけで喋る速さ <input type="range" id="rate" min="60" max="260" value="130"><span id="rateV">130</span></label>
+    <div id="vowels"></div>
+    <div class="note">録音がなくても、台本の文字だけで口パクできる。録音があるときは「合わせる」を押すと声のタイミングに口が付く。</div>
   </section>
 
   <section class="tab" id="tab-movie">
@@ -156,6 +163,31 @@ h5{font-size:12px;color:#999;margin:10px 0 2px;font-weight:normal;letter-spacing
   </section>
 
   <div class="note" id="stat">準備中…</div>
+</div>
+
+<!-- 目ぱち設定(目アイコン長押しで開く) -->
+<div id="blinkPop" class="hidden">
+  <b style="font-size:13px">目ぱちの設定</b>
+  <label>速さ <input type="range" id="blinkSpd" min="60" max="900" value="645"><span id="blinkV">645</span>ms</label>
+  <label>間隔 <input type="range" id="blinkGap" min="2" max="20" value="3"><span id="gapV">3</span>秒</label>
+  <button type="button" class="close" id="blinkPopClose">閉じる</button>
+</div>
+
+<!-- エンジンが参照する要素(スマホ版では隠して固定値) -->
+<div class="hidden">
+  <select id="body"></select>
+  <select id="eyes"></select>
+  <select id="mouth"></select>
+  <input type="checkbox" id="blink" checked>
+  <button id="snap"></button>
+  <button id="snapAll"></button>
+  <button id="cuesSave"></button>
+  <input type="file" id="cues">
+  <select id="cuesPick"></select>
+  <select id="bg"><option value="" selected></option></select>
+  <input type="text" id="bgCustom">
+  <select id="size"><option value="0" selected></option></select>
+  <select id="fit"><option value="contain" selected></option></select>
 </div>
 <script>
 // 素材を差し替えたときに古い画像が出ないようにする
@@ -316,7 +348,9 @@ function startBlink(){
   const tick=()=>{
     if(!document.getElementById('blink').checked){blinkT=setTimeout(tick,1200);return;}
     const sp=+document.getElementById('blinkSpd').value/4;
-    ['half','closed','half','open'].forEach((e,i)=>setTimeout(()=>{curEyes=e;syncSel();draw();},i*sp));
+    const back=curEyes;
+    ['half','closed','half'].forEach((e,i)=>setTimeout(()=>{curEyes=e;syncSel();draw();},i*sp));
+    setTimeout(()=>{curEyes=back;syncSel();draw();},3*sp);
     const gap=+document.getElementById('blinkGap').value*1000;
     blinkT=setTimeout(tick, gap*0.6+Math.random()*gap*0.8);
   };
@@ -696,11 +730,12 @@ ms.onchange=()=>{curMouth=ms.value;draw();};
 window.addEventListener('resize',draw);
 preload().then(()=>{
   refreshVowels(); draw(); startBlink();
-  document.getElementById('stat').textContent='準備できました（スマホ版 v1）';
+  document.getElementById('stat').textContent='準備できました（スマホ版 v2）';
 });
 </script>
 <script>
-// タブ切り替え
+// ───────── スマホ版UI配線 ─────────
+// タブ
 document.querySelectorAll('nav.tabs button').forEach(b=>{
   b.addEventListener('click',()=>{
     document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
@@ -708,5 +743,74 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     draw();
   });
 });
+// 台本タブの喋る/止めるは本体ボタンを叩く
+document.getElementById('play2').onclick=()=>document.getElementById('play').click();
+document.getElementById('stop2').onclick=()=>document.getElementById('stop').click();
+// カメラ(背景=透過/サイズ=そのまま/全身 の既定で1枚保存)
+document.getElementById('quickSnap').onclick=()=>document.getElementById('snap').click();
+
+// ポーズ・表情のアイコン(素材画像をそのままアイコンにする)
+const poseBar=document.getElementById('poseBar'), faceBar=document.getElementById('faceBar');
+function makeIcon(src,title){
+  const b=document.createElement('button');
+  b.type='button'; b.className='icon'; b.title=title;
+  const i=document.createElement('img'); i.src=src; b.appendChild(i);
+  return b;
+}
+BODIES.forEach(bd=>{
+  const b=makeIcon(`parts/body_${bd}.png`, BODY_LABEL[bd]);
+  b.dataset.pose=bd;
+  b.onclick=()=>{curBody=bd; document.getElementById('body').value=bd; draw(); markIcons();};
+  poseBar.appendChild(b);
+});
+EYES.forEach(ey=>{
+  const b=makeIcon(`parts/head_${ey}.png`, EYE_LABEL[ey]);
+  b.dataset.eyes=ey;
+  b.onclick=()=>{curEyes=ey; document.getElementById('eyes').value=ey; draw(); markIcons();};
+  faceBar.appendChild(b);
+});
+// 目ぱちトグル(お絵かきツールの目アイコン。長押しで設定) — 空きのあるポーズ列に置く
+const sepEl=document.createElement('span'); sepEl.className='sep'; poseBar.appendChild(sepEl);
+const eyeBtn=document.createElement('button');
+eyeBtn.type='button'; eyeBtn.className='icon tool'; eyeBtn.textContent='👁'; eyeBtn.title='自動で目ぱち(長押しで設定)';
+poseBar.appendChild(eyeBtn);
+const blinkChk=document.getElementById('blink');
+function syncEye(){ eyeBtn.classList.toggle('off', !blinkChk.checked); }
+let lp=null, lpFired=false;
+eyeBtn.addEventListener('pointerdown',()=>{
+  lpFired=false;
+  lp=setTimeout(()=>{ lpFired=true; openBlinkPop(); },500);
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>eyeBtn.addEventListener(ev,()=>{ if(lp){clearTimeout(lp);lp=null;} }));
+eyeBtn.addEventListener('click',()=>{
+  if(lpFired) return; // 長押し後のclickは無視
+  blinkChk.checked=!blinkChk.checked; syncEye();
+});
+const pop=document.getElementById('blinkPop');
+function openBlinkPop(){
+  const r=eyeBtn.getBoundingClientRect();
+  pop.classList.remove('hidden');
+  pop.style.left=Math.max(8, Math.min(window.innerWidth-pop.offsetWidth-8, r.left-120))+'px';
+  pop.style.top=(r.bottom+8)+'px';
+}
+document.getElementById('blinkPopClose').onclick=()=>pop.classList.add('hidden');
+document.addEventListener('pointerdown',e=>{
+  if(!pop.classList.contains('hidden') && !pop.contains(e.target) && e.target!==eyeBtn) pop.classList.add('hidden');
+});
+// 選択中アイコンの表示(目ぱち中のチラつきは無視して、選択値だけ見る)
+function markIcons(){
+  poseBar.querySelectorAll('.icon').forEach(b=>b.classList.toggle('on', b.dataset.pose===curBody));
+  faceBar.querySelectorAll('.icon[data-eyes]').forEach(b=>b.classList.toggle('on', b.dataset.eyes===document.getElementById('eyes').value));
+}
+// 目ぱちで#eyesが揺れてもアイコンは「選んだ表情」を保つ
+let chosenEyes='open';
+faceBar.addEventListener('click',e=>{
+  const b=e.target.closest('.icon[data-eyes]'); if(b) chosenEyes=b.dataset.eyes;
+});
+setInterval(()=>{
+  poseBar.querySelectorAll('.icon').forEach(b=>b.classList.toggle('on', b.dataset.pose===curBody));
+  faceBar.querySelectorAll('.icon[data-eyes]').forEach(b=>b.classList.toggle('on', b.dataset.eyes===chosenEyes));
+},400);
+syncEye(); markIcons();
 </script>
 </body></html>
