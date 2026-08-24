@@ -269,7 +269,9 @@ function startBlink(){
   const tick=()=>{
     if(!document.getElementById('blink').checked){blinkT=setTimeout(tick,1200);return;}
     const sp=+document.getElementById('blinkSpd').value/4;
-    ['half','closed','half','open'].forEach((e,i)=>setTimeout(()=>{curEyes=e;syncSel();draw();},i*sp));
+    const back=curEyes;
+    ['half','closed','half'].forEach((e,i)=>setTimeout(()=>{curEyes=e;syncSel();draw();},i*sp));
+    setTimeout(()=>{curEyes=back;syncSel();draw();},3*sp);
     const gap=+document.getElementById('blinkGap').value*1000;
     blinkT=setTimeout(tick, gap*0.6+Math.random()*gap*0.8);
   };
@@ -649,6 +651,6 @@ ms.onchange=()=>{curMouth=ms.value;draw();};
 window.addEventListener('resize',draw);
 preload().then(()=>{
   refreshVowels(); draw(); startBlink();
-  document.getElementById('stat').textContent='準備できました（v5・口パク/録画音 修正版）';
+  document.getElementById('stat').textContent='準備できました（v6）';
 });
 </script></body></html>
