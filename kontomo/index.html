@@ -97,8 +97,8 @@ input[type=range]{width:100%}
 
   <h4>動画にする</h4>
   <div class="note">
-    いま画面で起きていること（口パク・目ぱち）をそのまま録って
-    <b>mp4</b> で保存する。音声を選んでいれば音も入る。<br>
+    いま画面で起きていること（口パク・目ぱち）をそのまま録って保存する。
+    マイク録音や選んだ音声は、音声トラックとして一緒に入る。<br>
     <span id="codec"></span>
   </div>
   <div class="row">
@@ -411,6 +411,8 @@ function voicedSegments(buf){
     }
   }
   if(st!==null) segs.push({start:st,end:rms.length*win/sr});
+  // 無音がほとんどない録音（ずっと喋りっぱなし等）でも空にしない
+  if(!segs.length) segs.push({start:0,end:buf.duration});
   // 120ms以内の切れ目はつなぐ
   const merged=[];
   for(const s of segs){
@@ -512,11 +514,11 @@ recSave.onclick=()=>{
 let rec=null, chunks=[], recTimer=null;
 document.getElementById('recMax').oninput=e=>document.getElementById('recMaxV').textContent=e.target.value;
 (()=>{ // このブラウザで何が録れるか表示しておく
-  const ok=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4']
-    .some(m=>MediaRecorder.isTypeSupported(m));
+  const ok=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1.42E01E',
+            'video/mp4;codecs=avc1'].some(m=>MediaRecorder.isTypeSupported(m));
   document.getElementById('codec').textContent =
-    ok ? '（このブラウザは mp4 で直接書き出せます）'
-       : '（このブラウザは mp4 非対応のため webm で保存されます）';
+    ok ? '（このブラウザは mp4(H.264) で直接書き出せます）'
+       : '（このブラウザは mp4 に非対応なので webm で保存します。webmはそのままSNS投稿・編集ソフト読み込みができます）';
 })();
 document.getElementById('rec').onclick=()=>{
   const sizeSel=document.getElementById('size').value;
@@ -532,6 +534,7 @@ document.getElementById('rec').onclick=()=>{
         const s=ac.createMediaElementSource(audioEl);
         analyser=ac.createAnalyser(); analyser.fftSize=1024;
         s.connect(analyser); analyser.connect(ac.destination);}
+      if(ac.state==='suspended') ac.resume();
       const dest=ac.createMediaStreamDestination();
       analyser.connect(dest);
       dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
@@ -539,18 +542,22 @@ document.getElementById('rec').onclick=()=>{
   }
   chunks=[];
   // mp4 が録れるならmp4。ダメならwebmへ落とす
-  const CAND=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4',
-              'video/webm;codecs=vp9','video/webm'];
+  // mp4を名乗っても中身がVP9/Opusだと多くのプレイヤーで開けないので、
+  // H.264(avc1)が本当に使えるときだけmp4。それ以外はwebmにする。
+  const CAND=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1.42E01E',
+              'video/mp4;codecs=avc1','video/webm;codecs=vp9,opus','video/webm;codecs=vp9',
+              'video/webm'];
   const mime = CAND.find(m=>MediaRecorder.isTypeSupported(m)) || '';
-  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
   rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8_000_000});
+  const actual = rec.mimeType || mime || '';
+  const ext = (actual.startsWith('video/mp4') && /avc1/.test(actual)) ? 'mp4' : 'webm';
   rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
   rec.onstop=()=>{
-    const b=new Blob(chunks,{type:mime||'video/mp4'});
+    const b=new Blob(chunks,{type:actual||'video/webm'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(b); a.download=`こんとも_${curBody}.${ext}`; a.click();
     document.getElementById('stat').textContent=
-      `${ext.toUpperCase()} を保存（${(b.size/1e6).toFixed(1)}MB）`;
+      `${ext.toUpperCase()} を保存（${(b.size/1e6).toFixed(1)}MB）${audioEl?'／音つき':'／音なし'}`;
     document.getElementById('rec').disabled=false;
     document.getElementById('recStop').disabled=true;
   };
